@@ -32,7 +32,7 @@ Book
 - author
 - coverUrl
 - description
-- status: "want" | "reading" | "read"
+- status: "want" | "reading" | "dropped" | "read"
 - rating (1-5, опционально)
 - review (текст, опционально)
 - startedAt / finishedAt
@@ -48,7 +48,7 @@ Book
 
 На старте — **ручной ввод** (пользователь сам вписывает название/автора/обложку). Интеграция с внешним API (Google Books или Open Library) для автозаполнения — отдельный будущий этап, не блокирует MVP.
 
-## Этап 1 — Скелет проекта
+## Этап 1 — Скелет проекта ✅
 
 - Монорепо: `/server` (Express) и `/client` (Next.js) в одном репозитории
 - `server`: Express на обычном JS + nodemon
@@ -56,17 +56,17 @@ Book
 - Настроить CORS между `client` (например, `localhost:3000`) и `server` (например, `localhost:5000`)
 - Базовый `GET /api/health` на бэке, запрос и отображение результата на фронте — проверка, что вся цепочка работает
 
-## Этап 2 — MongoDB и модели
+## Этап 2 — MongoDB и модели ✅
 
 - MongoDB Atlas + Mongoose
-- Схемы `User` и `Book` (см. Этап 0)
+- Схемы `User` и `Book` (см. Этап 0), файлы `server/models/user.js` и `server/models/book.js`
 - Подключение через `.env`, обработка ошибок подключения
 
-## Этап 3 — Аутентификация
+## Этап 3 — Аутентификация ✅ (backend)
 
-- Регистрация/логин: bcrypt для паролей, JWT
-- Middleware для защищённых роутов на Express
-- На фронте: хранение токена (httpOnly cookie), хук/контекст `useAuth`
+- Регистрация/логин: bcrypt для паролей, JWT (httpOnly cookie) — `server/controllers/authController.js`, `server/routes/auth.js`
+- Middleware для защищённых роутов — `server/middleware/auth.js`
+- Фронтенд-часть (хук/контекст `useAuth`, формы логина/регистрации) — перенесена в Этап 5, будет сделана вместе с личным кабинетом
 
 ## Этап 4 — CRUD книг (backend)
 
