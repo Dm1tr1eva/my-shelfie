@@ -4,3 +4,9 @@ const requireAuth = require('../middleware/auth')
 
 const router = express.Router()
 
+router.post('/', requireAuth, bookController.createBook)
+router.get('/', requireAuth, bookController.getBooks)
+router.get('/:id', requireAuth, bookController.getBook)
+router.patch('/:id', requireAuth, bookController.updateBook)
+
+module.exports = router
