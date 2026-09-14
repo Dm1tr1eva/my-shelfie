@@ -22,10 +22,12 @@ Translated, not waived:
 - **"tenant" means `userId`.** Every user owns their own books, so the multi-tenancy section
   applies in full: `userId` as the first parameter, `404` and never `403`, and an integration
   test per resource proving a cross-user read fails.
-- The `(tenantId, createdAt)` index is `{ userId: 1, createdAt: -1 }` in Mongo. **It does not
-  exist yet** — `getBooks` filters on `userId` and sorts on `createdAt` without it.
+- The `(tenantId, createdAt)` index is `{ userId: 1, createdAt: -1 }` in Mongo. In place on
+  `Book` since 2026-09-14 (`server/models/book.js`).
 - "The database client never appears in a controller" means Mongoose models are reached
-  through a repository, not imported into `controllers/`.
+  through a repository, not imported into `controllers/`. True for `books` since 2026-09-14
+  (`server/repositories/bookRepository.js`); `auth` still imports its models directly and
+  migrates the same way whenever it is next touched substantially.
 - `docs/ROADMAP.md` is the plan that the documentation section calls `docs/plan.md`. It keeps
   its current name.
 

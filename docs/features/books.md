@@ -16,50 +16,53 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
 - A caller can only see, change or delete their own books. A book that exists but belongs to
   someone else is indistinguishable, from the outside, from a book that does not exist.
 
+## Shape
+
+Three layers, per `CLAUDE.md`: `controllers/bookController.js` (parses and validates the
+request with Zod, calls the service, maps the result through a DTO) →
+`services/bookService.js` (a thin pass-through today — no cross-field invariant exists yet
+that would live here) → `repositories/bookRepository.js` (every `Book` Mongoose call,
+`userId` as the required first parameter of each method). Validation schemas live in
+`validation/bookSchemas.js`; the response shape in `dto/bookDto.js`.
+
 ## Endpoints
 
 All routes are mounted at `/api/books` and require `requireAuth` (a valid `token` cookie).
+Every request body is validated against a `zod` schema that mirrors `server/models/book.js`
+exactly and rejects an unrecognized field — sending `userId` or `_id` in a body answers `400`,
+it does not get silently dropped.
 
 | Method and path | Answers |
 |---|---|
-| `POST /` | `201` with the created book. `500` on a Mongoose validation error — see Trade-offs. |
+| `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field). |
 | `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). |
 | `GET /:id` | `200` with the book. `404` if it does not exist, belongs to another user, or `:id` is not a valid ObjectId. |
-| `PATCH /:id` | `200` with the updated book. `400` if the body carries no field from the allow-list, or a value fails Mongoose validation (bad `status`, `rating` out of range, blanked-out `title`/`author`). `404` under the same three conditions as `GET /:id`. |
+| `PATCH /:id` | `200` with the updated book. `400` if the body carries no recognized field, or a value fails schema validation. `404` under the same three conditions as `GET /:id`. |
 | `DELETE /:id` | `204` with no body. `404` under the same three conditions as `GET /:id`. |
 
-**What "field absent" means on `PATCH`:** a field missing from the body is left untouched.
-Only fields present in [`UPDATABLE_FIELDS`](../../server/controllers/bookController.js) are
-ever written; anything else in the body — `userId`, `_id`, `createdAt` — is silently dropped,
-not rejected. A body with none of those fields present answers `400`.
+**What "field absent" means on `PATCH`:** a field missing from the body is left untouched. A
+body with none of the schema's fields present answers `400` ("No updatable fields provided").
+
+**Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
+is their own book), `title`, `author`, `status`, `createdAt`, `updatedAt`, plus whichever of
+`coverUrl`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
+field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
 
 ## Data
 
 One collection, `Book` (`server/models/book.js`): `userId`, `title`, `author`, `coverUrl`,
 `description`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
-`updatedAt` from `timestamps: true`.
-
-No index beyond the default `_id` exists yet. `GET /` filters on `userId` and sorts on
-`createdAt` without one — see Trade-offs.
+`updatedAt` from `timestamps: true`. Compound index `{ userId: 1, createdAt: -1 }` — covers
+both the filter every query uses and the sort `GET /` applies.
 
 ## Trade-offs accepted
 
-- **No `{ userId: 1, createdAt: -1 }` index.** At a personal-shelf scale (hundreds of rows per
-  user) an unindexed scan is fast enough to not matter yet. Add it if a list is ever slow, or
-  before Stage 10 deploy, whichever comes first.
 - **Offset pagination, not cursor.** `CLAUDE.md` asks for cursor pagination on time-ordered
   lists; this project's own applicability note exempts it at this scale. Revisit if a list
   can exceed a few thousand rows or gains inserts while a page is being read.
-- **Two layers, not three.** Controllers call the Mongoose model directly; there is no service
-  or repository layer yet. `CLAUDE.md` calls this a migration to do when the module is next
-  touched substantially, not a blocker for adding endpoints.
-- **Controllers return the Mongoose document, not a DTO.** `__v` and internal shape leak to
-  the client. Acceptable for a solo learning project with no other consumer of the API yet;
-  revisit before anyone but this frontend reads these responses.
-- **Validation is Mongoose schema validation only**, not a dedicated library (Zod/Joi is still
-  on the roadmap for this stage). This means `POST /` returns a generic `500` on a validation
-  failure instead of PATCH's `400` — `createBook` does not distinguish `ValidationError` from
-  any other failure the way `updateBook` does. Narrow and worth fixing, not yet done.
+- **The service layer has no logic of its own yet.** It exists because the three-layer shape
+  is required outright, not because a use case needs it today. Revisit once a real invariant
+  (e.g. `finishedAt >= startedAt`) shows up — it belongs here, not in the controller.
 - **No rate limiting, no idempotency key on `POST /`.** A double-submit creates two books. No
   concrete user action produces this today (one browser tab, no retry logic on the frontend
   yet), so it is not built — see `CLAUDE.md` principle 2.
@@ -68,8 +71,8 @@ No index beyond the default `_id` exists yet. `GET /` filters on `userId` and so
 
 No known way, today, for a book to end up orphaned (`userId` pointing at a deleted user) or
 stuck in an inconsistent state — there is no user-deletion endpoint yet and every write goes
-through the ownership-scoped queries above. If that changes, the fix for an orphaned book is
-a direct Mongo query:
+through the ownership-scoped repository methods above. If that changes, the fix for an
+orphaned book is a direct Mongo query:
 
 ```js
 db.books.deleteMany({ userId: { $nin: db.users.distinct("_id") } })
