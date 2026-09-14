@@ -88,8 +88,9 @@ future stage; it does not block the MVP.
 
 ## Stage 4 — Book CRUD (backend)
 
-- ✅ `POST /api/books`, `GET /api/books`, `GET /api/books/:id`, `PATCH /api/books/:id`
-- ⬜ `DELETE /api/books/:id`
+- ✅ `POST /api/books`, `GET /api/books`, `GET /api/books/:id`, `PATCH /api/books/:id`,
+  `DELETE /api/books/:id` — 13 tests passing, feature doc at
+  [features/books.md](features/books.md)
 - ⬜ Request body validation (Zod/Joi) — currently only Mongoose schema-level validation
 - ✅ Pagination and status filters at the API level
 - ⬜ The books module on three layers, with DTOs instead of Mongoose documents — see
