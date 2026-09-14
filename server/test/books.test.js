@@ -83,6 +83,40 @@ describe("books API", () => {
     assert.equal(response.status, 401);
   });
 
+  it("returns a DTO, not the raw Mongoose document", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await addBook(alice);
+
+    assert.equal(typeof response.id, "string");
+    assert.equal(response._id, undefined);
+    assert.equal(response.__v, undefined);
+  });
+
+  it("rejects a book with no title or author", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books", {
+      method: "POST",
+      cookie: alice,
+      body: { author: "Фрэнк Герберт" },
+    });
+
+    assert.equal(response.status, 400);
+  });
+
+  it("rejects an unknown field on create instead of silently storing it", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books", {
+      method: "POST",
+      cookie: alice,
+      body: { title: "Дюна", author: "Фрэнк Герберт", userId: "000000000000000000000000" },
+    });
+
+    assert.equal(response.status, 400);
+  });
+
   it("lists only the books belonging to the caller", async () => {
     const alice = await signIn("alice@example.com");
     const bob = await signIn("bob@example.com");
@@ -104,7 +138,15 @@ describe("books API", () => {
     const bob = await signIn("bob@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, { cookie: bob });
+    const response = await api(`/api/books/${book.id}`, { cookie: bob });
+
+    assert.equal(response.status, 404);
+  });
+
+  it("answers 404 rather than 500 for a malformed book id on read", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books/not-an-object-id", { cookie: alice });
 
     assert.equal(response.status, 404);
   });
@@ -114,7 +156,7 @@ describe("books API", () => {
     const bob = await signIn("bob@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: bob,
       body: { title: "Присвоено" },
@@ -122,31 +164,33 @@ describe("books API", () => {
 
     assert.equal(response.status, 404);
 
-    const stillAlices = await api(`/api/books/${book._id}`, { cookie: alice });
+    const stillAlices = await api(`/api/books/${book.id}`, { cookie: alice });
     assert.equal(stillAlices.body.title, "Дюна");
   });
 
-  it("ignores userId in the body so a book cannot change owner", async () => {
+  it("rejects userId in the PATCH body instead of silently dropping it", async () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
     const strangerId = "000000000000000000000000";
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
       body: { userId: strangerId, title: "Дюна (ред.)" },
     });
 
-    assert.equal(response.status, 200);
-    assert.equal(response.body.userId, book.userId);
-    assert.equal(response.body.title, "Дюна (ред.)");
+    assert.equal(response.status, 400);
+
+    const stillUnchanged = await api(`/api/books/${book.id}`, { cookie: alice });
+    assert.equal(stillUnchanged.body.userId, book.userId);
+    assert.equal(stillUnchanged.body.title, "Дюна");
   });
 
   it("rejects a rating outside the 1-5 range", async () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
       body: { rating: 9 },
@@ -159,7 +203,7 @@ describe("books API", () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
       body: { status: "finished" },
@@ -172,7 +216,7 @@ describe("books API", () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
       body: {},
@@ -197,14 +241,14 @@ describe("books API", () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "DELETE",
       cookie: alice,
     });
 
     assert.equal(response.status, 204);
 
-    const afterDelete = await api(`/api/books/${book._id}`, { cookie: alice });
+    const afterDelete = await api(`/api/books/${book.id}`, { cookie: alice });
     assert.equal(afterDelete.status, 404);
   });
 
@@ -213,14 +257,14 @@ describe("books API", () => {
     const bob = await signIn("bob@example.com");
     const book = await addBook(alice);
 
-    const response = await api(`/api/books/${book._id}`, {
+    const response = await api(`/api/books/${book.id}`, {
       method: "DELETE",
       cookie: bob,
     });
 
     assert.equal(response.status, 404);
 
-    const stillThere = await api(`/api/books/${book._id}`, { cookie: alice });
+    const stillThere = await api(`/api/books/${book.id}`, { cookie: alice });
     assert.equal(stillThere.status, 200);
   });
 

@@ -28,4 +28,8 @@ const bookSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Every book query the app makes filters on userId, and the list endpoint
+// sorts on createdAt — a compound index covers both without a second one.
+bookSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = mongoose.model("Book", bookSchema);
