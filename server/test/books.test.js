@@ -192,4 +192,57 @@ describe("books API", () => {
 
     assert.equal(response.status, 404);
   });
+
+  it("deletes a book the caller owns", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice);
+
+    const response = await api(`/api/books/${book._id}`, {
+      method: "DELETE",
+      cookie: alice,
+    });
+
+    assert.equal(response.status, 204);
+
+    const afterDelete = await api(`/api/books/${book._id}`, { cookie: alice });
+    assert.equal(afterDelete.status, 404);
+  });
+
+  it("hides another user's book behind a 404 when deleting it, and does not delete it", async () => {
+    const alice = await signIn("alice@example.com");
+    const bob = await signIn("bob@example.com");
+    const book = await addBook(alice);
+
+    const response = await api(`/api/books/${book._id}`, {
+      method: "DELETE",
+      cookie: bob,
+    });
+
+    assert.equal(response.status, 404);
+
+    const stillThere = await api(`/api/books/${book._id}`, { cookie: alice });
+    assert.equal(stillThere.status, 200);
+  });
+
+  it("answers 404 rather than 500 when deleting a malformed book id", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books/not-an-object-id", {
+      method: "DELETE",
+      cookie: alice,
+    });
+
+    assert.equal(response.status, 404);
+  });
+
+  it("answers 404 when deleting a book that is already gone", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books/000000000000000000000000", {
+      method: "DELETE",
+      cookie: alice,
+    });
+
+    assert.equal(response.status, 404);
+  });
 });

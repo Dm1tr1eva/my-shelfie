@@ -93,4 +93,22 @@ async function updateBook(req, res) {
     }
 }
 
-module.exports = {createBook, getBooks, getBook, updateBook}
+async function deleteBook(req, res) {
+    try {
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({ error: "Book not found" });
+        }
+
+        const book = await Book.findOneAndDelete({ _id: req.params.id, userId: req.userId })
+
+        if (!book) {
+            return res.status(404).json({ error: "Book not found" });
+        }
+
+        res.status(204).end()
+    } catch (err) {
+        res.status(500).json({ error: "Failed to delete book" });
+    }
+}
+
+module.exports = {createBook, getBooks, getBook, updateBook, deleteBook}
