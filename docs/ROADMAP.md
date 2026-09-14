@@ -1,24 +1,32 @@
-# my-shelfie — дорожная карта проекта
+# my-shelfie — project roadmap
 
-Трекер прочитанных книг с личным кабинетом, ручными и (позже) авто-заполняемыми карточками книг, публичной главной страницей и AI-чатом (Gemini) для поиска книг и информации о них.
+A tracker for books read, with a personal dashboard, manual (and later auto-filled) book
+cards, a public home page, and an AI chat (Gemini) for finding books and information about
+them.
 
-**Цель проекта:** учебный pet-проект для глубокого изучения React/Next.js, Node/Express и MongoDB — с прицелом на портфолио. Функционал добавляется поэтапно, план корректируется по ходу разработки.
+**Project goal:** a learning pet project for a deep dive into React/Next.js, Node/Express and
+MongoDB, aimed at a portfolio. Functionality is added stage by stage; the plan is adjusted as
+work proceeds.
 
-## Стек
+## Stack
 
-- **Backend:** Node.js + Express, обычный JS (TypeScript — возможная миграция позже, отдельным этапом)
+- **Backend:** Node.js + Express, plain JS (TypeScript — a possible migration later, as its
+  own stage)
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind
-- **База данных:** MongoDB (Atlas) + Mongoose
-- **Структура репозитория:** монорепо, папки `/server` и `/client` в одном git-репозитории
-- **AI:** Gemini API (запросы проксируются через backend, ключ не хранится на фронте)
+- **Database:** MongoDB (Atlas) + Mongoose
+- **Repository layout:** a monorepo, `/server` and `/client` folders in one git repository
+- **AI:** Gemini API (requests proxied through the backend, the key never reaches the
+  frontend)
 
-## Этап 0 — Планирование ✅ (решения приняты)
+## Stage 0 — Planning ✅ (decisions made)
 
-### Модель данных
+### Data model
 
-Скоуп на старте — **только личный список одного пользователя**: без рекомендаций, публичной библиотеки, рейтингов "лучшее среди пользователей". Решено не разделять общий каталог книг и личные данные — это оправдано только при кросс-пользовательских фичах, которых пока нет.
+Scope at the start is **a single user's personal list only**: no recommendations, no public
+library, no "best across users" ratings. Decided not to split a shared book catalogue from
+personal data — that split only pays off once cross-user features exist, and none do yet.
 
-**2 сущности:**
+**2 entities:**
 
 ```
 User
@@ -33,85 +41,110 @@ Book
 - coverUrl
 - description
 - status: "want" | "reading" | "dropped" | "read"
-- rating (1-5, опционально)
-- review (текст, опционально)
+- rating (1-5, optional)
+- review (text, optional)
 - startedAt / finishedAt
 ```
 
-Если позже появятся кросс-пользовательские фичи (рекомендации, публичная библиотека) — вынести общие поля книги в отдельную коллекцию `Book` + личную связку `UserBook`. На объёме данных pet-проекта такая миграция дешёвая.
+If cross-user features show up later (recommendations, a public library), split the shared
+book fields into a `Book` collection plus a personal `UserBook` link. At a pet project's data
+volume, that migration is cheap.
 
-### Вайрфреймы
+### Wireframes
 
-Отложено на потом — скетч экранов (главная, логин/регистрация, кабинет, страница книги, AI-чат) сделаем перед версткой соответствующего этапа.
+Deferred — a sketch of the screens (home, login/register, dashboard, book page, AI chat) will
+be made right before building the matching stage.
 
-### Источник данных о книгах
+### Book data source
 
-На старте — **ручной ввод** (пользователь сам вписывает название/автора/обложку). Интеграция с внешним API (Google Books или Open Library) для автозаполнения — отдельный будущий этап, не блокирует MVP.
+At the start — **manual entry** (the user types in title/author/cover themselves).
+Integration with an external API (Google Books or Open Library) for auto-fill is a separate
+future stage; it does not block the MVP.
 
-## Этап 1 — Скелет проекта ✅
+## Stage 1 — Project skeleton ✅
 
-- Монорепо: `/server` (Express) и `/client` (Next.js) в одном репозитории
-- `server`: Express на обычном JS + nodemon
+- Monorepo: `/server` (Express) and `/client` (Next.js) in one repository
+- `server`: Express in plain JS + nodemon
 - `client`: Next.js (App Router) + TypeScript + Tailwind
-- Настроить CORS между `client` (например, `localhost:3000`) и `server` (например, `localhost:5000`)
-- Базовый `GET /api/health` на бэке, запрос и отображение результата на фронте — проверка, что вся цепочка работает
+- CORS configured between `client` (e.g. `localhost:3000`) and `server` (e.g.
+  `localhost:5000`)
+- A basic `GET /api/health` on the backend, requested and displayed on the frontend — proof
+  the whole chain works
 
-## Этап 2 — MongoDB и модели ✅
+## Stage 2 — MongoDB and models ✅
 
 - MongoDB Atlas + Mongoose
-- Схемы `User` и `Book` (см. Этап 0), файлы `server/models/user.js` и `server/models/book.js`
-- Подключение через `.env`, обработка ошибок подключения
+- `User` and `Book` schemas (see Stage 0), files `server/models/user.js` and
+  `server/models/book.js`
+- Connection through `.env`, connection error handling
 
-## Этап 3 — Аутентификация ✅ (backend)
+## Stage 3 — Authentication ✅ (backend)
 
-- Регистрация/логин: bcrypt для паролей, JWT (httpOnly cookie) — `server/controllers/authController.js`, `server/routes/auth.js`
-- Middleware для защищённых роутов — `server/middleware/auth.js`
-- Фронтенд-часть (хук/контекст `useAuth`, формы логина/регистрации) — перенесена в Этап 5, будет сделана вместе с личным кабинетом
+- Register/login: bcrypt for passwords, JWT (httpOnly cookie) —
+  `server/controllers/authController.js`, `server/routes/auth.js`
+- Middleware for protected routes — `server/middleware/auth.js`
+- The frontend half (`useAuth` hook/context, login/register forms) — moved to Stage 5, to be
+  built together with the personal dashboard
 
-## Этап 4 — CRUD книг (backend)
+## Stage 4 — Book CRUD (backend)
 
-- `POST/GET/PATCH/DELETE /api/books`
-- Валидация входных данных (Zod/Joi)
-- Пагинация и фильтры по статусу на уровне API
+- ✅ `POST /api/books`, `GET /api/books`, `GET /api/books/:id`, `PATCH /api/books/:id`
+- ⬜ `DELETE /api/books/:id`
+- ⬜ Request body validation (Zod/Joi) — currently only Mongoose schema-level validation
+- ✅ Pagination and status filters at the API level
+- ⬜ The books module on three layers, with DTOs instead of Mongoose documents — see
+  `CLAUDE.md`
 
-## Этап 5 — Личный кабинет (frontend)
+### Test and verify scaffolding ✅
 
-- Список книг пользователя с фильтрами (читаю/прочитано/в планах)
-- Форма добавления книги вручную + форма рецензии/рейтинга
-- Подключение к API (fetch/axios + SWR или React Query)
+Arrived together with the rules in `CLAUDE.md`: the built-in `node:test`, `npm run verify` in
+`server/`, a separate test database, `.gitattributes`. `npm run verify` passes 9/9 from a
+network where port 27017 is open. The decision and the alternatives rejected —
+[designs/test-and-verify-scaffolding.md](designs/test-and-verify-scaffolding.md). Documentation
+index — [README.md](README.md).
 
-## Этап 6 — Публичная главная страница
+## Stage 5 — Personal dashboard (frontend)
 
-- Доступна без регистрации, SSG/ISR на Next.js
-- Описание сервиса
+- The user's book list with filters (reading / read / want to read)
+- A manual add-book form + a review/rating form
+- Wired to the API (fetch/axios + SWR or React Query)
 
-## Этап 7 — Поиск книг через внешний API (будущее)
+## Stage 6 — Public home page
 
-- Интеграция с Google Books API или Open Library для автозаполнения карточки книги при добавлении
-- Кэширование результатов запросов
+- Available without registration, SSG/ISR on Next.js
+- A description of the service
 
-## Этап 8 — AI-чат (Gemini API)
+## Stage 7 — Book search via an external API (future)
 
-- `POST /api/chat` на Express, проксирующий запросы к Gemini (ключ только на бэке)
-- Чат-виджет в кабинете, помогает искать книги и информацию о них
+- Integration with the Google Books API or Open Library, to auto-fill a book card when adding
+  one
+- Caching query results
 
-## Этап 9 — Полировка
+## Stage 8 — AI chat (Gemini API)
 
-- Поиск/сортировка/фильтры в личном списке
-- Обработка ошибок, лоадеры, пустые состояния
-- Респонсивная вёрстка
+- `POST /api/chat` on Express, proxying requests to Gemini (the key stays on the backend
+  only)
+- A chat widget in the dashboard, to help find books and information about them
 
-## Этап 10 — Деплой
+## Stage 9 — Polish
+
+- Search/sort/filter in the personal list
+- Error handling, loaders, empty states
+- Responsive layout
+
+## Stage 10 — Deploy
 
 - Backend → Render/Railway
 - Frontend → Vercel
 - MongoDB Atlas
-- Переменные окружения на обеих платформах
+- Environment variables on both platforms
 
-## Бэклог идей (после MVP)
+## Backlog of ideas (post-MVP)
 
-Цели чтения на год, статистика/графики прочитанного, теги/жанры, экспорт списка, публичный профиль пользователя, соцфункции.
+Yearly reading goals, statistics/charts of what was read, tags/genres, list export, a public
+user profile, social features.
 
 ---
 
-Описания отдельных фич по мере реализации будут добавляться в `docs/` отдельными файлами.
+Descriptions of individual features will be added to `docs/` as separate files as they are
+built.
