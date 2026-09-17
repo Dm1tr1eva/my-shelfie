@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from "@/lib/api";
 
 export default function Home() {
   const [status, setStatus] = useState("loading...");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/health")
-      .then((res) => res.json())
+    apiFetch<{ status: string }>("/api/health")
       .then((data) => setStatus(data.status))
       .catch(() => setStatus("error"));
   }, []);
