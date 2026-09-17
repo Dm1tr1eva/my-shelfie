@@ -109,9 +109,13 @@ index — [README.md](README.md).
 
 ## Stage 5 — Personal dashboard (frontend)
 
-- The user's book list with filters (reading / read / want to read)
-- A manual add-book form + a review/rating form
-- Wired to the API (fetch/axios + SWR or React Query)
+- ✅ Frontend auth: `useAuth`/`AuthProvider`, login/register forms, session-aware routing,
+  logout — [features/auth.md](features/auth.md),
+  [designs/frontend-auth.md](designs/frontend-auth.md)
+- ⬜ The user's book list with filters (reading / read / want to read)
+- ⬜ A manual add-book form + a review/rating form
+- ⬜ Wired to the API (fetch/axios + SWR or React Query)
+- ✅ Client test scaffolding: Vitest + React Testing Library, `npm run verify` in `client/`
 
 ## Stage 6 — Public home page
 

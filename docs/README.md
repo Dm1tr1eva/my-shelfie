@@ -27,7 +27,9 @@ cd client && npm install
 ```
 
 Configure the environment: copy `server/.env.example` to `server/.env` and fill in
-`MONGODB_URI` and `JWT_SECRET`.
+`MONGODB_URI`, `JWT_SECRET` and `CLIENT_URL` (the frontend's origin — CORS needs an exact
+match to allow the credentialed requests auth depends on); copy `client/.env.example` to
+`client/.env.local` and fill in `NEXT_PUBLIC_API_URL`.
 
 Backend (port 5000):
 
@@ -51,12 +53,21 @@ cd server && npm run verify
 ```
 
 Runs `server/test/**/*.test.js` through the built-in `node:test` runner, sequentially — the
-tests share one database. `client/` has no `verify` of its own yet; it only has `npm run lint`.
+tests share one database.
 
 **`verify` needs access to MongoDB Atlas over port 27017.** Tests run against a separate
 database: `MONGODB_URI_TEST`, or, when that is unset, the database name from `MONGODB_URI` plus
 a `-test` suffix. Every collection is cleared between tests, so the helper refuses to start if
 the resolved database is the development one.
+
+```bash
+cd client && npm run verify
+```
+
+Runs `eslint`, then the Vitest suite (`*.test.tsx` next to the code it tests, e.g.
+`lib/auth-context.test.tsx`). No network or database needed — component/hook tests mock
+`fetch`. What they cannot prove is a real cross-origin cookie round trip; check that by hand
+in a browser after a change to auth or CORS (see `docs/features/auth.md`).
 
 ## Known network problem
 
