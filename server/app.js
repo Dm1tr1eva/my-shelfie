@@ -10,7 +10,10 @@ const booksRouter = require("./routes/books");
 // listen() stay in index.js.
 const app = express();
 
-app.use(cors());
+// A wildcard origin can't be combined with credentials: true — the browser
+// refuses to expose the response to a fetch("...", { credentials: "include" })
+// call, which is how the frontend sends the httpOnly auth cookie.
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 

@@ -6,9 +6,7 @@ const router = express.Router()
 
 router.post('/register', authController.register)
 router.post('/login', authController.login)
-
-router.get("/me", authMiddleware, (req, res) => {
-  res.json({ userId: req.userId });
-});
+router.post('/logout', authController.logout)
+router.get('/me', authMiddleware, authController.getMe)
 
 module.exports = router

@@ -51,4 +51,23 @@ async function login(req, res) {
     
 }
 
-module.exports = { register, login };
+function logout(req, res) {
+    res.clearCookie("token")
+    res.status(204).end()
+}
+
+async function getMe(req, res) {
+    try {
+        const user = await User.findById(req.userId)
+
+        if (!user) {
+            return res.status(401).json({ error: "Not authenticated" });
+        }
+
+        res.json({ id: user._id, email: user.email, name: user.name });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to fetch the current user" });
+    }
+}
+
+module.exports = { register, login, logout, getMe };
