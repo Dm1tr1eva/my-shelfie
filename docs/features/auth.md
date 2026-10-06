@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-09-15
+**Last verified against code:** 2026-10-06
 
 ## What it does
 
@@ -27,7 +27,16 @@ All mounted at `/api/auth`.
 | `POST /register` | no | `201` with `{ id, email, name }`. `409` if the email is taken. Does **not** set the session cookie — a client must call `/login` after. |
 | `POST /login` | no | `200` with `{ id, email, name }`, sets the `token` cookie (`httpOnly`, 7-day `maxAge`). `401` on any credential mismatch. |
 | `POST /logout` | no | `204`, clears the `token` cookie. Must be a server round trip: `httpOnly` means client JS cannot delete the cookie itself. |
-| `GET /me` | yes | `200` with `{ id, email, name }` for the signed-in user. `401` with no cookie, an invalid/expired token, or a token whose user no longer exists. |
+| `GET /me` | no | `200` with `{ id, email, name }` for the signed-in user. `200` with `null` when there is no session: no cookie, an invalid or expired token, or a token whose user no longer exists. |
+
+**Why `/me` answers `null` instead of `401`:** the frontend calls it on every page load to find
+out who is signed in, and "nobody" is the normal answer for a first visit, not an error. The
+browser logs every 4xx response as a console error no matter how the code handles it, so a
+`401` here put a red error in the console of every signed-out visitor — and the course this
+project is submitted to requires a clean console. `/me` therefore goes through
+`optionalAuth` (sets `req.userId` when the cookie is valid, never rejects), while every books
+route keeps `requireAuth` (`401` on a missing or invalid cookie). Both share one token check,
+`readUserId` in `server/middleware/auth.js`.
 
 ## Shape
 
@@ -55,6 +64,10 @@ every API response regardless of what the page shows.
   `Lax`), which blocks the classic cross-site form-post CSRF shape; a `sameSite`/`secure`
   review is Stage 10's job, once there is a real deployment topology to threat-model against.
 - **Client-side-only route gating** — see Shape.
+- **A failed login still answers `401`, and still shows up in the console.** That one is a
+  real failure the user caused and is told about on the page; bending the status code to
+  hide it would make the API lie. Only `/me`, where "nobody signed in" is the normal state,
+  was changed.
 - **Client auth tests mock `fetch`**, they do not hit a live server the way the backend's
   Atlas integration tests do. The live cross-origin cookie round trip was checked by hand in
   a real browser for this PR (register → reload persists the session → logout → direct

@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const http = require("node:http");
 
 const app = require("../app");
+const User = require("../models/user");
 const { connectTestDb, clearTestDb, disconnectTestDb } = require("./helpers/db");
 
 const PASSWORD = "secret123";
@@ -64,10 +65,18 @@ async function signIn(email) {
 }
 
 describe("auth API", () => {
-  it("refuses /me with no session cookie", async () => {
+  it("answers null on /me with no session cookie, without an error status", async () => {
     const response = await api("/api/auth/me");
 
-    assert.equal(response.status, 401);
+    assert.equal(response.status, 200);
+    assert.equal(response.body, null);
+  });
+
+  it("answers null on /me for a tampered session cookie", async () => {
+    const response = await api("/api/auth/me", { cookie: "token=not-a-real-jwt" });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body, null);
   });
 
   it("returns the signed-in user's id, email and name on /me", async () => {
@@ -81,7 +90,17 @@ describe("auth API", () => {
     assert.equal(typeof response.body.id, "string");
   });
 
-  it("clears the session on logout, so /me answers 401 afterward", async () => {
+  it("answers null on /me when the token names a user that no longer exists", async () => {
+    const cookie = await signIn("alice@example.com");
+    await User.deleteOne({ email: "alice@example.com" });
+
+    const response = await api("/api/auth/me", { cookie });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body, null);
+  });
+
+  it("clears the session on logout, so /me answers null afterward", async () => {
     const cookie = await signIn("alice@example.com");
 
     const logout = await api("/api/auth/logout", { method: "POST", cookie });
@@ -89,7 +108,7 @@ describe("auth API", () => {
 
     // Assert the server actually sent a Set-Cookie before trusting it: an
     // empty logout.setCookie would silently turn into an empty Cookie header
-    // below, and a request with no cookie at all also answers 401 — that
+    // below, and a request with no cookie at all also answers null — that
     // would make this test pass even if logout stopped clearing anything.
     assert.ok(logout.setCookie.length > 0, "logout did not clear the cookie");
     const clearedCookie = logout.setCookie
@@ -97,6 +116,7 @@ describe("auth API", () => {
       .join("; ");
     const afterLogout = await api("/api/auth/me", { cookie: clearedCookie });
 
-    assert.equal(afterLogout.status, 401);
+    assert.equal(afterLogout.status, 200);
+    assert.equal(afterLogout.body, null);
   });
 });

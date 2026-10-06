@@ -24,16 +24,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
-    apiFetch<User>("/api/auth/me")
+    apiFetch<User | null>("/api/auth/me")
       .then((me) => {
         if (cancelled) return;
         setUser(me);
-        setStatus("authenticated");
+        setStatus(me ? "authenticated" : "anonymous");
       })
       .catch(() => {
-        // A 401 here means "not signed in" — the expected state for a first
-        // visit, not a failure to report. Any other error also just leaves
-        // the visitor treated as signed out; there is nothing else to show.
         if (cancelled) return;
         setUser(null);
         setStatus("anonymous");

@@ -40,15 +40,27 @@ describe("AuthProvider / useAuth", () => {
     spy.mockRestore();
   });
 
-  it("starts loading, then settles on anonymous when /me answers 401", async () => {
+  it("starts loading, then settles on anonymous when /me answers null", async () => {
     vi.mocked(fetch).mockImplementation((url) => {
-      if (url === ME_URL) return jsonResponse(401, { error: "Not authenticated" });
+      if (url === ME_URL) return jsonResponse(200, null);
       throw new Error(`unexpected fetch: ${url}`);
     });
 
     const { result } = renderAuth();
 
     expect(result.current.status).toBe("loading");
+
+    await waitFor(() => expect(result.current.status).toBe("anonymous"));
+    expect(result.current.user).toBeNull();
+  });
+
+  it("settles on anonymous when the session check fails outright", async () => {
+    vi.mocked(fetch).mockImplementation((url) => {
+      if (url === ME_URL) return jsonResponse(500, { error: "Failed to fetch the current user" });
+      throw new Error(`unexpected fetch: ${url}`);
+    });
+
+    const { result } = renderAuth();
 
     await waitFor(() => expect(result.current.status).toBe("anonymous"));
     expect(result.current.user).toBeNull();
@@ -68,7 +80,7 @@ describe("AuthProvider / useAuth", () => {
 
   it("login() updates user and status on success", async () => {
     vi.mocked(fetch).mockImplementation((url) => {
-      if (url === ME_URL) return jsonResponse(401, { error: "Not authenticated" });
+      if (url === ME_URL) return jsonResponse(200, null);
       if (url === LOGIN_URL) return jsonResponse(200, ALICE);
       throw new Error(`unexpected fetch: ${url}`);
     });
@@ -86,7 +98,7 @@ describe("AuthProvider / useAuth", () => {
 
   it("login() throws and leaves the caller anonymous on invalid credentials", async () => {
     vi.mocked(fetch).mockImplementation((url) => {
-      if (url === ME_URL) return jsonResponse(401, { error: "Not authenticated" });
+      if (url === ME_URL) return jsonResponse(200, null);
       if (url === LOGIN_URL) return jsonResponse(401, { error: "Invalid email or password" });
       throw new Error(`unexpected fetch: ${url}`);
     });
@@ -108,7 +120,7 @@ describe("AuthProvider / useAuth", () => {
     const calledUrls: string[] = [];
     vi.mocked(fetch).mockImplementation((url) => {
       calledUrls.push(String(url));
-      if (url === ME_URL) return jsonResponse(401, { error: "Not authenticated" });
+      if (url === ME_URL) return jsonResponse(200, null);
       if (url === REGISTER_URL) return jsonResponse(201, ALICE);
       if (url === LOGIN_URL) return jsonResponse(200, ALICE);
       throw new Error(`unexpected fetch: ${url}`);

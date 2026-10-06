@@ -53,7 +53,7 @@ describe("useBooks", () => {
     const calledUrls: string[] = [];
     vi.mocked(fetch).mockImplementation((url) => {
       calledUrls.push(String(url));
-      if (url === ME_URL) return jsonResponse(401, { error: "Not authenticated" });
+      if (url === ME_URL) return jsonResponse(200, null);
       throw new Error(`unexpected fetch: ${url}`);
     });
 

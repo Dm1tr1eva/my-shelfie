@@ -57,11 +57,15 @@ function logout(req, res) {
 }
 
 async function getMe(req, res) {
+    if (!req.userId) {
+        return res.json(null);
+    }
+
     try {
         const user = await User.findById(req.userId)
 
         if (!user) {
-            return res.status(401).json({ error: "Not authenticated" });
+            return res.json(null);
         }
 
         res.json({ id: user._id, email: user.email, name: user.name });

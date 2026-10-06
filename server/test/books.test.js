@@ -83,6 +83,12 @@ describe("books API", () => {
     assert.equal(response.status, 401);
   });
 
+  it("refuses a request with a tampered session cookie", async () => {
+    const response = await api("/api/books", { cookie: "token=not-a-real-jwt" });
+
+    assert.equal(response.status, 401);
+  });
+
   it("returns a DTO, not the raw Mongoose document", async () => {
     const alice = await signIn("alice@example.com");
 
