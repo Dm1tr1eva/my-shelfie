@@ -45,7 +45,8 @@ In order:
    shipped, waiting on an upstream fix. `server/` audit is still to do before deploy (item 6)
 2. ✅ `GET /api/auth/me` answers `200` with `null` for a signed-out visitor instead of `401` —
    the browser logs every 4xx as a console error, so every logged-out page load showed one
-3. ⬜ Book forms: add a book, change status, rating and review, delete (rest of stage 5)
+3. ✅ Book forms: add a book, change status, rating and review, delete (rest of stage 5) —
+   [designs/book-forms.md](designs/book-forms.md)
 4. ⬜ Home page (stage 6), a header with navigation, a real page title, responsive layout
 5. ⬜ Prettier for both packages; move code comments out of the code (the course reads "no
    comments" literally) — the reasoning already lives in `docs/designs/` and `docs/features/`,
@@ -153,7 +154,8 @@ index — [README.md](README.md).
   [designs/frontend-auth.md](designs/frontend-auth.md)
 - ✅ The user's book list with a status filter (all / want / reading / read / dropped),
   wired to the API via `swr` — [designs/book-list.md](designs/book-list.md)
-- ⬜ A manual add-book form + a review/rating form
+- ✅ A manual add-book form + a review/rating form, delete —
+  [designs/book-forms.md](designs/book-forms.md)
 - ✅ Client test scaffolding: Vitest + React Testing Library, `npm run verify` in `client/`
 
 ## Stage 6 — Public home page

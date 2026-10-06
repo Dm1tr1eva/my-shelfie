@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-09-17
+**Last verified against code:** 2026-10-06
 
 ## What it does
 
@@ -43,6 +43,12 @@ it does not get silently dropped.
 **What "field absent" means on `PATCH`:** a field missing from the body is left untouched. A
 body with none of the schema's fields present answers `400` ("No updatable fields provided").
 
+**What `null` means on `PATCH`:** clear the field. Allowed for the optional fields only —
+`coverUrl`, `description`, `rating`, `review`, `startedAt`, `finishedAt`; `null` for
+`title`, `author` or `status` answers `400`. Mongoose stores `null`, and the DTO omits it, so a
+cleared field is absent from the response exactly like one that was never set. A cleared date
+stays cleared — `null` is not coerced into 1970; a test pins that.
+
 **Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
 is their own book), `title`, `author`, `status`, `createdAt`, `updatedAt`, plus whichever of
 `coverUrl`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
@@ -50,10 +56,15 @@ field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
 
 ## Frontend consumer
 
-`client/lib/books.ts`'s `useBooks` (an `swr` hook) is the only caller today —
-[docs/designs/book-list.md](../designs/book-list.md). It asks for `?limit=100` explicitly since
-there is no pagination UI yet; a list past that size would be silently truncated on the
-dashboard. Add/edit/delete are backend-only so far — the dashboard is read-only.
+`client/lib/books.ts`: `useBooks(status)` and `useBook(id)` (`swr` hooks) read;
+`useBookActions()` creates, updates and deletes, then revalidates every list key through the
+current `SWRConfig` cache. After a delete only list keys are revalidated — refetching the
+deleted book's own key would answer `404` and put an error in the browser console.
+
+The dashboard lists books (`?limit=100` explicitly — no pagination UI yet, so a list past that
+size would be silently truncated) and has an inline add form; `/dashboard/books/[id]` edits
+title, author, status, rating and review, and deletes after `window.confirm`. Designs:
+[book-list.md](../designs/book-list.md), [book-forms.md](../designs/book-forms.md).
 
 ## Data
 
