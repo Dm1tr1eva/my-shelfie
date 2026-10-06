@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-09-14
+**Last verified against code:** 2026-09-17
 
 ## What it does
 
@@ -47,6 +47,13 @@ body with none of the schema's fields present answers `400` ("No updatable field
 is their own book), `title`, `author`, `status`, `createdAt`, `updatedAt`, plus whichever of
 `coverUrl`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
 field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
+
+## Frontend consumer
+
+`client/lib/books.ts`'s `useBooks` (an `swr` hook) is the only caller today —
+[docs/designs/book-list.md](../designs/book-list.md). It asks for `?limit=100` explicitly since
+there is no pagination UI yet; a list past that size would be silently truncated on the
+dashboard. Add/edit/delete are backend-only so far — the dashboard is read-only.
 
 ## Data
 
