@@ -18,8 +18,15 @@ const createBookSchema = z
   })
   .strict();
 
+const CLEARABLE_FIELDS = ["coverUrl", "description", "rating", "review", "startedAt", "finishedAt"];
+
+const clearableFields = Object.fromEntries(
+  CLEARABLE_FIELDS.map((field) => [field, createBookSchema.shape[field].nullable()]),
+);
+
 const updateBookSchema = createBookSchema
   .partial()
+  .extend(clearableFields)
   .strict()
   .refine((data) => Object.keys(data).length > 0, {
     message: "No updatable fields provided",
