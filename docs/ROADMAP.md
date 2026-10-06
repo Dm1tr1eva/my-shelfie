@@ -47,7 +47,8 @@ In order:
    the browser logs every 4xx as a console error, so every logged-out page load showed one
 3. ✅ Book forms: add a book, change status, rating and review, delete (rest of stage 5) —
    [designs/book-forms.md](designs/book-forms.md)
-4. ⬜ Home page (stage 6), a header with navigation, a real page title, responsive layout
+4. ✅ Home page (stage 6), a header with navigation, a real page title, responsive layout,
+   dark mode fixed — [designs/site-shell.md](designs/site-shell.md)
 5. ⬜ Prettier for both packages; move code comments out of the code (the course reads "no
    comments" literally) — the reasoning already lives in `docs/designs/` and `docs/features/`,
    and `CLAUDE.md`'s Comments section changes with it
@@ -158,10 +159,10 @@ index — [README.md](README.md).
   [designs/book-forms.md](designs/book-forms.md)
 - ✅ Client test scaffolding: Vitest + React Testing Library, `npm run verify` in `client/`
 
-## Stage 6 — Public home page
+## Stage 6 — Public home page ✅
 
-- Available without registration, SSG/ISR on Next.js
-- A description of the service
+- ✅ Available without registration, prerendered as static content
+- ✅ A description of the service — [designs/site-shell.md](designs/site-shell.md)
 
 ## Stage 7 — Book search via an external API (future)
 
