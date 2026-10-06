@@ -74,7 +74,7 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
         >
           {pending ? "Adding..." : "Add book"}
         </button>
