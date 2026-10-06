@@ -18,6 +18,45 @@ work proceeds.
 - **AI:** Gemini API (requests proxied through the backend, the key never reaches the
   frontend)
 
+## Current focus — course submission MVP
+
+The project is being submitted as a replacement pet project for a course homework. The
+course's general criteria: React/Next.js with TypeScript, a UI matching a design/spec that
+works on mobile and tablet, semantic valid markup, no browser console errors, formatted code
+without extra comments, a README (about, stack, design, spec), and a live deployment. This
+list takes priority over the stage order below; items marked "stage N" pull that stage
+forward.
+
+Decisions:
+
+- **English everywhere** — UI, docs, code. Other interface languages come later (see Backlog).
+- **No Firebase.** The course's Firebase criterion belongs to its own project #1; this project
+  keeps its Express + MongoDB backend, and the README says why. Revisit only if the mentor
+  insists.
+- **No mockup.** The design is our own; the README shows screenshots and links this roadmap as
+  the spec.
+
+In order:
+
+0. ✅ Commit the stage 5 book list work
+1. ✅ Upgrade Next.js past the critical advisory in `16.2.10` (GHSA-p293-qw3h-jr36) — now
+   `16.3.8`. What `npm audit` still reports in `client/` is the ESLint plugin chain
+   (`@next/eslint-plugin-next` → `fast-glob` → `micromatch` → `braces`): dev-only, never
+   shipped, waiting on an upstream fix. `server/` audit is still to do before deploy (item 6)
+2. ✅ `GET /api/auth/me` answers `200` with `null` for a signed-out visitor instead of `401` —
+   the browser logs every 4xx as a console error, so every logged-out page load showed one
+3. ⬜ Book forms: add a book, change status, rating and review, delete (rest of stage 5)
+4. ⬜ Home page (stage 6), a header with navigation, a real page title, responsive layout
+5. ⬜ Prettier for both packages; move code comments out of the code (the course reads "no
+   comments" literally) — the reasoning already lives in `docs/designs/` and `docs/features/`,
+   and `CLAUDE.md`'s Comments section changes with it
+6. ⬜ Deploy (stage 10): frontend on Vercel, backend on Render. `/api` goes through Next.js
+   rewrites so the session cookie is first-party — `vercel.app` and `onrender.com` are
+   different sites, and Safari blocks third-party cookies by default. Render's free tier
+   sleeps; the README warns that the first request can take up to a minute
+7. ⬜ README: what it is, stack, why not Firebase, screenshots, link to this roadmap, live URL
+8. ⬜ Final check on the deployed site: clean console, mobile and tablet views, W3C validator
+
 ## Stage 0 — Planning ✅ (decisions made)
 
 ### Data model
@@ -150,7 +189,7 @@ index — [README.md](README.md).
 ## Backlog of ideas (post-MVP)
 
 Yearly reading goals, statistics/charts of what was read, tags/genres, list export, a public
-user profile, social features.
+user profile, social features. Interface translations (the UI is English-only for now).
 
 ---
 
