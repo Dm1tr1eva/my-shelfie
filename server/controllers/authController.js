@@ -2,6 +2,14 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  };
+}
+
 async function register(req, res) {
   try {
     const { email, password, name } = req.body;
@@ -40,7 +48,7 @@ async function login(req, res) {
     });
 
     res.cookie("token", token, {
-      httpOnly: true,
+      ...sessionCookieOptions(),
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -51,7 +59,7 @@ async function login(req, res) {
 }
 
 function logout(req, res) {
-  res.clearCookie("token");
+  res.clearCookie("token", sessionCookieOptions());
   res.status(204).end();
 }
 

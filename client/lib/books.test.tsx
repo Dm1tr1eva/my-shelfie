@@ -4,7 +4,7 @@ import { SWRConfig } from "swr";
 import { AuthProvider, useAuth } from "./auth-context";
 import { useBooks } from "./books";
 
-const ME_URL = "http://localhost:5000/api/auth/me";
+const ME_URL = "/api/auth/me";
 const ALICE = { id: "1", email: "alice@example.com", name: "Alice" };
 
 function jsonResponse(status: number, body: unknown) {
@@ -65,7 +65,7 @@ describe("useBooks", () => {
 
     vi.mocked(fetch).mockImplementation((url) => {
       if (url === ME_URL) return jsonResponse(200, ALICE);
-      if (String(url).startsWith("http://localhost:5000/api/books")) {
+      if (String(url).startsWith("/api/books")) {
         return jsonResponse(200, { books, total: 1, page: 1, limit: 100 });
       }
       throw new Error(`unexpected fetch: ${url}`);

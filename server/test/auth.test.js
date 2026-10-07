@@ -49,7 +49,7 @@ async function api(path, { method = "GET", body, cookie } = {}) {
   };
 }
 
-async function signIn(email) {
+async function loginCookies(email) {
   await api("/api/auth/register", {
     method: "POST",
     body: { email, password: PASSWORD, name: "Alice" },
@@ -61,7 +61,12 @@ async function signIn(email) {
   });
 
   assert.equal(login.status, 200, `login failed for ${email}`);
-  return login.setCookie.map((cookie) => cookie.split(";")[0]).join("; ");
+  return login.setCookie;
+}
+
+async function signIn(email) {
+  const setCookie = await loginCookies(email);
+  return setCookie.map((cookie) => cookie.split(";")[0]).join("; ");
 }
 
 describe("auth API", () => {
@@ -98,6 +103,31 @@ describe("auth API", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.body, null);
+  });
+
+  it("sets the session cookie HttpOnly and SameSite=Lax, without Secure outside production", async () => {
+    const cookie = (await loginCookies("alice@example.com"))[0];
+
+    assert.match(cookie, /HttpOnly/i);
+    assert.match(cookie, /SameSite=Lax/i);
+    assert.doesNotMatch(cookie, /Secure/i);
+  });
+
+  it("marks the session cookie and its removal Secure in production", async () => {
+    const previous = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const loginSetCookie = (await loginCookies("alice@example.com"))[0];
+      const logout = await api("/api/auth/logout", { method: "POST" });
+
+      assert.match(loginSetCookie, /Secure/i);
+      assert.match(logout.setCookie[0], /Secure/i);
+      assert.match(logout.setCookie[0], /SameSite=Lax/i);
+    } finally {
+      if (previous === undefined) delete process.env.NODE_ENV;
+      else process.env.NODE_ENV = previous;
+    }
   });
 
   it("clears the session on logout, so /me answers null afterward", async () => {

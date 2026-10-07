@@ -4,8 +4,8 @@ import { AuthProvider } from "@/lib/auth-context";
 import { SiteHeader } from "./site-header";
 import { HeroActions } from "./hero-actions";
 
-const ME_URL = "http://localhost:5000/api/auth/me";
-const LOGOUT_URL = "http://localhost:5000/api/auth/logout";
+const ME_URL = "/api/auth/me";
+const LOGOUT_URL = "/api/auth/logout";
 const ALICE = { id: "1", email: "alice@example.com", name: "Alice" };
 
 function jsonResponse(status: number, body: unknown) {

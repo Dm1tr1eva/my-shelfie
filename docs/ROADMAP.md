@@ -53,7 +53,9 @@ In order:
    also type-checks the client); code comments moved out of the code (the course reads "no
    comments" literally) into `docs/` — see [testing.md](testing.md); `CLAUDE.md`'s Comments
    rule changed with it
-6. ⬜ Deploy (stage 10): frontend on Vercel, backend on Render. `/api` goes through Next.js
+6. ⬜ Deploy (stage 10) — [designs/deploy.md](designs/deploy.md). Code is ready (`start`
+   script, `SameSite`/`Secure` cookie flags, the `/api` rewrite); the two services are not
+   created yet. Frontend on Vercel, backend on Render. `/api` goes through Next.js
    rewrites so the session cookie is first-party — `vercel.app` and `onrender.com` are
    different sites, and Safari blocks third-party cookies by default. Render's free tier
    sleeps; the README warns that the first request can take up to a minute

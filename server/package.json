@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "verify": "npm run format:check && npm test",
     "format": "prettier --write .",

@@ -4,7 +4,7 @@ import { SWRConfig } from "swr";
 import { EditBookForm } from "./edit-book-form";
 import type { Book } from "@/lib/books";
 
-const BOOK_URL = "http://localhost:5000/api/books/1";
+const BOOK_URL = "/api/books/1";
 
 const DUNE: Book = {
   id: "1",

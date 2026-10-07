@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AddBookForm } from "./add-book-form";
 
-const BOOKS_URL = "http://localhost:5000/api/books";
+const BOOKS_URL = "/api/books";
 
 function jsonResponse(status: number, body: unknown) {
   return Promise.resolve(

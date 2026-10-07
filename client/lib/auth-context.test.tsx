@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { AuthProvider, useAuth } from "./auth-context";
 
-const ME_URL = "http://localhost:5000/api/auth/me";
-const LOGIN_URL = "http://localhost:5000/api/auth/login";
-const REGISTER_URL = "http://localhost:5000/api/auth/register";
-const LOGOUT_URL = "http://localhost:5000/api/auth/logout";
+const ME_URL = "/api/auth/me";
+const LOGIN_URL = "/api/auth/login";
+const REGISTER_URL = "/api/auth/register";
+const LOGOUT_URL = "/api/auth/logout";
 
 const ALICE = { id: "1", email: "alice@example.com", name: "Alice" };
 

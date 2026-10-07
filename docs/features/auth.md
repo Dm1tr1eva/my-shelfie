@@ -25,8 +25,8 @@ All mounted at `/api/auth`.
 | Method and path | Auth required | Answers |
 |---|---|---|
 | `POST /register` | no | `201` with `{ id, email, name }`. `409` if the email is taken. Does **not** set the session cookie — a client must call `/login` after. |
-| `POST /login` | no | `200` with `{ id, email, name }`, sets the `token` cookie (`httpOnly`, 7-day `maxAge`). `401` on any credential mismatch. |
-| `POST /logout` | no | `204`, clears the `token` cookie. Must be a server round trip: `httpOnly` means client JS cannot delete the cookie itself. |
+| `POST /login` | no | `200` with `{ id, email, name }`, sets the `token` cookie (`httpOnly`, `SameSite=Lax`, `Secure` when `NODE_ENV` is `production`, 7-day `maxAge`). `401` on any credential mismatch. |
+| `POST /logout` | no | `204`, clears the `token` cookie with the same attributes. Must be a server round trip: `httpOnly` means client JS cannot delete the cookie itself. |
 | `GET /me` | no | `200` with `{ id, email, name }` for the signed-in user. `200` with `null` when there is no session: no cookie, an invalid or expired token, or a token whose user no longer exists. |
 
 **Why `/me` answers `null` instead of `401`:** the frontend calls it on every page load to find
@@ -54,7 +54,9 @@ so it would appear to work in dev — but Stage 10 deploys the two to different 
 (Vercel, Render), where a Next.js server process could never read it. Route protection is
 client-side only: `AuthProvider` redirects on `status === "anonymous"`. This is a UX trade-off
 (a flash of blank page before the redirect), not a security one — `requireAuth` still gates
-every API response regardless of what the page shows.
+every API response regardless of what the page shows. With the Stage 10 rewrites (below) the
+cookie ends up on the Next.js origin, but Express still issues and checks it, so the
+client-side model stays.
 
 ## Cross-origin cookies
 
@@ -65,13 +67,25 @@ the frontend sends the `httpOnly` cookie) when the server names the exact origin
 `credentials: "include"`. A bare `cors()` looks fine in a server-side test and fails only in a
 real browser.
 
+## Same origin through rewrites
+
+`vercel.app` and `onrender.com` are different sites, so a cookie set by the API would be
+third-party to the page, and Safari blocks those by default. The frontend therefore never calls
+the API origin: `client/next.config.ts` rewrites `/api/:path*` to `API_ORIGIN`, and
+`client/lib/api.ts` requests relative paths. The browser sees one origin, so the cookie is
+first-party and CORS is not exercised from the browser — it stays configured for direct API
+use. Development takes the same route, so a cookie bug shows locally. Whether the proxy passes
+`Set-Cookie` through unchanged is confirmed by hand after the first deploy, per
+[designs/deploy.md](../designs/deploy.md).
+
 ## Trade-offs accepted
 
 - **`authController.js` is still two layers**, not three. Out of scope for the frontend-auth
   PR; migrates when auth is next touched substantially, same as the note in `CLAUDE.md`.
-- **No CSRF token.** The cookie has no `sameSite` override (Express/`cookie-parser` default is
-  `Lax`), which blocks the classic cross-site form-post CSRF shape; a `sameSite`/`secure`
-  review is Stage 10's job, once there is a real deployment topology to threat-model against.
+- **No CSRF token.** The cookie is `SameSite=Lax`, set explicitly (and `Secure` in
+  production), which blocks the classic cross-site form-post CSRF shape. A `Lax` cookie is
+  still sent on top-level GET navigations, which is acceptable because no GET endpoint changes
+  state.
 - **Client-side-only route gating** — see Shape.
 - **A failed login still answers `401`, and still shows up in the console.** That one is a
   real failure the user caused and is told about on the page; bending the status code to

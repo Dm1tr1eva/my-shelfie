@@ -30,7 +30,9 @@ cd client && npm install
 Configure the environment: copy `server/.env.example` to `server/.env` and fill in
 `MONGODB_URI`, `JWT_SECRET` and `CLIENT_URL` (the frontend's origin — CORS needs an exact
 match to allow the credentialed requests auth depends on); copy `client/.env.example` to
-`client/.env.local` and fill in `NEXT_PUBLIC_API_URL`.
+`client/.env.local` — its one variable, `API_ORIGIN`, defaults to `http://localhost:5000`, so
+the file is optional locally. The browser never calls the backend directly: Next.js proxies
+`/api/*` to `API_ORIGIN`.
 
 Backend (port 5000):
 
@@ -47,6 +49,23 @@ cd client && npm run dev
 To confirm the backend is alive: `GET http://localhost:5000/api/health` answers
 `{"status":"ok"}`. The frontend at `http://localhost:3000` shows the home page; registering
 and landing on `/dashboard` proves the cookie round trip between the two.
+
+## Deploying
+
+Two services from this repository, planned in [designs/deploy.md](designs/deploy.md). Not yet
+deployed — this section is the plan until the first deploy confirms it.
+
+| | Backend | Frontend |
+|---|---|---|
+| Host | Render, Web Service, free tier | Vercel |
+| Root directory | `server` | `client` |
+| Build / start | `npm install` / `npm start` | Vercel's Next.js defaults |
+| Environment | `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (the Vercel URL), `NODE_ENV=production`; `PORT` is set by Render | `API_ORIGIN` (the Render URL, no trailing slash) |
+
+Create the Render service first, then Vercel. Set `API_ORIGIN` before the Vercel build: the
+rewrite destination is baked in at build time, so changing it later needs a redeploy. Atlas
+Network Access must let Render in (`0.0.0.0/0`). The free Render service sleeps after 15
+minutes without traffic and takes about a minute to wake on the next request.
 
 ## Checks before a commit
 
