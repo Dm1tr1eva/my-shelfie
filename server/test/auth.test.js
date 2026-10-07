@@ -106,10 +106,6 @@ describe("auth API", () => {
     const logout = await api("/api/auth/logout", { method: "POST", cookie });
     assert.equal(logout.status, 204);
 
-    // Assert the server actually sent a Set-Cookie before trusting it: an
-    // empty logout.setCookie would silently turn into an empty Cookie header
-    // below, and a request with no cookie at all also answers null — that
-    // would make this test pass even if logout stopped clearing anything.
     assert.ok(logout.setCookie.length > 0, "logout did not clear the cookie");
     const clearedCookie = logout.setCookie.map((c) => c.split(";")[0]).join("; ");
     const afterLogout = await api("/api/auth/me", { cookie: clearedCookie });

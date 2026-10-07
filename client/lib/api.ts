@@ -10,9 +10,6 @@ export class ApiError extends Error {
   }
 }
 
-// Always sends the httpOnly session cookie cross-origin. The backend must
-// answer with Access-Control-Allow-Credentials: true for a specific origin
-// (never "*") or the browser refuses to expose the response at all.
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,

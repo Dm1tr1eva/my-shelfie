@@ -1,11 +1,5 @@
 const bookRepository = require("../repositories/bookRepository");
 
-// A thin pass-through today: the book model has no cross-field invariant yet
-// (nothing enforces finishedAt >= startedAt, for instance). This layer exists
-// because CLAUDE.md's Shape section requires it outright, not because there
-// is business logic here yet — the next invariant this project needs lands
-// here, not back in the controller or repository.
-
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 

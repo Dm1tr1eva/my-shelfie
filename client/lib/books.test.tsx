@@ -16,17 +16,6 @@ function jsonResponse(status: number, body: unknown) {
   );
 }
 
-// useBooks only fetches once auth settles, and useSWR's own isLoading is
-// false both before that (key is still null) and after real data has
-// arrived — waiting on isLoading alone can't tell those apart. Rendering
-// both hooks together lets a test wait on the unambiguous signal instead:
-// auth.status.
-//
-// SWR caches by key in a module-level store by default, shared across every
-// useSWR call in the process. Two tests here use the same key
-// (/api/books?limit=100, the "all" filter) — without a fresh cache per
-// test, the second one would see the first one's cached response instead of
-// exercising its own mock.
 function renderBooks(status: Parameters<typeof useBooks>[0] = "all") {
   return renderHook(() => ({ auth: useAuth(), books: useBooks(status) }), {
     wrapper: ({ children }) => (

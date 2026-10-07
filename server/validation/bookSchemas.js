@@ -1,9 +1,5 @@
 const { z } = require("zod");
 
-// Mirrors server/models/book.js exactly — this is boundary validation, not a
-// chance to invent constraints Mongoose never had. .strict() doubles as the
-// allow-list PATCH used to track by hand in UPDATABLE_FIELDS: an unknown key
-// (userId, _id, createdAt, ...) is now rejected, not silently dropped.
 const createBookSchema = z
   .object({
     title: z.string().min(1),

@@ -32,7 +32,6 @@ describe("AuthProvider / useAuth", () => {
   });
 
   it("throws when used outside an AuthProvider", () => {
-    // Suppress the expected console.error React logs for the thrown render.
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => renderHook(() => useAuth())).toThrow(
       "useAuth must be used inside an AuthProvider",

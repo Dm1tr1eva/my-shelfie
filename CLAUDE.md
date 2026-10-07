@@ -186,6 +186,7 @@ Skip this section only if the product genuinely has one tenant.
 - Add `.gitattributes` with `* text=auto eol=lf` on any repo with Windows contributors.
   Without it the formatter check passes for the author and fails on a fresh clone.
 - A formatting-only commit goes in `.git-blame-ignore-revs` so it does not bury `git blame`.
+  Run `git config blame.ignoreRevsFile .git-blame-ignore-revs` once per clone to use it.
 
 ---
 
@@ -274,10 +275,12 @@ docs/
 
 ## Comments
 
-- Comments explain **why**, never **what**. A comment that restates the line below it is
-  deleted.
-- Decisions get recorded (why this flag on the connection string, why the lock file is built
-  in Docker); narration does not.
+- **Code carries no comments.** This project is submitted to a course that reads "no
+  comments" literally, and the reasoning has a better home anyway: a design doc, a feature
+  doc, `docs/testing.md` or the commit message. A *why* that would have been a comment goes
+  there, and the code is named well enough to carry its own *what*.
+- The one exception is a directive a tool requires, such as `eslint-disable-next-line`, which
+  names the rule and says why.
 - No commented-out code. No `TODO` without an ADR or issue reference — an unreferenced TODO
   is a wish, and it will outlive everyone who understood it.
 

@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-10-06
+**Last verified against code:** 2026-10-07
 
 ## What it does
 
@@ -55,6 +55,15 @@ so it would appear to work in dev — but Stage 10 deploys the two to different 
 client-side only: `AuthProvider` redirects on `status === "anonymous"`. This is a UX trade-off
 (a flash of blank page before the redirect), not a security one — `requireAuth` still gates
 every API response regardless of what the page shows.
+
+## Cross-origin cookies
+
+The browser only exposes a credentialed response (`fetch` with `credentials: "include"`, how
+the frontend sends the `httpOnly` cookie) when the server names the exact origin and answers
+`Access-Control-Allow-Credentials: true`; a wildcard origin is refused. So the backend runs
+`cors({ origin: CLIENT_URL, credentials: true })`, and `client/lib/api.ts` always sends
+`credentials: "include"`. A bare `cors()` looks fine in a server-side test and fails only in a
+real browser.
 
 ## Trade-offs accepted
 

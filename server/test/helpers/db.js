@@ -12,9 +12,6 @@ function withDbName(uri, name) {
   return url.toString();
 }
 
-// Tests clear every collection between cases. A run against the development
-// database would wipe real books and users with nothing to restore them from,
-// so the database name is checked rather than assumed.
 function resolveTestUri() {
   const devUri = process.env.MONGODB_URI;
   if (!devUri) {

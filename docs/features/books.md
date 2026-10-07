@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-10-06
+**Last verified against code:** 2026-10-07
 
 ## What it does
 
@@ -22,7 +22,11 @@ Three layers, per `CLAUDE.md`: `controllers/bookController.js` (parses and valid
 request with Zod, calls the service, maps the result through a DTO) →
 `services/bookService.js` (a thin pass-through today — no cross-field invariant exists yet
 that would live here) → `repositories/bookRepository.js` (every `Book` Mongoose call,
-`userId` as the required first parameter of each method). Validation schemas live in
+`userId` as the required first parameter of each method, folded into the query itself rather
+than checked afterwards — so another user's book is indistinguishable from a missing one).
+The repository also absorbs Mongoose's `CastError`: a malformed id returns `null`, the same
+"not found" every caller already handles, instead of an exception only some callers would
+know to catch. Validation schemas live in
 `validation/bookSchemas.js`; the response shape in `dto/bookDto.js`.
 
 ## Endpoints

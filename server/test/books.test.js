@@ -20,8 +20,6 @@ before(async () => {
 });
 
 after(async () => {
-  // before() can fail while connecting to the database, leaving no server here.
-  // Without this guard the real error drowns in a second, meaningless one.
   if (server) {
     await new Promise((resolve) => server.close(resolve));
   }
