@@ -170,6 +170,53 @@ index — [README.md](README.md).
   one
 - Caching query results
 
+Checked live on 2026-10-06: Google Books answers `429` to every request without a key (the
+anonymous quota is shared and spent), so it needs our own key; Open Library works without one
+but finds almost no Ukrainian titles (it files "Тіні забутих предків" under its English title,
+and has no Zhadan or Zabuzhko).
+
+**Decision: Google Books, with our own key, as the only source.** Re-run with a key on
+2026-10-07: it found every title tested — Kotsiubynsky, Shevchenko, Zhadan's "Інтернат",
+Zabuzhko, Bulgakov, Weir — where Open Library found none of the modern Ukrainian ones. No
+second source until a real gap shows up. What the run showed for the implementation:
+
+- **Free-text `q` only.** `inauthor:Жадан` and `intitle:… inauthor:…` return 0 for Cyrillic;
+  "Інтернат Сергій Жадан" as plain text finds the book.
+- **Ranking is noisy.** The right book is often third, behind books *about* Ukrainian
+  literature, and English titles come with foreign-language summaries. Show around ten results
+  with author, year and cover so the user picks; many entries have no cover, author or
+  description, so every field is optional in the UI.
+- **Cover thumbnails come as `http://`.** Rewrite to `https://` on the backend, or the deployed
+  HTTPS site gets mixed-content warnings in the console.
+- **Responses carry no `Cache-Control` header**, so the terms leave no room for a long-lived
+  cache. Quota protection comes from debouncing on the client, not from storing results.
+- **0.5–2 s per search** — needs a visible loading state.
+
+Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must honour them:
+
+- **The key stays secret.** Google APIs ToS: credentials "may not be embedded in open source
+  projects" — this repository is public. The key lives only in `server/.env` and the host's
+  environment variables, never a `NEXT_PUBLIC_` variable; the browser talks to our backend,
+  never to Google with the key.
+- **Attribution** (Books branding guidelines): a "powered by Google" logo adjacent to search
+  results, the official asset unaltered; every result links prominently to its Google Books
+  page (`infoLink` / `canonicalVolumeLink`). Nothing may suggest Google endorses the app.
+- **No permanent copies of Google content.** Google APIs ToS §5 forbids building databases or
+  keeping copies longer than the response's cache headers allow. What a user saves to their
+  shelf is their own entry: title and author pre-filled but editable, the Google volume id,
+  and the cover as a URL pointing at Google rather than a stored image. The description is
+  shown live or not stored — never copied into `Book.description`. The backend's search cache
+  respects the cache headers.
+- **A privacy policy page** describing what the app collects (email, name, password hash,
+  reading list) — required for any API client by the Google APIs ToS.
+- **A takedown contact.** Books API ToS: remove content alleged to infringe third-party rights
+  and give rights holders a way to ask — a contact on the privacy page covers it.
+- **Free to use.** Books API ToS forbids charging users without Google's agreement.
+- **Respect quotas** — debounced search input on the client, a cache on the server, no
+  rotating keys to get around limits.
+- **Results depend on the server's location.** The API restricts results "based on your server
+  or client application's IP address"; check what the deployed backend's region gets back.
+
 ## Stage 8 — AI chat (Gemini API)
 
 - `POST /api/chat` on Express, proxying requests to Gemini (the key stays on the backend
