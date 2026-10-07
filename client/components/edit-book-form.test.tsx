@@ -65,9 +65,7 @@ describe("EditBookForm", () => {
 
   it("deletes the book once the user confirms", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
-    vi.mocked(fetch).mockImplementation(() =>
-      Promise.resolve(new Response(null, { status: 204 })),
-    );
+    vi.mocked(fetch).mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
     const onDeleted = renderForm();
 
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));

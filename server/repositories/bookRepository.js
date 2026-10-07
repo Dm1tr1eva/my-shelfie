@@ -39,11 +39,10 @@ async function findOneForUser(userId, id) {
 
 async function updateOneForUser(userId, id, updates) {
   if (!isValidId(id)) return null;
-  return Book.findOneAndUpdate(
-    { _id: id, userId },
-    updates,
-    { returnDocument: "after", runValidators: true },
-  );
+  return Book.findOneAndUpdate({ _id: id, userId }, updates, {
+    returnDocument: "after",
+    runValidators: true,
+  });
 }
 
 async function deleteOneForUser(userId, id) {

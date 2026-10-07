@@ -31,11 +31,7 @@ export function BookEditor({ id }: { id: string }) {
       {book && (
         <>
           <h1 className="text-xl font-semibold">{book.title}</h1>
-          <EditBookForm
-            key={book.id}
-            book={book}
-            onDeleted={() => router.push("/dashboard")}
-          />
+          <EditBookForm key={book.id} book={book} onDeleted={() => router.push("/dashboard")} />
         </>
       )}
     </main>

@@ -66,7 +66,10 @@ export function LoginForm() {
         </button>
 
         <p>
-          No account? <Link href="/register" className="underline">Register</Link>
+          No account?{" "}
+          <Link href="/register" className="underline">
+            Register
+          </Link>
         </p>
       </form>
     </main>

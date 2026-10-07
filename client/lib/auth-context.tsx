@@ -50,13 +50,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("authenticated");
   }, []);
 
-  const register = useCallback(async (email: string, password: string, name: string) => {
-    await apiFetch<User>("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ email, password, name }),
-    });
-    await login(email, password);
-  }, [login]);
+  const register = useCallback(
+    async (email: string, password: string, name: string) => {
+      await apiFetch<User>("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ email, password, name }),
+      });
+      await login(email, password);
+    },
+    [login],
+  );
 
   const logout = useCallback(async () => {
     await apiFetch<void>("/api/auth/logout", { method: "POST" });

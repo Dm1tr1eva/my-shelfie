@@ -53,11 +53,7 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
   }
 
   return (
-    <form
-      onSubmit={handleSave}
-      aria-label="Edit book"
-      className="flex flex-col gap-3 sm:max-w-lg"
-    >
+    <form onSubmit={handleSave} aria-label="Edit book" className="flex flex-col gap-3 sm:max-w-lg">
       <label className="flex flex-col gap-1">
         <span>Title</span>
         <input

@@ -59,9 +59,7 @@ describe("AddBookForm", () => {
   });
 
   it("shows the server's error and stays open when the book is rejected", async () => {
-    vi.mocked(fetch).mockImplementation(() =>
-      jsonResponse(400, { error: "title: Too small" }),
-    );
+    vi.mocked(fetch).mockImplementation(() => jsonResponse(400, { error: "title: Too small" }));
     const onDone = renderForm();
 
     fillAndSubmit();

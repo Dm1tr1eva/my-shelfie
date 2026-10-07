@@ -111,9 +111,7 @@ describe("auth API", () => {
     // below, and a request with no cookie at all also answers null — that
     // would make this test pass even if logout stopped clearing anything.
     assert.ok(logout.setCookie.length > 0, "logout did not clear the cookie");
-    const clearedCookie = logout.setCookie
-      .map((c) => c.split(";")[0])
-      .join("; ");
+    const clearedCookie = logout.setCookie.map((c) => c.split(";")[0]).join("; ");
     const afterLogout = await api("/api/auth/me", { cookie: clearedCookie });
 
     assert.equal(afterLogout.status, 200);

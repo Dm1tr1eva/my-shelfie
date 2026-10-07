@@ -3,7 +3,9 @@ const { createBookSchema, updateBookSchema } = require("../validation/bookSchema
 const { toBookDto } = require("../dto/bookDto");
 
 function formatZodError(error) {
-  return error.issues.map((issue) => `${issue.path.join(".") || "body"}: ${issue.message}`).join("; ");
+  return error.issues
+    .map((issue) => `${issue.path.join(".") || "body"}: ${issue.message}`)
+    .join("; ");
 }
 
 async function createBook(req, res) {

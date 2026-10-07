@@ -28,16 +28,13 @@ function jsonResponse(status: number, body: unknown) {
 // test, the second one would see the first one's cached response instead of
 // exercising its own mock.
 function renderBooks(status: Parameters<typeof useBooks>[0] = "all") {
-  return renderHook(
-    () => ({ auth: useAuth(), books: useBooks(status) }),
-    {
-      wrapper: ({ children }) => (
-        <SWRConfig value={{ provider: () => new Map() }}>
-          <AuthProvider>{children}</AuthProvider>
-        </SWRConfig>
-      ),
-    },
-  );
+  return renderHook(() => ({ auth: useAuth(), books: useBooks(status) }), {
+    wrapper: ({ children }) => (
+      <SWRConfig value={{ provider: () => new Map() }}>
+        <AuthProvider>{children}</AuthProvider>
+      </SWRConfig>
+    ),
+  });
 }
 
 describe("useBooks", () => {
@@ -66,7 +63,15 @@ describe("useBooks", () => {
 
   it("fetches the list once authenticated", async () => {
     const books = [
-      { id: "1", userId: "1", title: "Dune", author: "Frank Herbert", status: "want", createdAt: "", updatedAt: "" },
+      {
+        id: "1",
+        userId: "1",
+        title: "Dune",
+        author: "Frank Herbert",
+        status: "want",
+        createdAt: "",
+        updatedAt: "",
+      },
     ];
 
     vi.mocked(fetch).mockImplementation((url) => {
@@ -95,9 +100,7 @@ describe("useBooks", () => {
     const { result } = renderBooks("reading");
 
     await waitFor(() => expect(result.current.auth.status).toBe("authenticated"));
-    await waitFor(() =>
-      expect(requestedUrls.some((u) => u.includes("status=reading"))).toBe(true),
-    );
+    await waitFor(() => expect(requestedUrls.some((u) => u.includes("status=reading"))).toBe(true));
   });
 
   it("surfaces a fetch failure as an error instead of throwing", async () => {

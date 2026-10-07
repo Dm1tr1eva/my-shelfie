@@ -28,8 +28,7 @@ function resolveTestUri() {
     );
   }
 
-  const testUri =
-    process.env.MONGODB_URI_TEST || withDbName(devUri, devName + TEST_DB_SUFFIX);
+  const testUri = process.env.MONGODB_URI_TEST || withDbName(devUri, devName + TEST_DB_SUFFIX);
 
   if (dbNameOf(testUri) === devName) {
     throw new Error(
