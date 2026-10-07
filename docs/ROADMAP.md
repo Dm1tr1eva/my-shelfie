@@ -49,9 +49,10 @@ In order:
    [designs/book-forms.md](designs/book-forms.md)
 4. ✅ Home page (stage 6), a header with navigation, a real page title, responsive layout,
    dark mode fixed — [designs/site-shell.md](designs/site-shell.md)
-5. ⬜ Prettier for both packages; move code comments out of the code (the course reads "no
-   comments" literally) — the reasoning already lives in `docs/designs/` and `docs/features/`,
-   and `CLAUDE.md`'s Comments section changes with it
+5. ✅ Prettier for both packages (shared config, exact-pinned, enforced by `verify`, which now
+   also type-checks the client); code comments moved out of the code (the course reads "no
+   comments" literally) into `docs/` — see [testing.md](testing.md); `CLAUDE.md`'s Comments
+   rule changed with it
 6. ⬜ Deploy (stage 10): frontend on Vercel, backend on Render. `/api` goes through Next.js
    rewrites so the session cookie is first-party — `vercel.app` and `onrender.com` are
    different sites, and Safari blocks third-party cookies by default. Render's free tier

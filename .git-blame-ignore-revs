@@ -1,0 +1,8 @@
+# Commits that only reformat or strip comments; git blame skips them.
+# Enable once per clone: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: format the code with Prettier
+288896fdedf8f25f298d61d337e33d99ec772514
+
+# refactor: move code comments into the docs, code carries none
+af8198b49a6c7608d43bff3714b15eaec27478c9
