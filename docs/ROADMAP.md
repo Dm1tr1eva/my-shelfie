@@ -53,12 +53,13 @@ In order:
    also type-checks the client); code comments moved out of the code (the course reads "no
    comments" literally) into `docs/` — see [testing.md](testing.md); `CLAUDE.md`'s Comments
    rule changed with it
-6. ⬜ Deploy (stage 10) — [designs/deploy.md](designs/deploy.md). Code is ready (`start`
-   script, `SameSite`/`Secure` cookie flags, the `/api` rewrite); the two services are not
-   created yet. Frontend on Vercel, backend on Render. `/api` goes through Next.js
-   rewrites so the session cookie is first-party — `vercel.app` and `onrender.com` are
-   different sites, and Safari blocks third-party cookies by default. Render's free tier
-   sleeps; the README warns that the first request can take up to a minute
+6. ✅ Deploy (stage 10) — [designs/deploy.md](designs/deploy.md). Live: frontend
+   `https://my-shelfie-ecru.vercel.app` (Vercel), backend `https://my-shelfie.onrender.com`
+   (Render). `/api` goes through Next.js rewrites so the session cookie is first-party —
+   `vercel.app` and `onrender.com` are different sites, and Safari blocks third-party cookies
+   by default. Checked in a browser on 2026-10-08: sign-in survives a reload, the cookie is
+   invisible to JavaScript, the console is clean. Render's free tier sleeps; the README warns
+   that the first request can take up to a minute
 7. ⬜ README: what it is, stack, why not Firebase, screenshots, link to this roadmap, live URL
 8. ⬜ Final check on the deployed site: clean console, mobile and tablet views, W3C validator
 
@@ -232,7 +233,9 @@ Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must 
 - Error handling, loaders, empty states
 - Responsive layout
 
-## Stage 10 — Deploy
+## Stage 10 — Deploy ✅
+
+Done as MVP item 6 — see [designs/deploy.md](designs/deploy.md).
 
 - Backend → Render/Railway
 - Frontend → Vercel

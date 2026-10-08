@@ -52,8 +52,9 @@ and landing on `/dashboard` proves the cookie round trip between the two.
 
 ## Deploying
 
-Two services from this repository, planned in [designs/deploy.md](designs/deploy.md). Not yet
-deployed — this section is the plan until the first deploy confirms it.
+Two services from this repository, designed in [designs/deploy.md](designs/deploy.md). Live
+since 2026-10-08: frontend `https://my-shelfie-ecru.vercel.app`, backend
+`https://my-shelfie.onrender.com`.
 
 | | Backend | Frontend |
 |---|---|---|

@@ -65,6 +65,8 @@ lines, mostly the test URLs.
 
 ## Open questions
 
-- Does Vercel's proxy pass `Set-Cookie` through unchanged? Expected yes. The manual browser
-  check settles it; a failure sends us back to this doc.
+- Does Vercel's proxy pass `Set-Cookie` through unchanged? **Answered 2026-10-08: yes.** On
+  the live site a login survives a reload, and `document.cookie` stays empty, so the cookie
+  is `HttpOnly`. The `Secure` and `SameSite=Lax` attributes are covered by the server tests;
+  they were not read back from the live browser.
 - Which Render region sits closest to the Atlas cluster? Checked when creating the service.
