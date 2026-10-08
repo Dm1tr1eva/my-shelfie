@@ -62,7 +62,12 @@ In order:
    that the first request can take up to a minute
 7. ⬜ README: ✅ what it is, stack, why not Firebase, link to this roadmap, live URL;
    ⬜ screenshots (add them under `docs/screenshots/` and reference them from the README)
-8. ⬜ Final check on the deployed site: clean console, mobile and tablet views, W3C validator
+8. ✅ Final check on the deployed site, 2026-10-08. The W3C Nu validator reports 0 errors and
+   0 warnings for the served HTML of `/`, `/login`, `/register` and `/dashboard`. No page
+   scrolls horizontally at 320, 375, 768 and 1440 px (home, login, register, dashboard, book
+   page). The console is empty signed in and signed out. Logout clears the session, and
+   `/dashboard` then redirects to `/login`. Not covered: a visual review by eye, a real
+   phone, and Safari
 
 ## Stage 0 — Planning ✅ (decisions made)
 
