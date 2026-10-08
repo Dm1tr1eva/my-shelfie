@@ -60,7 +60,8 @@ In order:
    by default. Checked in a browser on 2026-10-08: sign-in survives a reload, the cookie is
    invisible to JavaScript, the console is clean. Render's free tier sleeps; the README warns
    that the first request can take up to a minute
-7. ⬜ README: what it is, stack, why not Firebase, screenshots, link to this roadmap, live URL
+7. ⬜ README: ✅ what it is, stack, why not Firebase, link to this roadmap, live URL;
+   ⬜ screenshots (add them under `docs/screenshots/` and reference them from the README)
 8. ⬜ Final check on the deployed site: clean console, mobile and tablet views, W3C validator
 
 ## Stage 0 — Planning ✅ (decisions made)
