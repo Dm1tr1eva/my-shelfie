@@ -5,6 +5,7 @@ const createBookSchema = z
     title: z.string().min(1),
     author: z.string().min(1),
     coverUrl: z.string().optional(),
+    googleVolumeId: z.string().min(1).optional(),
     description: z.string().optional(),
     status: z.enum(["want", "reading", "dropped", "read"]).optional(),
     rating: z.number().min(1).max(5).optional(),
@@ -28,4 +29,10 @@ const updateBookSchema = createBookSchema
     message: "No updatable fields provided",
   });
 
-module.exports = { createBookSchema, updateBookSchema };
+const searchBooksQuerySchema = z
+  .object({
+    q: z.string().trim().min(3).max(200),
+  })
+  .strict();
+
+module.exports = { createBookSchema, updateBookSchema, searchBooksQuerySchema };

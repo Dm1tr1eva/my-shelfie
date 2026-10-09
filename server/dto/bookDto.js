@@ -1,4 +1,12 @@
-const OPTIONAL_FIELDS = ["coverUrl", "description", "rating", "review", "startedAt", "finishedAt"];
+const OPTIONAL_FIELDS = [
+  "coverUrl",
+  "googleVolumeId",
+  "description",
+  "rating",
+  "review",
+  "startedAt",
+  "finishedAt",
+];
 
 function toBookDto(book) {
   const dto = {

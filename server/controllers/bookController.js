@@ -1,5 +1,10 @@
 const bookService = require("../services/bookService");
-const { createBookSchema, updateBookSchema } = require("../validation/bookSchemas");
+const googleBooksService = require("../services/googleBooksService");
+const {
+  createBookSchema,
+  updateBookSchema,
+  searchBooksQuerySchema,
+} = require("../validation/bookSchemas");
 const { toBookDto } = require("../dto/bookDto");
 
 function formatZodError(error) {
@@ -33,6 +38,23 @@ async function getBooks(req, res) {
     res.json({ books: books.map(toBookDto), total, page, limit });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch books" });
+  }
+}
+
+async function searchBooks(req, res) {
+  const parsed = searchBooksQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({ error: formatZodError(parsed.error) });
+  }
+
+  try {
+    const results = await googleBooksService.searchVolumes(parsed.data.q);
+    res.json({ results });
+  } catch (err) {
+    if (err instanceof googleBooksService.UpstreamError) {
+      return res.status(502).json({ error: "Book search is unavailable right now" });
+    }
+    res.status(500).json({ error: "Failed to search books" });
   }
 }
 
@@ -83,4 +105,4 @@ async function deleteBook(req, res) {
   }
 }
 
-module.exports = { createBook, getBooks, getBook, updateBook, deleteBook };
+module.exports = { createBook, getBooks, searchBooks, getBook, updateBook, deleteBook };

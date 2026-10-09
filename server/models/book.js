@@ -10,6 +10,7 @@ const bookSchema = new mongoose.Schema(
     title: { type: String, required: true },
     author: { type: String, required: true },
     coverUrl: String,
+    googleVolumeId: String,
     description: String,
     status: {
       type: String,

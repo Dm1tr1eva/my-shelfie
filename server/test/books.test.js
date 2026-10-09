@@ -1,11 +1,12 @@
 require("dotenv").config({ quiet: true });
 
-const { describe, it, before, after, beforeEach } = require("node:test");
+const { describe, it, before, after, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("node:http");
 
 const app = require("../app");
 const { connectTestDb, clearTestDb, disconnectTestDb } = require("./helpers/db");
+const { stubGoogleBooks, restoreFetch, googleResponse } = require("./helpers/googleBooks");
 
 const PASSWORD = "secret123";
 
@@ -338,5 +339,88 @@ describe("books API", () => {
     });
 
     assert.equal(response.status, 404);
+  });
+
+  it("keeps the Google volume id a book was added from", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const created = await addBook(alice, { googleVolumeId: "WH86DwAAQBAJ" });
+    const fetched = await api(`/api/books/${created.id}`, { cookie: alice });
+
+    assert.equal(created.googleVolumeId, "WH86DwAAQBAJ");
+    assert.equal(fetched.body.googleVolumeId, "WH86DwAAQBAJ");
+  });
+});
+
+describe("book search API", () => {
+  const KEY = "integration-test-key";
+  let previousKey;
+
+  beforeEach(() => {
+    previousKey = process.env.GOOGLE_BOOKS_API_KEY;
+    process.env.GOOGLE_BOOKS_API_KEY = KEY;
+  });
+
+  afterEach(() => {
+    restoreFetch();
+    if (previousKey === undefined) delete process.env.GOOGLE_BOOKS_API_KEY;
+    else process.env.GOOGLE_BOOKS_API_KEY = previousKey;
+  });
+
+  it("refuses a search with no session cookie", async () => {
+    const calls = stubGoogleBooks(() => googleResponse({ items: [] }));
+
+    const response = await api("/api/books/search?q=dracula");
+
+    assert.equal(response.status, 401);
+    assert.equal(calls.length, 0);
+  });
+
+  it("rejects a missing or too short search text without calling Google", async () => {
+    const alice = await signIn("alice@example.com");
+    const calls = stubGoogleBooks(() => googleResponse({ items: [] }));
+
+    const missing = await api("/api/books/search", { cookie: alice });
+    const short = await api("/api/books/search?q=ab", { cookie: alice });
+
+    assert.equal(missing.status, 400);
+    assert.equal(short.status, 400);
+    assert.equal(calls.length, 0);
+  });
+
+  it("answers with the results instead of treating search as a book id", async () => {
+    const alice = await signIn("alice@example.com");
+    stubGoogleBooks(() =>
+      googleResponse({
+        items: [{ id: "vol1", volumeInfo: { title: "Dracula", authors: ["Bram Stoker"] } }],
+      }),
+    );
+
+    const response = await api("/api/books/search?q=dracula", { cookie: alice });
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(response.body, {
+      results: [{ volumeId: "vol1", title: "Dracula", authors: ["Bram Stoker"] }],
+    });
+  });
+
+  it("never lets the API key reach the response", async () => {
+    const alice = await signIn("alice@example.com");
+    stubGoogleBooks(() => googleResponse({ items: [] }));
+
+    const response = await api("/api/books/search?q=dracula", { cookie: alice });
+
+    assert.equal(response.status, 200);
+    assert.ok(!JSON.stringify(response).includes(KEY));
+  });
+
+  it("answers 502 when Google fails, without exposing its message", async () => {
+    const alice = await signIn("alice@example.com");
+    stubGoogleBooks(() => googleResponse({ error: { message: "API key not valid" } }, 403));
+
+    const response = await api("/api/books/search?q=dracula", { cookie: alice });
+
+    assert.equal(response.status, 502);
+    assert.ok(!JSON.stringify(response.body).includes("API key"));
   });
 });

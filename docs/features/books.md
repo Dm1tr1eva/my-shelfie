@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-10-07
+**Last verified against code:** 2026-10-08
 
 ## What it does
 
@@ -40,6 +40,7 @@ it does not get silently dropped.
 |---|---|
 | `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field). |
 | `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). |
+| `GET /search?q=` | `200` with `{ results }`, up to ten Google Books matches for the text. `400` unless `q` is 3–200 characters and the only parameter. `502` when Google fails. See "Book search" below. Registered before `/:id`, or `search` would be read as an id. |
 | `GET /:id` | `200` with the book. `404` if it does not exist, belongs to another user, or `:id` is not a valid ObjectId. |
 | `PATCH /:id` | `200` with the updated book. `400` if the body carries no recognized field, or a value fails schema validation. `404` under the same three conditions as `GET /:id`. |
 | `DELETE /:id` | `204` with no body. `404` under the same three conditions as `GET /:id`. |
@@ -55,8 +56,31 @@ stays cleared — `null` is not coerced into 1970; a test pins that.
 
 **Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
 is their own book), `title`, `author`, `status`, `createdAt`, `updatedAt`, plus whichever of
-`coverUrl`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
+`coverUrl`/`googleVolumeId`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
 field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
+
+## Book search
+
+`services/googleBooksService.js` calls the Google Books `volumes` endpoint with `GOOGLE_BOOKS_API_KEY`
+and maps each volume to `{ volumeId, title, authors, year?, coverUrl?, link? }`. Design and
+the terms it honours: [google-books-search.md](../designs/google-books-search.md).
+
+- **Free text only.** `q` goes to Google as typed: `inauthor:` and `intitle:` find nothing for
+  Cyrillic, while plain text finds the book.
+- **Covers are https.** Google returns `http://` thumbnails; the service rewrites them, or the
+  deployed HTTPS site would log mixed-content warnings.
+- **Optional means optional.** Only `volumeId` and `title` are guaranteed; a volume without a
+  title is dropped. `link` is `canonicalVolumeLink`, falling back to `infoLink`, which for
+  e-books is a Google Play Books page.
+- **Failure is a `502`.** A non-2xx answer, a network error or the 8-second timeout throws
+  `UpstreamError`, and the controller answers `502` with a generic message. Google's own text
+  never reaches the client. A missing key is a plain `500`: a misconfiguration is not Google's
+  fault. Google answered `503` twice in a row on 2026-10-08 and was fine a minute later.
+- **The key stays on the server.** It is read from the environment, sent only to Google, and a
+  test pins that it cannot appear in a response.
+- **Nothing is copied.** The responses carry no `Cache-Control`, so no result is cached or
+  stored. A book added from a result keeps `googleVolumeId` and a `coverUrl` pointing at
+  Google; the description is not copied.
 
 ## Frontend consumer
 
@@ -73,7 +97,7 @@ title, author, status, rating and review, and deletes after `window.confirm`. De
 ## Data
 
 One collection, `Book` (`server/models/book.js`): `userId`, `title`, `author`, `coverUrl`,
-`description`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
+`googleVolumeId`, `description`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
 `updatedAt` from `timestamps: true`. Compound index `{ userId: 1, createdAt: -1 }` — covers
 both the filter every query uses and the sort `GET /` applies.
 
