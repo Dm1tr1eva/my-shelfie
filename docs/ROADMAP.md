@@ -174,11 +174,18 @@ index — [README.md](README.md).
 - ✅ Available without registration, prerendered as static content
 - ✅ A description of the service — [designs/site-shell.md](designs/site-shell.md)
 
-## Stage 7 — Book search via an external API (future)
+## Stage 7 — Book search via an external API
 
-- Integration with the Google Books API or Open Library, to auto-fill a book card when adding
-  one
-- Caching query results
+Built 2026-10-09 — [designs/google-books-search.md](designs/google-books-search.md),
+[features/books.md](features/books.md). Backend `GET /api/books/search`, the search box in the
+add form, covers on the shelf, the "Powered by Google" mark and the `/privacy` page. Checked
+against the real API and in a browser on a throwaway test database; not yet deployed — Render
+needs `GOOGLE_BOOKS_API_KEY` first.
+
+- ✅ Integration with the Google Books API, to auto-fill a book card when adding one
+- ⬜ Caching query results — dropped on purpose: the terms leave no room for it (see below)
+- ⬜ Check what the deployed backend's region gets back from the API (see the last bullet of
+  the constraints)
 
 Checked live on 2026-10-06: Google Books answers `429` to every request without a key (the
 anonymous quota is shared and spent), so it needs our own key; Open Library works without one

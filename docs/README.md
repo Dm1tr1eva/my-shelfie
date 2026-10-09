@@ -61,7 +61,7 @@ since 2026-10-08: frontend `https://my-shelfie-ecru.vercel.app`, backend
 | Host | Render, Web Service, free tier | Vercel |
 | Root directory | `server` | `client` |
 | Build / start | `npm install` / `npm start` | Vercel's Next.js defaults |
-| Environment | `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (the Vercel URL), `NODE_ENV=production`; `PORT` is set by Render | `API_ORIGIN` (the Render URL, no trailing slash) |
+| Environment | `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (the Vercel URL), `GOOGLE_BOOKS_API_KEY`, `NODE_ENV=production`; `PORT` is set by Render | `API_ORIGIN` (the Render URL, no trailing slash) |
 
 Create the Render service first, then Vercel. Set `API_ORIGIN` before the Vercel build: the
 rewrite destination is baked in at build time, so changing it later needs a redeploy. Atlas

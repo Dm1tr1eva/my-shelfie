@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { act, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AddBookForm } from "./add-book-form";
 
@@ -55,6 +55,47 @@ describe("AddBookForm", () => {
       title: "Dune",
       author: "Frank Herbert",
       status: "reading",
+    });
+  });
+
+  it("saves the Google volume id and cover of the result it was filled in from", async () => {
+    vi.mocked(fetch).mockImplementation((url) =>
+      String(url).startsWith("/api/books/search")
+        ? jsonResponse(200, {
+            results: [
+              {
+                volumeId: "vol1",
+                title: "Dracula",
+                authors: ["Bram Stoker"],
+                coverUrl: "https://books.google.com/cover?id=vol1",
+              },
+            ],
+          })
+        : jsonResponse(201, { id: "1", title: "Dracula", author: "Bram Stoker", status: "want" }),
+    );
+    vi.useFakeTimers();
+    const onDone = renderForm();
+
+    fireEvent.change(screen.getByLabelText("Find a book"), { target: { value: "dracula" } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+    });
+    vi.useRealTimers();
+
+    fireEvent.click(screen.getByRole("button", { name: "Use Dracula" }));
+    expect(screen.getByLabelText("Title")).toHaveValue("Dracula");
+    expect(screen.getByLabelText("Author")).toHaveValue("Bram Stoker");
+
+    fireEvent.submit(screen.getByRole("form", { name: "Add a book" }));
+
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
+    const createCall = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
+    expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({
+      title: "Dracula",
+      author: "Bram Stoker",
+      status: "want",
+      googleVolumeId: "vol1",
+      coverUrl: "https://books.google.com/cover?id=vol1",
     });
   });
 

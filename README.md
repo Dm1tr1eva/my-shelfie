@@ -12,6 +12,8 @@ request after a pause can take up to a minute.
 
 - Registration, login and logout. The session is a JWT in an `httpOnly` cookie.
 - A private shelf for every user: add, edit and delete books.
+- Book search through the Google Books API: pick a result and the title, author and cover are
+  filled in. Typing a book in by hand still works.
 - A status for each book — want to read, reading, read or dropped — and a filter by status.
 - A rating from 1 to 5 and a text review.
 - A public home page, a header with navigation, and a mobile-first layout.
@@ -45,6 +47,7 @@ belongs to someone else answers `404`.
 | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout` | Account and session |
 | `GET /api/auth/me` | The signed-in user, or `null` |
 | `POST /api/books`, `GET /api/books` | Create a book, list the user's books (status filter, pagination) |
+| `GET /api/books/search?q=` | Search the Google Books API (the key stays on the server) |
 | `GET`, `PATCH`, `DELETE /api/books/:id` | Read, update or delete one book |
 
 Details: [docs/features/auth.md](docs/features/auth.md) and
@@ -76,8 +79,8 @@ cp .env.example .env
 npm run dev
 ```
 
-Fill in `MONGODB_URI`, `JWT_SECRET` and `CLIENT_URL` in `server/.env` first. The backend listens
-on port 5000.
+Fill in `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` and `GOOGLE_BOOKS_API_KEY` in `server/.env`
+first. The backend listens on port 5000.
 
 ```bash
 cd client
@@ -102,5 +105,4 @@ port 27017 and use a separate `-test` database. The full runbook, including depl
 
 ## What is next
 
-Book search through the Google Books API to fill in a book's details, and an AI assistant
-(Gemini) that helps find books. Both are planned in the roadmap.
+An AI assistant (Gemini) that helps find books, planned in the roadmap.

@@ -94,6 +94,18 @@ size would be silently truncated) and has an inline add form; `/dashboard/books/
 title, author, status, rating and review, and deletes after `window.confirm`. Designs:
 [book-list.md](../designs/book-list.md), [book-forms.md](../designs/book-forms.md).
 
+**Search in the add form.** `components/book-search.tsx` sits above the form's fields (outside
+the `<form>`, so Enter in the search box cannot submit it) and `lib/book-search.ts`
+(`useBookSearch`) drives it: it waits 400 ms after the last keystroke, needs three characters,
+aborts a request that has been overtaken, and keeps nothing between searches — no SWR cache,
+because the results may not be stored. A picked result fills title and author, which stay
+editable, and the form then sends `googleVolumeId` and `coverUrl` with the book. The
+"Powered by Google" mark (`client/public/powered-by-google.png`, unaltered) shows beside any
+results, each result links to Google, and a failed search says so and leaves manual entry
+working. The shelf rows (`components/book-row.tsx`) show the cover through a plain `<img>`;
+`next/image` would copy it into Vercel's optimizer. `/privacy` states what is stored and gives
+the takedown contact.
+
 ## Data
 
 One collection, `Book` (`server/models/book.js`): `userId`, `title`, `author`, `coverUrl`,

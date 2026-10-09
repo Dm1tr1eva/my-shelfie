@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function SiteFooter() {
   return (
     <footer className="border-t">
@@ -5,7 +7,11 @@ export function SiteFooter() {
         my-shelfie — a reading tracker pet project ·{" "}
         <a href="https://github.com/Dm1tr1eva/my-shelfie" className="underline">
           Source on GitHub
-        </a>
+        </a>{" "}
+        ·{" "}
+        <Link href="/privacy" className="underline">
+          Privacy
+        </Link>
       </div>
     </footer>
   );

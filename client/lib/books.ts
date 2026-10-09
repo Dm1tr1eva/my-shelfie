@@ -25,6 +25,7 @@ export type Book = {
   createdAt: string;
   updatedAt: string;
   coverUrl?: string;
+  googleVolumeId?: string;
   description?: string;
   rating?: number;
   review?: string;
@@ -32,7 +33,8 @@ export type Book = {
   finishedAt?: string;
 };
 
-export type NewBook = Pick<Book, "title" | "author" | "status">;
+export type NewBook = Pick<Book, "title" | "author" | "status"> &
+  Partial<Pick<Book, "coverUrl" | "googleVolumeId">>;
 
 export type BookChanges = Partial<{
   title: string;

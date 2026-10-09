@@ -64,6 +64,6 @@ dependencies. Roughly 400 lines.
 
 ## Open questions
 
-- The official "powered by Google" asset must be downloaded from Google's branding guidelines by
-  the author; it cannot be reproduced from memory.
-- Which takedown contact goes on the privacy page: an email, or the GitHub issues page?
+- Settled 2026-10-09: the official "powered by Google" asset came from the author, a 62×30 PNG
+  like the file the guidelines link, and the takedown contact is the public GitHub issues page.
+- Does the deployed backend's region get the same results from the API as a local run?
