@@ -89,10 +89,14 @@ the terms it honours: [google-books-search.md](../designs/google-books-search.md
 current `SWRConfig` cache. After a delete only list keys are revalidated — refetching the
 deleted book's own key would answer `404` and put an error in the browser console.
 
-The dashboard lists books (`?limit=100` explicitly — no pagination UI yet, so a list past that
-size would be silently truncated) and has an inline add form; `/dashboard/books/[id]` edits
-title, author, status, rating and review, and deletes after `window.confirm`. Designs:
-[book-list.md](../designs/book-list.md), [book-forms.md](../designs/book-forms.md).
+The dashboard loads the whole list once (`?limit=100` explicitly — no pagination UI yet, so a
+list past that size would be silently truncated, and the stats under-count with it) and
+derives everything else on the client: stat cards from `lib/book-stats.ts`, a "Currently
+reading" strip, and the status filter, which no longer asks the API again. The library shows as
+a list or a cover grid, the choice kept in `localStorage` (`lib/use-view-mode.ts`).
+`/dashboard/books/[id]` edits title, author, status, rating and review, and deletes after
+`window.confirm`. Designs: [book-list.md](../designs/book-list.md),
+[book-forms.md](../designs/book-forms.md), [visual-refresh.md](../designs/visual-refresh.md).
 
 **Search in the add form.** `components/book-search.tsx` sits above the form's fields (outside
 the `<form>`, so Enter in the search box cannot submit it) and `lib/book-search.ts`

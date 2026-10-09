@@ -29,11 +29,11 @@ export function BookSearch({ onPick }: { onPick: (result: BookSearchResult) => v
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Title and author"
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      <p role="status" className="text-sm text-neutral-500">
+      <p role="status" className="text-sm text-muted">
         {messageFor(status, results.length)}
       </p>
 
@@ -44,13 +44,13 @@ export function BookSearch({ onPick }: { onPick: (result: BookSearchResult) => v
               <BookCover url={result.coverUrl} />
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="font-medium">{result.title}</span>
-                <span className="text-sm text-neutral-500">{describe(result)}</span>
+                <span className="text-sm text-muted">{describe(result)}</span>
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                   <button
                     type="button"
                     aria-label={`Use ${result.title}`}
                     onClick={() => onPick(result)}
-                    className="underline"
+                    className="link"
                   >
                     Use this book
                   </button>
@@ -59,7 +59,7 @@ export function BookSearch({ onPick }: { onPick: (result: BookSearchResult) => v
                       href={result.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline"
+                      className="link"
                     >
                       View on Google Books
                     </a>
@@ -72,8 +72,10 @@ export function BookSearch({ onPick }: { onPick: (result: BookSearchResult) => v
       )}
 
       {status !== "idle" && (
-        // eslint-disable-next-line @next/next/no-img-element -- Google's attribution asset must be shown unaltered, so it is not optimised
-        <img src="/powered-by-google.png" alt="Powered by Google" width={62} height={30} />
+        <div className="w-fit rounded-md bg-paper px-2 py-1">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Google's attribution asset must be shown unaltered, so it is not optimised */}
+          <img src="/powered-by-google.png" alt="Powered by Google" width={62} height={30} />
+        </div>
       )}
     </div>
   );

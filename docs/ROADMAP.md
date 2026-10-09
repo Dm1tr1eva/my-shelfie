@@ -242,6 +242,9 @@ Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must 
 
 ## Stage 9 — Polish
 
+- ✅ Visual refresh, 2026-10-09 — [designs/visual-refresh.md](designs/visual-refresh.md): a palette
+  from the author's colour card in a light and a dark theme, Playfair Display and Inter with
+  Cyrillic, stat cards, a "Currently reading" strip and a list/grid view on the dashboard
 - Search/sort/filter in the personal list
 - Error handling, loaders, empty states
 - Responsive layout

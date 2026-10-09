@@ -45,7 +45,7 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded border p-4 sm:max-w-md">
+    <div className="card flex flex-col gap-4 p-4 sm:max-w-md">
       <BookSearch onPick={handlePick} />
 
       <form onSubmit={handleSubmit} aria-label="Add a book" className="flex flex-col gap-3">
@@ -55,7 +55,7 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="field"
           />
         </label>
 
@@ -65,12 +65,12 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
             required
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="field"
           />
         </label>
 
         {picked && (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted">
             Filled in from Google Books. You can edit the title and author.
           </p>
         )}
@@ -80,7 +80,7 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as BookStatus)}
-            className="rounded border px-3 py-2"
+            className="field"
           >
             {STATUSES.map((value) => (
               <option key={value} value={value}>
@@ -90,17 +90,13 @@ export function AddBookForm({ onDone }: { onDone: () => void }) {
           </select>
         </label>
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-danger">{error}</p>}
 
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={pending}
-            className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
-          >
+          <button type="submit" disabled={pending} className="btn-primary">
             {pending ? "Adding..." : "Add book"}
           </button>
-          <button type="button" onClick={onDone} className="rounded border px-4 py-2">
+          <button type="button" onClick={onDone} className="btn-outline">
             Cancel
           </button>
         </div>

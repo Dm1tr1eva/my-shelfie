@@ -16,7 +16,9 @@ request after a pause can take up to a minute.
   filled in. Typing a book in by hand still works.
 - A status for each book — want to read, reading, read or dropped — and a filter by status.
 - A rating from 1 to 5 and a text review.
-- A public home page, a header with navigation, and a mobile-first layout.
+- A dashboard with stat cards, a "Currently reading" strip and a list or cover-grid view.
+- A public home page, a header with navigation, a mobile-first layout, and a light and a dark
+  theme that follows the system.
 
 ## Stack
 

@@ -30,8 +30,8 @@ export function LoginForm() {
 
   return (
     <main className="flex flex-1 items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
-        <h1 className="text-xl font-semibold">Log in</h1>
+      <form onSubmit={handleSubmit} className="card flex w-full max-w-sm flex-col gap-4 p-6">
+        <h1 className="text-3xl">Log in</h1>
 
         <label className="flex flex-col gap-1">
           <span>Email</span>
@@ -40,7 +40,7 @@ export function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="field"
           />
         </label>
 
@@ -51,23 +51,19 @@ export function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="field"
           />
         </label>
 
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-danger">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending} className="btn-primary">
           {pending ? "Logging in..." : "Log in"}
         </button>
 
         <p>
           No account?{" "}
-          <Link href="/register" className="underline">
+          <Link href="/register" className="link">
             Register
           </Link>
         </p>

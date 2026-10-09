@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
-import { STATUS_LABELS, type Book } from "@/lib/books";
+import { Rating } from "@/components/rating";
+import { StatusChip } from "@/components/status-chip";
+import type { Book } from "@/lib/books";
 
 export function BookRow({ book }: { book: Book }) {
   return (
@@ -14,14 +16,12 @@ export function BookRow({ book }: { book: Book }) {
           >
             {book.title}
           </Link>
-          <p className="text-sm text-neutral-500">{book.author}</p>
+          <p className="text-sm text-muted">{book.author}</p>
         </div>
       </div>
       <div className="flex items-center gap-3 text-sm">
-        {book.rating && (
-          <span aria-label={`Rated ${book.rating} out of 5`}>{"★".repeat(book.rating)}</span>
-        )}
-        <span className="rounded-full border px-2 py-0.5">{STATUS_LABELS[book.status]}</span>
+        <Rating value={book.rating} />
+        <StatusChip status={book.status} />
       </div>
     </li>
   );

@@ -7,24 +7,24 @@ export function SiteHeader() {
   const { user, status, logout } = useAuth();
 
   return (
-    <header className="border-b">
+    <header className="border-b bg-surface">
       <nav
         aria-label="Main"
         className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 p-4"
       >
-        <Link href="/" className="text-lg font-semibold">
+        <Link href="/" className="font-display text-2xl font-semibold text-accent">
           my-shelfie
         </Link>
 
         {status === "anonymous" && (
           <ul className="flex items-center gap-2">
             <li>
-              <Link href="/login" className="rounded px-3 py-2 hover:underline">
+              <Link href="/login" className="btn-outline">
                 Log in
               </Link>
             </li>
             <li>
-              <Link href="/register" className="rounded bg-foreground px-3 py-2 text-background">
+              <Link href="/register" className="btn-primary">
                 Register
               </Link>
             </li>
@@ -38,9 +38,9 @@ export function SiteHeader() {
                 My shelf
               </Link>
             </li>
-            <li className="text-sm opacity-70">{user.name}</li>
+            <li className="text-sm text-muted">{user.name}</li>
             <li>
-              <button onClick={() => logout()} className="rounded border px-3 py-1.5">
+              <button onClick={() => logout()} className="btn-outline px-3 py-1.5">
                 Log out
               </button>
             </li>

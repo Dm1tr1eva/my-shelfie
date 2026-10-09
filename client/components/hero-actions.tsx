@@ -9,7 +9,7 @@ export function HeroActions() {
   if (status === "authenticated") {
     return (
       <div className="flex flex-wrap gap-3">
-        <Link href="/dashboard" className="rounded bg-foreground px-5 py-3 text-background">
+        <Link href="/dashboard" className="btn-primary px-5 py-3">
           Go to my shelf
         </Link>
       </div>
@@ -18,10 +18,10 @@ export function HeroActions() {
 
   return (
     <div className="flex flex-wrap gap-3">
-      <Link href="/register" className="rounded bg-foreground px-5 py-3 text-background">
+      <Link href="/register" className="btn-primary px-5 py-3">
         Get started
       </Link>
-      <Link href="/login" className="rounded border px-5 py-3">
+      <Link href="/login" className="btn-outline px-5 py-3">
         Log in
       </Link>
     </div>

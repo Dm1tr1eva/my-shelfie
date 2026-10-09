@@ -60,7 +60,7 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
@@ -70,7 +70,7 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
           required
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
@@ -79,7 +79,7 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as BookStatus)}
-          className="rounded border px-3 py-2"
+          className="field"
         >
           {STATUSES.map((value) => (
             <option key={value} value={value}>
@@ -91,11 +91,7 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
 
       <label className="flex flex-col gap-1">
         <span>Rating</span>
-        <select
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-          className="rounded border px-3 py-2"
-        >
+        <select value={rating} onChange={(e) => setRating(e.target.value)} className="field">
           <option value="">No rating</option>
           {[1, 2, 3, 4, 5].map((value) => (
             <option key={value} value={value}>
@@ -111,26 +107,22 @@ export function EditBookForm({ book, onDeleted }: { book: Book; onDeleted: () =>
           value={review}
           onChange={(e) => setReview(e.target.value)}
           rows={5}
-          className="rounded border px-3 py-2"
+          className="field"
         />
       </label>
 
-      {error && <p className="text-red-600">{error}</p>}
-      {message && <p className="text-green-700">{message}</p>}
+      {error && <p className="text-danger">{error}</p>}
+      {message && <p className="text-success">{message}</p>}
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
-        >
+        <button type="submit" disabled={pending} className="btn-primary">
           {pending ? "Saving..." : "Save"}
         </button>
         <button
           type="button"
           onClick={handleDelete}
           disabled={pending}
-          className="rounded border border-red-600 px-4 py-2 text-red-600 disabled:opacity-50"
+          className="btn-outline border-danger text-danger"
         >
           Delete
         </button>

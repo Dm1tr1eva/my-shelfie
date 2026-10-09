@@ -1,3 +1,4 @@
+import { BookSpines } from "@/components/book-spines";
 import { HeroActions } from "@/components/hero-actions";
 
 const FEATURES = [
@@ -19,14 +20,15 @@ export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-4 py-12 sm:px-8 sm:py-20">
       <section className="flex flex-col gap-6">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
           Your reading, on one shelf.
         </h1>
-        <p className="max-w-2xl text-lg opacity-80">
+        <p className="max-w-2xl text-lg text-muted">
           my-shelfie is a personal tracker for the books you want to read, are reading and have
           finished — with ratings and reviews of your own.
         </p>
         <HeroActions />
+        <BookSpines />
       </section>
 
       <section aria-labelledby="features-heading">
@@ -35,9 +37,9 @@ export default function Home() {
         </h2>
         <ul className="grid gap-4 sm:grid-cols-3">
           {FEATURES.map((feature) => (
-            <li key={feature.title} className="rounded border p-5">
-              <h3 className="font-semibold">{feature.title}</h3>
-              <p className="mt-2 opacity-80">{feature.text}</p>
+            <li key={feature.title} className="card p-5">
+              <h3 className="font-display text-lg font-semibold">{feature.title}</h3>
+              <p className="mt-2 text-muted">{feature.text}</p>
             </li>
           ))}
         </ul>

@@ -20,17 +20,17 @@ export function BookEditor({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 sm:p-8">
-      <Link href="/dashboard" className="w-fit underline-offset-2 hover:underline">
+      <Link href="/dashboard" className="link w-fit">
         ← Back to my shelf
       </Link>
 
       {isLoading && <p>Loading...</p>}
       {notFound && <p>Book not found.</p>}
-      {error && !notFound && <p className="text-red-600">Could not load this book.</p>}
+      {error && !notFound && <p className="text-danger">Could not load this book.</p>}
 
       {book && (
         <>
-          <h1 className="text-xl font-semibold">{book.title}</h1>
+          <h1 className="text-3xl">{book.title}</h1>
           <EditBookForm key={book.id} book={book} onDeleted={() => router.push("/dashboard")} />
         </>
       )}
