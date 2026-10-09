@@ -18,7 +18,7 @@ request after a pause can take up to a minute.
 - A rating from 1 to 5 and a text review.
 - A dashboard with stat cards, a "Currently reading" strip and a list or cover-grid view.
 - A public home page, a header with navigation, a mobile-first layout, and a light and a dark
-  theme that follows the system.
+  theme: it starts from the system setting, and a button in the header switches it.
 
 ## Stack
 

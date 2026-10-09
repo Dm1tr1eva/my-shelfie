@@ -244,7 +244,8 @@ Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must 
 
 - ✅ Visual refresh, 2026-10-09 — [designs/visual-refresh.md](designs/visual-refresh.md): a palette
   from the author's colour card in a light and a dark theme, Playfair Display and Inter with
-  Cyrillic, stat cards, a "Currently reading" strip and a list/grid view on the dashboard
+  Cyrillic, stat cards, a "Currently reading" strip and a list/grid view on the dashboard, and
+  a light/dark switch in the header (it starts from the system theme and remembers the choice)
 - Search/sort/filter in the personal list
 - Error handling, loaders, empty states
 - Responsive layout

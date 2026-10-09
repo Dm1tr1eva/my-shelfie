@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/lib/auth-context";
 
 export function SiteHeader() {
@@ -16,36 +17,40 @@ export function SiteHeader() {
           my-shelfie
         </Link>
 
-        {status === "anonymous" && (
-          <ul className="flex items-center gap-2">
-            <li>
-              <Link href="/login" className="btn-outline">
-                Log in
-              </Link>
-            </li>
-            <li>
-              <Link href="/register" className="btn-primary">
-                Register
-              </Link>
-            </li>
-          </ul>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <ThemeToggle />
 
-        {status === "authenticated" && user && (
-          <ul className="flex flex-wrap items-center gap-3">
-            <li>
-              <Link href="/dashboard" className="hover:underline">
-                My shelf
-              </Link>
-            </li>
-            <li className="text-sm text-muted">{user.name}</li>
-            <li>
-              <button onClick={() => logout()} className="btn-outline px-3 py-1.5">
-                Log out
-              </button>
-            </li>
-          </ul>
-        )}
+          {status === "anonymous" && (
+            <ul className="flex items-center gap-2">
+              <li>
+                <Link href="/login" className="btn-outline">
+                  Log in
+                </Link>
+              </li>
+              <li>
+                <Link href="/register" className="btn-primary">
+                  Register
+                </Link>
+              </li>
+            </ul>
+          )}
+
+          {status === "authenticated" && user && (
+            <ul className="flex flex-wrap items-center gap-3">
+              <li>
+                <Link href="/dashboard" className="hover:underline">
+                  My shelf
+                </Link>
+              </li>
+              <li className="text-sm text-muted">{user.name}</li>
+              <li>
+                <button onClick={() => logout()} className="btn-outline px-3 py-1.5">
+                  Log out
+                </button>
+              </li>
+            </ul>
+          )}
+        </div>
       </nav>
     </header>
   );

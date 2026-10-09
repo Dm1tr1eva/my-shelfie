@@ -11,8 +11,8 @@ mock-ups as inspiration, not as templates.
 ## Out of scope
 
 A yearly reading goal and progress ring (needs a backend field), quotes, a calendar log,
-per-book reading progress, illustrations beyond one decorative shelf, new pages, a theme switch
-(the theme follows the system).
+per-book reading progress, illustrations beyond one decorative shelf, new pages, a third
+"system" choice in the theme switch.
 
 ## Scale assumptions
 
@@ -26,6 +26,11 @@ One list within the existing 100-book cap. Nothing here adds a request.
 "Reading", `#C6D0DD` for "Want to read", beige `#E0D1CA` for "Dropped". Dark: brown `#2E1819`
 page, beige buttons, the same hues for status. Each text and border pair passed WCAG AA (4.5:1
 text, 3:1 input borders), checked with a script; one dark chip failed and was recoloured.
+
+**Theme switch.** Each token is a `light-dark()` pair, so `color-scheme` picks the theme: both
+values follow the system, and a `data-theme` attribute on `<html>` forces one. A button in the
+header flips it and keeps the choice in `localStorage`; a small inline script in `<head>` applies
+the stored choice before first paint, so a dark-mode visitor never sees a light flash.
 
 **Type.** Playfair Display for headings and Inter for body, both with the Cyrillic subset, so
 Ukrainian and Russian titles render in the same face as Latin ones. Geist goes.
@@ -42,8 +47,8 @@ same three feature cards.
 
 **Shared.** Buttons, chips, inputs, cards and focus rings use the tokens everywhere; no
 component keeps a literal colour. The one fixed colour is `paper`, the plate behind Google's
-attribution logo, which is dark text and would vanish on the dark theme. Covers are shown
-without the `edge=curl` page-corner Google adds to its image addresses.
+attribution logo, which is dark text and would vanish on the dark theme. Covers drop the
+`edge=curl` page corner Google adds.
 
 ## Trade-offs accepted
 
@@ -52,6 +57,8 @@ without the `edge=curl` page-corner Google adds to its image addresses.
 - **Counts and an average only.** "Read this year" is out: no form edits `finishedAt` yet.
 - **View mode in `localStorage`**, wrapped in `try`/`catch`. It is per browser by nature.
 - **Two typefaces add weight to every page.** Both load through `next/font` and are self-hosted.
+- **`light-dark()` needs a browser from 2024 or later.** Older ones drop the colours; that is
+  acceptable for a portfolio project and avoids keeping the dark values twice.
 
 ## Cost
 

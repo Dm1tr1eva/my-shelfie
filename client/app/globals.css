@@ -1,54 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: light;
-  --background: #ece4e5;
-  --surface: #f6f1f1;
-  --surface-alt: #e0d1ca;
-  --foreground: #2e1819;
-  --muted: #6b5557;
-  --border: #c6d0dd;
-  --border-strong: #6f7c93;
-  --accent: #72251f;
-  --accent-foreground: #f6f1f1;
-  --link: #192b51;
-  --danger: #72251f;
-  --success: #1f4d3a;
+  color-scheme: light dark;
+  --background: light-dark(#ece4e5, #2e1819);
+  --surface: light-dark(#f6f1f1, #3b2527);
+  --surface-alt: light-dark(#e0d1ca, #4a3032);
+  --foreground: light-dark(#2e1819, #ece4e5);
+  --muted: light-dark(#6b5557, #c2b3b4);
+  --border: light-dark(#c6d0dd, #5a4042);
+  --border-strong: light-dark(#6f7c93, #8090a8);
+  --accent: light-dark(#72251f, #e0d1ca);
+  --accent-foreground: light-dark(#f6f1f1, #2e1819);
+  --link: light-dark(#192b51, #c6d0dd);
+  --danger: light-dark(#72251f, #e9b0a8);
+  --success: light-dark(#1f4d3a, #a8d5be);
+  --want: light-dark(#c6d0dd, #2a3a5a);
+  --want-fg: light-dark(#192b51, #c6d0dd);
+  --reading: light-dark(#192b51, #c6d0dd);
+  --reading-fg: light-dark(#ece4e5, #192b51);
+  --read: light-dark(#72251f, #e0d1ca);
+  --read-fg: light-dark(#ece4e5, #2e1819);
+  --dropped: light-dark(#e0d1ca, #4a3032);
+  --dropped-fg: light-dark(#5a4546, #c2b3b4);
   --paper: #f6f1f1;
-  --want: #c6d0dd;
-  --want-fg: #192b51;
-  --reading: #192b51;
-  --reading-fg: #ece4e5;
-  --read: #72251f;
-  --read-fg: #ece4e5;
-  --dropped: #e0d1ca;
-  --dropped-fg: #5a4546;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: #2e1819;
-    --surface: #3b2527;
-    --surface-alt: #4a3032;
-    --foreground: #ece4e5;
-    --muted: #c2b3b4;
-    --border: #5a4042;
-    --border-strong: #8090a8;
-    --accent: #e0d1ca;
-    --accent-foreground: #2e1819;
-    --link: #c6d0dd;
-    --danger: #e9b0a8;
-    --success: #a8d5be;
-    --want: #2a3a5a;
-    --want-fg: #c6d0dd;
-    --reading: #c6d0dd;
-    --reading-fg: #192b51;
-    --read: #e0d1ca;
-    --read-fg: #2e1819;
-    --dropped: #4a3032;
-    --dropped-fg: #c2b3b4;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
