@@ -1,4 +1,13 @@
 const mongoose = require("mongoose");
+const { OWNERSHIP, LINK_LANGUAGES, GENRES } = require("../constants/library");
+
+const linkSchema = new mongoose.Schema(
+  {
+    language: { type: String, enum: LINK_LANGUAGES, required: true },
+    url: { type: String, required: true },
+  },
+  { _id: false },
+);
 
 const bookSchema = new mongoose.Schema(
   {
@@ -12,6 +21,15 @@ const bookSchema = new mongoose.Schema(
     coverUrl: String,
     googleVolumeId: String,
     description: String,
+    ownership: { type: String, enum: OWNERSHIP, default: "owned" },
+    seriesId: { type: mongoose.Schema.Types.ObjectId, ref: "Series" },
+    seriesNumber: { type: Number, min: 0 },
+    genres: [{ type: String, enum: GENRES }],
+    tropes: [String],
+    links: [linkSchema],
+    notes: String,
+    annotation: String,
+    priority: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["want", "reading", "dropped", "read"],
@@ -30,5 +48,6 @@ const bookSchema = new mongoose.Schema(
 );
 
 bookSchema.index({ userId: 1, createdAt: -1 });
+bookSchema.index({ userId: 1, seriesId: 1, seriesNumber: 1 });
 
 module.exports = mongoose.model("Book", bookSchema);

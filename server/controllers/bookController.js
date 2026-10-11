@@ -1,9 +1,11 @@
 const bookService = require("../services/bookService");
 const googleBooksService = require("../services/googleBooksService");
+const { SeriesNotFoundError } = require("../services/seriesService");
 const {
   createBookSchema,
   updateBookSchema,
   searchBooksQuerySchema,
+  listBooksFiltersSchema,
 } = require("../validation/bookSchemas");
 const { toBookDto } = require("../dto/bookDto");
 
@@ -23,17 +25,30 @@ async function createBook(req, res) {
     const book = await bookService.createBook(req.userId, parsed.data);
     res.status(201).json(toBookDto(book));
   } catch (err) {
+    if (err instanceof SeriesNotFoundError) {
+      return res.status(400).json({ error: "seriesId: unknown series" });
+    }
     res.status(500).json({ error: "Failed to create book" });
   }
 }
 
 async function getBooks(req, res) {
+  const filters = listBooksFiltersSchema.safeParse(req.query);
+  if (!filters.success) {
+    return res.status(400).json({ error: formatZodError(filters.error) });
+  }
+
   try {
     const { status } = req.query;
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
 
-    const { books, total } = await bookService.listBooks(req.userId, { status, page, limit });
+    const { books, total } = await bookService.listBooks(req.userId, {
+      ...filters.data,
+      status,
+      page,
+      limit,
+    });
 
     res.json({ books: books.map(toBookDto), total, page, limit });
   } catch (err) {
@@ -87,6 +102,9 @@ async function updateBook(req, res) {
 
     res.json(toBookDto(book));
   } catch (err) {
+    if (err instanceof SeriesNotFoundError) {
+      return res.status(400).json({ error: "seriesId: unknown series" });
+    }
     res.status(500).json({ error: "Failed to update book" });
   }
 }

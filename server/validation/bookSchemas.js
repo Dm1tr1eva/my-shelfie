@@ -1,12 +1,35 @@
 const { z } = require("zod");
+const { OWNERSHIP, LINK_LANGUAGES, GENRES } = require("../constants/library");
 
-const createBookSchema = z
+const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
+
+const linkSchema = z
+  .object({
+    language: z.enum(LINK_LANGUAGES),
+    url: z.httpUrl(),
+  })
+  .strict();
+
+const baseBookSchema = z
   .object({
     title: z.string().min(1),
     author: z.string().min(1),
     coverUrl: z.string().optional(),
     googleVolumeId: z.string().min(1).optional(),
     description: z.string().optional(),
+    ownership: z.enum(OWNERSHIP).optional(),
+    seriesId: objectId.optional(),
+    seriesNumber: z.number().positive().optional(),
+    genres: z
+      .array(z.enum(GENRES))
+      .max(GENRES.length)
+      .refine((genres) => new Set(genres).size === genres.length, "Genres must be unique")
+      .optional(),
+    tropes: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
+    links: z.array(linkSchema).max(10).optional(),
+    notes: z.string().max(5000).optional(),
+    annotation: z.string().max(5000).optional(),
+    priority: z.boolean().optional(),
     status: z.enum(["want", "reading", "dropped", "read"]).optional(),
     rating: z.number().min(1).max(5).optional(),
     review: z.string().optional(),
@@ -15,13 +38,29 @@ const createBookSchema = z
   })
   .strict();
 
-const CLEARABLE_FIELDS = ["coverUrl", "description", "rating", "review", "startedAt", "finishedAt"];
-
-const clearableFields = Object.fromEntries(
-  CLEARABLE_FIELDS.map((field) => [field, createBookSchema.shape[field].nullable()]),
+const createBookSchema = baseBookSchema.refine(
+  (data) => data.seriesNumber === undefined || data.seriesId !== undefined,
+  { message: "seriesNumber needs a seriesId", path: ["seriesNumber"] },
 );
 
-const updateBookSchema = createBookSchema
+const CLEARABLE_FIELDS = [
+  "coverUrl",
+  "description",
+  "seriesId",
+  "seriesNumber",
+  "notes",
+  "annotation",
+  "rating",
+  "review",
+  "startedAt",
+  "finishedAt",
+];
+
+const clearableFields = Object.fromEntries(
+  CLEARABLE_FIELDS.map((field) => [field, baseBookSchema.shape[field].nullable()]),
+);
+
+const updateBookSchema = baseBookSchema
   .partial()
   .extend(clearableFields)
   .strict()
@@ -35,4 +74,17 @@ const searchBooksQuerySchema = z
   })
   .strict();
 
-module.exports = { createBookSchema, updateBookSchema, searchBooksQuerySchema };
+const listBooksFiltersSchema = z.object({
+  ownership: z.enum(OWNERSHIP).optional(),
+  seriesId: objectId.optional(),
+  genre: z.enum(GENRES).optional(),
+  trope: z.string().trim().min(1).max(60).optional(),
+  q: z.string().trim().min(1).max(100).optional(),
+});
+
+module.exports = {
+  createBookSchema,
+  updateBookSchema,
+  searchBooksQuerySchema,
+  listBooksFiltersSchema,
+};

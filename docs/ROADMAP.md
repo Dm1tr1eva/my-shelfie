@@ -18,7 +18,47 @@ work proceeds.
 - **AI:** Gemini API (requests proxied through the backend, the key never reaches the
   frontend)
 
-## Current focus — course submission MVP
+## Current focus — library, wishlist and series (submission by 2026-10-17)
+
+Decided 2026-10-11. The app's main job changes from tracking reading to being the author's
+catalogue: the paper books she owns plus a wishlist organised by series, replacing a Notion
+table. Reading progress and stats stay, as secondary. Design:
+[designs/library-and-wishlist.md](designs/library-and-wishlist.md). The course deadline is
+2026-10-21; the submission goes in by 2026-10-17 to leave room for the mentor's corrections.
+
+Decisions:
+
+- **Thinking in series.** A book belongs to a series with a number, or is a standalone book.
+  A series is `ongoing`, `complete` or `unknown`, with a free note ("book 7 delayed").
+- **Ownership is separate from reading status:** "My library" (owned) and "Wishlist" (wanted).
+- **Genres from a fixed list, tropes as free text** with suggestions from the user's own.
+  Proposed genres, to confirm: Fantasy, Romantasy, Romance, Science fiction, Mystery &
+  thriller, Horror, Historical fiction, Contemporary fiction, Classics, Young adult,
+  Non-fiction, Poetry.
+- **Shop links are added by hand**, marked RU, UK, EN or other. Nothing is read from shops'
+  sites: their terms generally forbid it, and it breaks whenever a site changes.
+- **The annotation is optional and the author's own text** — Google's description cannot be
+  stored.
+- **No Firebase** for the submission; revisit only after the mentor's review.
+- **"Next to buy"** — the next wanted book of every series plus wanted standalone books, with
+  filters — is the feature the README presents as the algorithm.
+
+In order:
+
+1. ✅ Data model and API, 2026-10-11 — `Series`, and on `Book` ownership, series and number,
+   genres, tropes, links, notes, annotation, priority; `/api/series`, `/api/next-to-buy`,
+   `/api/tropes`; 81 server tests. Existing books read as owned with no migration.
+   [features/series.md](features/series.md)
+2. ⬜ Screens: library tabs grouped by series, series page, book page, add flow, "Next to buy"
+   (2026-10-15 to 10-17). The author designs them in parallel; without a design by
+   2026-10-14 they are built in the current visual style and polished later
+3. ⬜ Home page texts for the new purpose, README (what it does, the algorithm, screenshots)
+4. ⬜ Check the deployed site again, then submit; decide on a demo account at that point
+
+After the submission: the AI assistant (stage 8, repurposed to fill series order, status and
+tropes), importing the Notion table, live Google annotations.
+
+## Course submission MVP — done 2026-10-09
 
 The project is being submitted as a replacement pet project for a course homework. The
 course's general criteria: React/Next.js with TypeScript, a UI matching a design/spec that

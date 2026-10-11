@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-10-08
+**Last verified against code:** 2026-10-11
 
 ## What it does
 
@@ -39,7 +39,7 @@ it does not get silently dropped.
 | Method and path | Answers |
 |---|---|
 | `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field). |
-| `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). |
+| `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). Also `?ownership=`, `?seriesId=`, `?genre=`, `?trope=`, `?q=` — see [series.md](series.md). |
 | `GET /search?q=` | `200` with `{ results }`, up to ten Google Books matches for the text. `400` unless `q` is 3–200 characters and the only parameter. `502` when Google fails. See "Book search" below. Registered before `/:id`, or `search` would be read as an id. |
 | `GET /:id` | `200` with the book. `404` if it does not exist, belongs to another user, or `:id` is not a valid ObjectId. |
 | `PATCH /:id` | `200` with the updated book. `400` if the body carries no recognized field, or a value fails schema validation. `404` under the same three conditions as `GET /:id`. |

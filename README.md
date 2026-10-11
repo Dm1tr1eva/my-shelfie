@@ -50,6 +50,9 @@ belongs to someone else answers `404`.
 | `GET /api/auth/me` | The signed-in user, or `null` |
 | `POST /api/books`, `GET /api/books` | Create a book, list the user's books (status filter, pagination) |
 | `GET /api/books/search?q=` | Search the Google Books API (the key stays on the server) |
+| `/api/series` | Series: create, list with owned and wanted counts, read with its books, update, delete |
+| `GET /api/next-to-buy` | The next wanted book of every series plus wanted standalone books, with filters |
+| `GET /api/tropes` | The user's own tropes, for tag suggestions |
 | `GET`, `PATCH`, `DELETE /api/books/:id` | Read, update or delete one book |
 
 Details: [docs/features/auth.md](docs/features/auth.md) and
