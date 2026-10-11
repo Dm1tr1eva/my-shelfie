@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Components</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input,select{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.card{background:#F6F1F1;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:16px}
+.ct{margin:0;font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:600}
+.cap{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B5557}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.bt{color:#192B51;text-decoration:underline;text-underline-offset:3px;font-weight:500;padding:0 8px}
+.inp{height:44px;width:100%;padding:0 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819}
+.inp::placeholder{color:#6B5557;opacity:1}
+.lbl{font-size:14px;font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.own{background:#72251F;color:#F6F1F1}.want{background:#C6D0DD;color:#192B51}.ongo{background:#192B51;color:#ECE4E5}.done{background:#2E1819;color:#ECE4E5}.unk{background:#E0D1CA;color:#5A4546}
+.g{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 12px;border-radius:999px;background:#8090A8;color:#2E1819;font-size:13px;font-weight:600}
+.tr{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 12px;border-radius:999px;border:1px solid #8090A8;color:#2E1819;font-size:13px;background:#ECE4E5}
+.x{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:inherit;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.ru{background:#2E1819;color:#ECE4E5}.uk{background:#192B51;color:#ECE4E5}.en{background:#72251F;color:#F6F1F1}.ot{background:#E0D1CA;color:#5A4546}
+.pop{border-radius:10px;background:#F6F1F1;border:1px solid #C6D0DD;box-shadow:0 18px 32px -16px rgba(46,24,25,.45);overflow:hidden}
+.opt{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 14px;font-size:14px}
+.cb{width:20px;height:20px;border-radius:5px;border:1.5px solid #6F7C93;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.cb.on{background:#192B51;border-color:#192B51;color:#ECE4E5}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tabbar{height:78px;background:#192B51;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:start;padding:8px 4px 12px;border-radius:0 0 16px 16px}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:56px;color:#C6D0DD;text-decoration:none;font-size:11px;font-weight:500}
+.tb.on{color:#ECE4E5;font-weight:700}
+.tb.on .ico{background:rgba(198,208,221,.2);border-radius:999px;width:44px;height:26px;padding:3px 12px}
+.fab{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:#ECE4E5;font-size:11px;font-weight:600}
+.fab .c{width:56px;height:56px;border-radius:50%;background:#72251F;color:#F6F1F1;display:flex;align-items:center;justify-content:center;margin-top:-28px;box-shadow:0 0 0 5px #ECE4E5}
+</style>
+</head>
+<body>
+<div class="app" style="width: 1440px; min-height: 1700px; padding: 56px 0 80px">
+  <div style="width: 1024px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+    <h1 class="serif" style="margin: 0; font-size: 44px; font-weight: 600">Components</h1>
+
+    <section class="card" aria-label="Chips and badges">
+      <h2 class="ct">Chips &amp; badges</h2>
+      <div style="display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px 20px; align-items: center">
+        <span class="cap">Ownership</span><div style="display: flex; gap: 8px"><span class="chip own">In my library</span><span class="chip want">Wishlist</span><span class="chip want">Wishlist · gap</span></div>
+        <span class="cap">Series status</span><div style="display: flex; gap: 8px"><span class="chip ongo">Ongoing</span><span class="chip done">Complete</span><span class="chip unk">Unknown</span></div>
+        <span class="cap">Shop language</span><div style="display: flex; gap: 8px"><span class="lang ru">RU</span><span class="lang uk">UK</span><span class="lang en">EN</span><span class="lang ot">OTH</span></div>
+        <span class="cap">Genre / trope</span><div style="display: flex; gap: 8px"><span class="g" style="padding-right: 12px">Romantasy</span><span class="tr" style="padding-right: 12px">Enemies to lovers</span></div>
+      </div>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start">
+      <section class="card">
+        <h2 class="ct">Tag input · tropes</h2>
+        <span class="cap">Empty</span>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="t0" class="lbl">Tropes</label>
+          <input id="t0" class="inp" placeholder="Type a trope, e.g. Slow burn">
+        </div>
+        <span class="cap">Typing, suggestions open</span>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="t1" class="lbl">Tropes</label>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 48px; padding: 6px 8px; border: 2px solid #192B51; border-radius: 8px">
+            <span class="tr">Enemies to lovers<button type="button" class="x" aria-label="Remove Enemies to lovers"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span>
+            <span class="tr">Slow burn<button type="button" class="x" aria-label="Remove Slow burn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span>
+            <input id="t1" role="combobox" aria-expanded="true" aria-controls="t1l" value="fat" style="flex: 1; min-width: 80px; height: 32px; border: 0; background: transparent; color: #2E1819; outline: none">
+          </div>
+          <ul id="t1l" role="listbox" class="pop" style="margin: 0; padding: 4px 0; list-style: none">
+            <li role="option" aria-selected="true" class="opt" style="background: #ECE4E5"><b>Fat</b>ed mates<span class="muted" style="margin-left: auto; font-size: 12px">6 books</span></li>
+            <li role="option" class="opt" style="color: #192B51; font-weight: 600"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M12 5v14M5 12h14"></path></svg>Create “fat”</li>
+          </ul>
+          <span class="muted" style="font-size: 13px">Enter or comma adds the tag. Backspace in an empty field removes the last one.</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="ct">Genre multi-select</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span class="lbl" id="gl">Genres</span>
+          <button type="button" class="inp" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="gl" style="display: flex; align-items: center; gap: 6px; height: auto; min-height: 48px; padding: 6px 10px; border: 2px solid #192B51; text-align: left">
+            <span class="g" style="padding-right: 12px">Romantasy</span><span class="g" style="padding-right: 12px">Fantasy</span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto"><path d="M18 15l-6-6-6 6"></path></svg>
+          </button>
+          <ul role="listbox" aria-multiselectable="true" class="pop" style="margin: 0; padding: 4px 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr">
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Fantasy</li>
+            <li role="option" aria-selected="true" class="opt" style="font-weight: 600"><span class="cb on"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; stroke-width: 3"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Romantasy</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Romance</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Science fiction</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Mystery &amp; thriller</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Horror</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Historical fiction</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Contemporary fiction</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Classics</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Young adult</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Non-fiction</li>
+            <li role="option" aria-selected="false" class="opt"><span class="cb"></span>Poetry</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="ct">Shop-link editor</h2>
+        <div style="display: grid; grid-template-columns: 104px minmax(0, 1fr) 44px; gap: 8px; align-items: center">
+          <span class="lbl">Language</span><span class="lbl">URL</span><span></span>
+          <label for="s1" class="sr">Language, link 1</label><select id="s1" class="inp"><option>UK</option></select>
+          <label for="u1" class="sr">URL, link 1</label><input id="u1" class="inp" type="url" value="https://yakaboo.ua/…">
+          <button type="button" class="x" aria-label="Remove link 1" style="width: 44px; height: 44px; color: #6B5557"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button>
+          <label for="s2" class="sr">Language, link 2</label><select id="s2" class="inp"><option>Other</option></select>
+          <label for="u2" class="sr">URL, link 2</label><input id="u2" class="inp" type="url" value="amazon.de/dp/" aria-invalid="true" aria-describedby="u2e" style="border: 2px solid #72251F">
+          <button type="button" class="x" aria-label="Remove link 2" style="width: 44px; height: 44px; color: #6B5557"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button>
+          <span></span><span id="u2e" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #72251F; font-weight: 600"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5M12 16h.01"></path></svg>Start the link with https://</span><span></span>
+        </div>
+        <button type="button" class="btn bt" style="align-self: flex-start; height: 40px; font-size: 14px; padding-left: 0"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M12 5v14M5 12h14"></path></svg>Add another link</button>
+      </section>
+
+      <section class="card">
+        <h2 class="ct">Series picker</h2>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="sp" class="lbl">Series</label>
+          <input id="sp" class="inp" role="combobox" aria-expanded="true" aria-controls="spl" value="Ночн" lang="ru" style="border: 2px solid #192B51">
+          <div id="spl" role="listbox" class="pop">
+            <div role="option" aria-selected="false" class="opt" style="min-height: 52px"><div style="flex: 1; display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 600" lang="uk">Нічна варта Львова</span><span class="muted" style="font-size: 12px" lang="uk">Анна Кривенко · own 1 of 2</span></div><span class="chip unk">Unknown</span></div>
+            <div role="option" aria-selected="true" style="border-top: 1px solid #C6D0DD; background: #ECE4E5; padding: 14px; display: flex; flex-direction: column; gap: 10px">
+              <span style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #192B51; font-size: 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M12 5v14M5 12h14"></path></svg>New series</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <label for="ns1" class="sr">Series title</label><input id="ns1" class="inp" value="Ночные сады" lang="ru">
+                <label for="ns2" class="sr">Author</label><input id="ns2" class="inp" value="Елена Сорокина" lang="ru">
+                <label for="ns3" class="sr">Status</label><select id="ns3" class="inp"><option>Ongoing</option><option>Complete</option><option>Unknown</option></select>
+                <button type="button" class="btn bp" style="height: 44px">Create series</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="ct">Filter bar · desktop</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px 0 14px; font-weight: 500">Genre<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+          <button type="button" class="btn bo" aria-expanded="true" style="height: 40px; padding: 0 12px 0 14px; font-weight: 600; border: 2px solid #192B51">Shop language<span class="chip" style="background: #192B51; color: #ECE4E5; height: 20px; padding: 0 7px">2</span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M18 15l-6-6-6 6"></path></svg></button>
+        </div>
+        <div role="group" aria-label="Shop language" class="pop" style="width: 260px; margin-left: 100px; margin-top: -8px; padding: 6px 0">
+          <label class="opt"><span class="cb on"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; stroke-width: 3"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="lang uk">UK</span>Ukrainian<span class="muted" style="margin-left: auto; font-size: 12px">14</span></label>
+          <label class="opt"><span class="cb on"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; stroke-width: 3"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span class="lang ru">RU</span>Russian<span class="muted" style="margin-left: auto; font-size: 12px">6</span></label>
+          <label class="opt"><span class="cb"></span><span class="lang en">EN</span>English<span class="muted" style="margin-left: auto; font-size: 12px">9</span></label>
+          <label class="opt"><span class="cb"></span><span class="lang ot">OTH</span>Other<span class="muted" style="margin-left: auto; font-size: 12px">3</span></label>
+          <div style="display: flex; justify-content: space-between; padding: 8px 8px 2px; border-top: 1px solid #C6D0DD; margin-top: 4px"><button type="button" class="btn bt" style="height: 40px; font-size: 14px">Clear</button><button type="button" class="btn bp" style="height: 40px; font-size: 14px">Apply</button></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="ct">Mobile navigation</h2>
+        <p class="muted" style="margin: 0; font-size: 14px">Fixed to the bottom on screens under 768px. Add sits in the centre.</p>
+        <div style="width: 375px; align-self: center; padding-top: 40px; background: #ECE4E5; border-radius: 16px 16px 16px 16px; overflow: hidden">
+          <nav class="tabbar" aria-label="Main (specimen)">
+            <a href="#" class="tb on"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h3v16H5zM10 4h3v16h-3zM15.5 5l3 .8-3.6 14-3-.8z"></path></svg>Library</a>
+            <a href="#" class="tb"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg>Wishlist</a>
+            <a href="#" class="fab"><span class="c"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 26px; height: 26px"><path d="M12 5v14M5 12h14"></path></svg></span>Add</a>
+            <a href="#" class="tb"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 13H7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg>Next to buy</a>
+            <a href="#" class="tb"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>Account</a>
+          </nav>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

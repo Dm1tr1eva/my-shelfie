@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search unavailable, 375</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 18px;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:16px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 375px; min-height: 1000px">
+  <header style="background: #192B51; height: 56px; padding: 0 4px 0 16px; display: flex; align-items: center; justify-content: space-between">
+    <span style="color: #ECE4E5; font-weight: 600">Add a book</span>
+    <a href="#" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #ECE4E5"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+  </header>
+  <main style="padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 14px">
+    <p class="muted" style="margin: 0; font-size: 13px; font-weight: 600">Step 1 of 2 · Find it</p>
+    <form role="search" style="position: relative">
+      <label for="gb" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search Google Books</label>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 14px; top: 15px; color: #6B5557"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input id="gb" type="search" value="Кам'яні леви" lang="uk" aria-describedby="err" style="width: 100%; height: 52px; padding: 0 14px 0 44px; border: 1px solid #6F7C93; border-radius: 12px; background: #F6F1F1; color: #2E1819; font-size: 17px">
+    </form>
+    <section id="err" role="alert" style="margin-top: 8px; padding: 24px 20px; border-radius: 12px; background: #F6F1F1; border: 2px solid #72251F; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px">
+      <div aria-hidden="true" style="width: 64px; height: 64px; border-radius: 50%; background: #72251F; color: #F6F1F1; display: flex; align-items: center; justify-content: center"><svg class="ico" viewBox="0 0 24 24" style="width: 30px; height: 30px"><path d="M3 3l18 18M8.5 16.5a5 5 0 0 1 7 0M5 12.5a10 10 0 0 1 4-2.3M19 12.5a10 10 0 0 0-3.6-2.2M12 20h.01"></path></svg></div>
+      <h2 class="serif" style="margin: 6px 0 0; font-size: 22px; font-weight: 600">Google Books isn’t answering</h2>
+      <p class="muted" style="margin: 0; font-size: 15px">Search is unavailable right now. Your library is fine. Try again in a minute, or add the book by hand.</p>
+      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px">
+        <button type="button" class="btn bp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"></path></svg>Try again</button>
+        <a href="#" class="btn bo">Add it without search</a>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

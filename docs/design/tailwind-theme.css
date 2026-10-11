@@ -1,0 +1,35 @@
+/* Tailwind v4: put this in app/globals.css after `@import "tailwindcss";` */
+
+@theme {
+  --color-page: #ECE4E5;
+  --color-card: #F6F1F1;
+  --color-ink: #2E1819;
+  --color-ink-soft: #5A4546;
+  --color-muted: #6B5557;
+  --color-navy: #192B51;
+  --color-burgundy: #72251F;
+  --color-beige: #E0D1CA;
+  --color-mist: #C6D0DD;
+  --color-slate: #8090A8;
+  --color-field: #6F7C93;
+
+  /* Set by next/font in app/layout.tsx */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-cover: 3px 6px 6px 3px;
+
+  --shadow-cover: 0 1px 2px rgb(46 24 25 / .20), 0 12px 18px -12px rgb(46 24 25 / .55), inset 5px 0 0 rgb(236 228 229 / .14);
+  --shadow-shelf: 0 10px 14px -10px rgb(46 24 25 / .5);
+  --shadow-pop: 0 18px 32px -16px rgb(46 24 25 / .45);
+}
+
+/* Breakpoints are Tailwind defaults: md = 768px, lg = 1024px. Content column: max-w-5xl. */
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}

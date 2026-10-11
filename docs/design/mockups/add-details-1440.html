@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a book, details, 1440</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input,select{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:1024px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:24px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bb{background:#E0D1CA;color:#2E1819}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.bt{color:#192B51;text-decoration:underline;text-underline-offset:3px;font-weight:500;padding:0 8px}
+.card{background:#F6F1F1;border-radius:12px}
+.lbl{font-size:14px;font-weight:600}
+.hint{font-size:13px;color:#6B5557}
+.inp{height:44px;width:100%;padding:0 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819}
+.inp::placeholder{color:#6B5557;opacity:1}
+.g{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 12px;border-radius:999px;background:#8090A8;color:#2E1819;font-size:13px;font-weight:600}
+.tr{display:inline-flex;align-items:center;gap:2px;height:32px;padding:0 4px 0 12px;border-radius:999px;border:1px solid #8090A8;color:#2E1819;font-size:13px;background:#ECE4E5}
+.x{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:inherit;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.uk{background:#192B51;color:#ECE4E5}
+.opt{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;font-size:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.step{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.dot{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="app" style="width: 1440px; min-height: 1700px">
+  <header class="nav">
+    <div class="wrap" style="height: 68px; display: flex; align-items: center; gap: 6px">
+      <a href="#" class="logo" style="margin-right: 28px">my-shelfie</a>
+      <a href="#" class="nl">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn bb" aria-current="page" style="margin-left: auto; height: 40px; padding: 0 16px; box-shadow: 0 0 0 2px #ECE4E5"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main style="width: 800px; margin: 0 auto; padding: 48px 0 80px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <h1 class="serif" style="margin: 0; font-size: 44px; font-weight: 600; line-height: 1.1">Add a book</h1>
+      <ol aria-label="Steps" style="margin: 0 0 6px; padding: 0; list-style: none; display: flex; align-items: center; gap: 12px">
+        <li class="step"><span class="dot" style="background: #192B51; color: #ECE4E5"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Find it</li>
+        <li aria-hidden="true" style="width: 28px; height: 2px; background: #192B51"></li>
+        <li class="step" aria-current="step"><span class="dot" style="background: #72251F; color: #F6F1F1">2</span>Details <span class="muted" style="font-weight: 400">(optional)</span></li>
+      </ol>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; border-radius: 12px; background: #192B51; color: #ECE4E5">
+      <div style="width: 52px; aspect-ratio: 2/3; border-radius: 2px 4px 4px 2px; background: #8090A8; box-shadow: inset 3px 0 0 rgba(236,228,229,.2)"></div>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <span style="font-weight: 700; font-size: 17px" lang="uk">Попіл і терен</span>
+        <span style="font-size: 14px; color: #C6D0DD"><span lang="uk">Мирослава Дейнека</span> · 2023</span>
+      </div>
+      <span class="chip" style="background: #72251F; color: #F6F1F1; height: 30px; padding: 0 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Added to library</span>
+    </div>
+
+    <form class="card" style="padding: 32px; display: flex; flex-direction: column; gap: 28px">
+      <fieldset style="border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 8px 16px">
+        <legend class="serif" style="padding: 0; margin-bottom: 14px; font-size: 22px; font-weight: 600">Series</legend>
+        <label for="ser" class="lbl">Series</label>
+        <label for="num" class="lbl">Number</label>
+        <div style="position: relative">
+          <button id="ser" type="button" class="inp" aria-haspopup="listbox" style="display: flex; align-items: center; justify-content: space-between; text-align: left"><span lang="uk">Корона з попелу</span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+        </div>
+        <input id="num" class="inp" type="number" min="1" value="2">
+        <p style="grid-column: 1 / -1; margin: 4px 0 0; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #192B51; font-weight: 600"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>This fills the gap: you now own books 1 to 3 of 4.</p>
+        <div style="grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 4px">
+          <button type="button" class="btn bt" style="height: 40px; font-size: 14px; padding-left: 0">Create a new series</button>
+          <button type="button" class="btn bt" style="height: 40px; font-size: 14px">Mark as standalone</button>
+        </div>
+      </fieldset>
+
+      <div style="height: 1px; background: #C6D0DD"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="lbl" id="glbl">Genres</span>
+        <div role="group" aria-labelledby="glbl" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 48px; padding: 6px 8px; border: 1px solid #6F7C93; border-radius: 8px">
+          <span class="g">Romantasy<button type="button" class="x" aria-label="Remove Romantasy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span>
+          <span class="g">Fantasy<button type="button" class="x" aria-label="Remove Fantasy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span>
+          <button type="button" class="btn" aria-haspopup="listbox" style="height: 36px; padding: 0 10px; font-size: 14px; font-weight: 500; color: #192B51; margin-left: auto">Choose genres<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+        </div>
+        <span class="hint">Pre-filled from the series. Pick from the fixed list.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; position: relative">
+        <label for="trope" class="lbl">Tropes</label>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 48px; padding: 6px 8px; border: 2px solid #192B51; border-radius: 8px">
+          <span class="tr">Enemies to lovers<button type="button" class="x" aria-label="Remove Enemies to lovers"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span>
+          <input id="trope" role="combobox" aria-expanded="true" aria-controls="tsug" value="fo" style="flex: 1; min-width: 140px; height: 34px; border: 0; background: transparent; color: #2E1819; outline: none">
+        </div>
+        <ul id="tsug" role="listbox" style="margin: 0; padding: 6px 0; list-style: none; border-radius: 10px; background: #F6F1F1; border: 1px solid #C6D0DD; box-shadow: 0 16px 30px -16px rgba(46,24,25,.45)">
+          <li role="option" aria-selected="true" class="opt" style="background: #ECE4E5"><b>Fo</b>und family<span class="hint" style="margin-left: auto">used in 6 books</span></li>
+          <li role="option" class="opt"><b>Fo</b>rced proximity<span class="hint" style="margin-left: auto">used in 3 books</span></li>
+          <li role="option" class="opt" style="color: #192B51; font-weight: 600"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M12 5v14M5 12h14"></path></svg>Create “fo”</li>
+        </ul>
+        <span class="hint">Free text. Enter or comma adds a tag.</span>
+      </div>
+
+      <div style="height: 1px; background: #C6D0DD"></div>
+
+      <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+        <legend class="serif" style="padding: 0; margin-bottom: 14px; font-size: 22px; font-weight: 600">Shop links</legend>
+        <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr) 44px; gap: 8px; align-items: center">
+          <label for="l1l" class="sr">Language of link 1</label>
+          <select id="l1l" class="inp"><option>UK</option><option>RU</option><option>EN</option><option>Other</option></select>
+          <label for="l1u" class="sr">URL of link 1</label>
+          <input id="l1u" class="inp" type="url" value="https://yakaboo.ua/…/popil-i-teren">
+          <button type="button" class="x" aria-label="Remove link 1" style="width: 44px; height: 44px; color: #6B5557"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button>
+          <label for="l2l" class="sr">Language of link 2</label>
+          <select id="l2l" class="inp"><option>EN</option><option>UK</option><option>RU</option><option>Other</option></select>
+          <label for="l2u" class="sr">URL of link 2</label>
+          <input id="l2u" class="inp" type="url" placeholder="Paste a shop link, https://…">
+          <button type="button" class="x" aria-label="Remove link 2" style="width: 44px; height: 44px; color: #6B5557"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button>
+        </div>
+        <button type="button" class="btn bt" style="align-self: flex-start; height: 40px; font-size: 14px; padding-left: 0"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M12 5v14M5 12h14"></path></svg>Add another link</button>
+      </fieldset>
+
+      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid #C6D0DD">
+        <a href="#" class="btn bt">Skip for now</a>
+        <button type="submit" class="btn bp">Save details</button>
+      </div>
+    </form>
+  </main>
+</div>
+</body>
+</html>

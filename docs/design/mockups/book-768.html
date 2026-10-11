@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book, 768</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input,textarea,select{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:704px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:22px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 12px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500;font-size:14px}
+.nl.on{background:rgba(198,208,221,.18);color:#ECE4E5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bb{background:#E0D1CA;color:#2E1819}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.bd{border-color:#C6D0DD;color:#72251F;font-weight:500}
+.bt{color:#192B51;text-decoration:underline;text-underline-offset:3px;font-weight:500;padding:0 8px}
+.card{background:#F6F1F1;border-radius:12px}
+.h2{margin:0;font-family:'Playfair Display',Georgia,serif;font-size:21px;font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.ongo{background:#192B51;color:#ECE4E5}
+.g{display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:999px;background:#8090A8;color:#2E1819;font-size:13px;font-weight:600}
+.tr{display:inline-flex;align-items:center;height:32px;padding:0 13px;border-radius:999px;border:1px solid #8090A8;color:#2E1819;font-size:13px;background:#F6F1F1}
+.x{border:0;border-radius:50%;background:transparent;color:#6B5557;display:inline-flex;align-items:center;justify-content:center;padding:0;width:40px;height:40px}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.uk{background:#192B51;color:#ECE4E5}.en{background:#72251F;color:#F6F1F1}
+.lk{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 4px 0 14px;border-radius:8px;background:#ECE4E5}
+.inp{height:44px;width:100%;padding:0 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819}
+.ta{width:100%;padding:12px 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819;line-height:1.6;resize:vertical}
+.ta::placeholder,.inp::placeholder{color:#6B5557;opacity:1}
+.lbl{font-size:14px;font-weight:600}
+.cv{aspect-ratio:2/3;width:100%;border-radius:3px 8px 8px 3px;padding:12%;display:flex;flex-direction:column;justify-content:space-between;color:#E0D1CA;font-family:'Playfair Display',Georgia,serif;line-height:1.1;box-shadow:0 2px 3px rgba(46,24,25,.2),0 24px 34px -16px rgba(46,24,25,.6),inset 7px 0 0 rgba(236,228,229,.14)}
+.shelf{height:12px;border-radius:4px;background:#8090A8;box-shadow:0 12px 16px -10px rgba(46,24,25,.5)}
+.seg{display:inline-flex;padding:4px;border-radius:12px;background:#F6F1F1;border:1px solid #C6D0DD}
+.seg button{height:40px;padding:0 16px;border:0;border-radius:8px;background:transparent;color:#2E1819;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.pill{height:40px;padding:0 16px;border-radius:999px;border:1px solid #C6D0DD;background:transparent;color:#2E1819;font-size:14px;font-weight:500}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.st{width:26px;height:26px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="app" style="width: 768px; min-height: 2300px">
+  <header class="nav">
+    <div class="wrap" style="height: 64px; display: flex; align-items: center; gap: 2px">
+      <a href="#" class="logo" style="margin-right: 16px">my-shelfie</a>
+      <a href="#" class="nl on" aria-current="page">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn bb" style="margin-left: auto; height: 40px; padding: 0 14px; font-size: 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding: 20px 0 72px; display: flex; flex-direction: column; gap: 24px">
+    <nav aria-label="Breadcrumb" style="display: flex; align-items: center; gap: 4px; font-size: 14px">
+      <a href="#" style="display: inline-flex; align-items: center; height: 40px; text-decoration: none; font-weight: 500">Library</a><span class="muted" aria-hidden="true">/</span>
+      <a href="#" lang="uk" style="display: inline-flex; align-items: center; height: 40px; padding: 0 4px; text-decoration: none; font-weight: 500">Корона з попелу</a><span class="muted" aria-hidden="true">/</span><span class="muted">Book 3</span>
+    </nav>
+
+    <section style="display: flex; flex-direction: column">
+      <div style="display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: end; padding: 0 20px">
+        <div class="cv" role="img" aria-label="Cover of Терновий трон" style="background: #2E1819">
+          <span style="font-family: Inter, sans-serif; font-size: 9px; letter-spacing: .18em; text-transform: uppercase" lang="uk">Мирослава Дейнека</span>
+          <span style="font-size: 26px; font-style: italic" lang="uk">Терновий трон</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px; padding-bottom: 28px; min-width: 0">
+          <a href="#" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 40px; text-decoration: none"><span class="chip ongo">Book 3 of 4</span><span style="font-weight: 600; text-decoration: underline; text-underline-offset: 3px" lang="uk">Корона з попелу</span></a>
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h1 class="serif" style="margin: 0; font-size: 42px; font-weight: 600; line-height: 1.05" lang="uk">Терновий трон</h1>
+            <p class="muted" style="margin: 0; font-size: 17px" lang="uk">Мирослава Дейнека</p>
+          </div>
+          <div role="radiogroup" aria-label="Ownership" class="seg" style="align-self: flex-start">
+            <button type="button" role="radio" aria-checked="true" style="background: #72251F; color: #F6F1F1; font-weight: 700"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>In my library</button>
+            <button type="button" role="radio" aria-checked="false">Wishlist</button>
+          </div>
+        </div>
+      </div>
+      <div class="shelf"></div>
+    </section>
+
+    <section class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: space-between"><h2 class="h2">Genres &amp; tropes</h2><a href="#" class="btn bt" style="height: 40px; font-size: 14px">Edit</a></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px"><span class="g">Romantasy</span><span class="g">Fantasy</span><span class="tr">Fated mates</span><span class="tr">Slow burn</span><span class="tr">Morally grey</span></div>
+    </section>
+
+    <section class="card" style="padding: 22px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 24px; align-items: start">
+      <h2 class="h2" style="grid-column: 1 / -1; font-size: 19px">Reading</h2>
+      <fieldset style="border: 0; margin: 0; padding: 0">
+        <legend class="sr">Reading status</legend>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" class="pill" aria-pressed="false">To read</button>
+          <button type="button" class="pill" aria-pressed="true" style="background: #192B51; border-color: #192B51; color: #F6F1F1; font-weight: 600">Reading</button>
+          <button type="button" class="pill" aria-pressed="false">Read</button>
+          <button type="button" class="pill" aria-pressed="false">Dropped</button>
+        </div>
+      </fieldset>
+      <fieldset style="border: 0; margin: 0; padding: 0">
+        <legend class="sr">Rating, 4 of 5</legend>
+        <div style="display: flex">
+          <button type="button" class="x" aria-label="1 star"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z" fill="#72251F"></path></svg></button>
+          <button type="button" class="x" aria-label="2 stars"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z" fill="#72251F"></path></svg></button>
+          <button type="button" class="x" aria-label="3 stars"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z" fill="#72251F"></path></svg></button>
+          <button type="button" class="x" aria-label="4 stars" aria-pressed="true"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z" fill="#72251F"></path></svg></button>
+          <button type="button" class="x" aria-label="5 stars"><svg class="st" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9z" fill="none" stroke="#72251F" stroke-width="1.5"></path></svg></button>
+        </div>
+      </fieldset>
+    </section>
+
+    <section class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
+      <h2 class="h2">Where to buy</h2>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px"><span class="lang uk">UK</span><span class="muted" style="font-size: 13px">Ukrainian</span></div>
+        <div class="lk"><a href="#" style="flex: 1; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500">yakaboo.ua<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a><button type="button" class="x" aria-label="Remove link yakaboo.ua"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button></div>
+        <div class="lk"><a href="#" style="flex: 1; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500">book-ye.com.ua<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a><button type="button" class="x" aria-label="Remove link book-ye.com.ua"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px"><span class="lang en">EN</span><span class="muted" style="font-size: 13px">English</span></div>
+        <div class="lk"><a href="#" style="flex: 1; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500">waterstones.com<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a><button type="button" class="x" aria-label="Remove link waterstones.com"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg></button></div>
+      </div>
+      <form style="display: grid; grid-template-columns: 110px minmax(0, 1fr) auto; gap: 8px; padding-top: 16px; border-top: 1px solid #C6D0DD">
+        <label for="ll" class="sr">Link language</label>
+        <select id="ll" class="inp"><option>RU</option><option>UK</option><option>EN</option><option>Other</option></select>
+        <label for="lu" class="sr">Shop URL</label>
+        <input id="lu" class="inp" type="url" placeholder="https://…">
+        <button type="submit" class="btn bo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add</button>
+      </form>
+    </section>
+
+    <section class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <label for="notes" class="h2">Notes</label>
+        <textarea id="notes" class="ta" rows="3">Signed copy from the Lviv book fair. Lent to Olya in May, came back.</textarea>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <label for="ann" class="h2">My annotation <span class="muted" style="font-family: Inter, sans-serif; font-size: 13px; font-weight: 500">optional</span></label>
+        <textarea id="ann" class="ta" rows="4" placeholder="Your own short summary of the book, in your words"></textarea>
+      </div>
+    </section>
+
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 12px; background: #192B51; color: #C6D0DD">
+      <button type="button" class="btn" style="color: #E0D1CA; border-color: rgba(224,209,202,.45); font-weight: 500; padding: 0 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 18px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"></path></svg>Delete book</button>
+      <span style="font-size: 14px; margin-left: auto">Unsaved changes</span>
+      <button type="button" class="btn bb">Save changes</button>
+    </div>
+  </main>
+</div>
+</body>
+</html>

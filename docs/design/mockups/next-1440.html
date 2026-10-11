@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next to buy, 1440</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:1024px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:24px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500}
+.nl.on{background:rgba(198,208,221,.18);color:#ECE4E5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bb{background:#E0D1CA;color:#2E1819}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.bt{color:#192B51;text-decoration:underline;text-underline-offset:3px;font-weight:500;padding:0 8px}
+.card{background:#F6F1F1;border-radius:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.ongo{background:#192B51;color:#ECE4E5}.unk{background:#E0D1CA;color:#5A4546}.gapc{background:#72251F;color:#F6F1F1}
+.fx{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 8px 0 12px;border-radius:999px;background:#192B51;color:#ECE4E5;font-size:13px;font-weight:500;border:0}
+.th{width:64px;flex:none;aspect-ratio:2/3;border-radius:2px 5px 5px 2px;box-shadow:0 10px 14px -10px rgba(46,24,25,.6),inset 3px 0 0 rgba(236,228,229,.15)}
+.row{display:grid;grid-template-columns:64px minmax(0,1fr) 360px 120px;gap:20px;align-items:center;padding:16px 20px;border-top:1px solid #ECE4E5}
+.row:first-child{border-top:0}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:20px;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em}
+.ru{background:#2E1819;color:#ECE4E5}.uk{background:#192B51;color:#ECE4E5}.en{background:#72251F;color:#F6F1F1}.ot{background:#E0D1CA;color:#5A4546}
+.shop{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 8px;border-radius:999px;border:1px solid #C6D0DD;background:#ECE4E5;color:#2E1819;text-decoration:none;font-size:13px;font-weight:500}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 1440px; min-height: 1600px">
+  <header class="nav">
+    <div class="wrap" style="height: 68px; display: flex; align-items: center; gap: 6px">
+      <a href="#" class="logo" style="margin-right: 28px">my-shelfie</a>
+      <a href="#" class="nl">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl on" aria-current="page">Next to buy</a>
+      <a href="#" class="btn bb" style="margin-left: auto; height: 40px; padding: 0 16px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding: 40px 0 80px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h1 class="serif" style="margin: 0; font-size: 44px; font-weight: 600; line-height: 1.1">Next to buy</h1>
+        <p class="muted" style="margin: 0; font-size: 16px">Missing books from the series you collect, plus standalone books on your wishlist.</p>
+      </div>
+      <p style="margin: 0; display: flex; align-items: baseline; gap: 8px"><span class="serif" style="font-size: 40px; font-weight: 600; color: #72251F; line-height: 1">6</span><span class="muted">books</span></p>
+    </div>
+
+    <section aria-label="Filters" class="card" style="padding: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+      <button type="button" class="btn bo" style="height: 40px; padding: 0 12px 0 14px; font-weight: 500">Shop language<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+      <button type="button" class="btn bo" style="height: 40px; padding: 0 12px 0 14px; font-weight: 500">Genre<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+      <button type="button" class="btn bo" style="height: 40px; padding: 0 12px 0 14px; font-weight: 500">Trope<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+      <button type="button" class="btn bo" style="height: 40px; padding: 0 12px 0 14px; font-weight: 500">Series status<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px">
+      <h2 class="serif" style="margin: 0; font-size: 24px; font-weight: 600">From your series <span class="muted" style="font-family: Inter, sans-serif; font-size: 15px; font-weight: 500">4</span></h2>
+      <div class="card" style="overflow: hidden">
+        <div class="row" style="background: rgba(114,37,31,.05)">
+          <div class="th" style="background: #8090A8"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none" lang="uk">Попіл і терен</a>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px"><a href="#" lang="uk">Корона з попелу</a><span class="muted">· #2</span><span class="chip gapc">Gap: you own #1 and #3</span></div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <a href="#" class="shop"><span class="lang uk">UK</span>yakaboo.ua<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+            <a href="#" class="shop"><span class="lang ru">RU</span>chitai-gorod.ru<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+          </div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+        <div class="row">
+          <div class="th" style="background: #2E1819"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none" lang="ru">Песнь глубины</a>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px"><a href="#" lang="ru">Ведьмы Северного моря</a><span class="muted">· #3</span><span class="chip ongo">Ongoing</span></div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <a href="#" class="shop"><span class="lang ru">RU</span>chitai-gorod.ru<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+          </div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+        <div class="row">
+          <div class="th" style="background: #72251F"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none" lang="uk">Кам'яні леви</a>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px"><a href="#" lang="uk">Нічна варта Львова</a><span class="muted">· #2</span><span class="chip unk">Unknown</span></div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <a href="#" class="shop"><span class="lang uk">UK</span>book-ye.com.ua<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+            <a href="#" class="shop"><span class="lang ot">OTH</span>amazon.de<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+          </div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+        <div class="row">
+          <div class="th" style="background: #192B51"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none" lang="uk">Трон без короля</a>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px"><a href="#" lang="uk">Корона з попелу</a><span class="muted">· #4 · delayed to 2027</span></div>
+          </div>
+          <div><a href="#" class="btn bt" style="height: 40px; font-size: 14px; padding-left: 0"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 16px"><path d="M12 5v14M5 12h14"></path></svg>No links yet · add one</a></div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+      <h2 class="serif" style="margin: 0; font-size: 24px; font-weight: 600">Standalone wishlist <span class="muted" style="font-family: Inter, sans-serif; font-size: 15px; font-weight: 500">2</span></h2>
+      <div class="card" style="overflow: hidden">
+        <div class="row">
+          <div class="th" style="background: #C6D0DD"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none">Lanterns in Fog</a>
+            <span class="muted" style="font-size: 14px">Nell Harrow · Standalone</span>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <a href="#" class="shop"><span class="lang uk">UK</span>yakaboo.ua<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+            <a href="#" class="shop"><span class="lang en">EN</span>waterstones.com<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+          </div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+        <div class="row">
+          <div class="th" style="background: #E0D1CA"></div>
+          <div style="min-width: 0; display: flex; flex-direction: column; gap: 4px">
+            <a href="#" style="font-weight: 700; font-size: 16px; color: #2E1819; text-decoration: none">The Glass Orchard</a>
+            <span class="muted" style="font-size: 14px">Nell Harrow · Standalone</span>
+          </div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <a href="#" class="shop"><span class="lang en">EN</span>waterstones.com<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+          </div>
+          <button type="button" class="btn bo" style="height: 40px; padding: 0 12px; font-size: 14px">I bought it</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

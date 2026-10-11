@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home, 768</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:704px;margin:0 auto}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:24px;color:#ECE4E5;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:16px;text-decoration:none;white-space:nowrap}
+.card{background:#F6F1F1;border-radius:12px;padding:24px;display:grid;grid-template-columns:180px minmax(0,1fr);gap:8px 24px;align-items:start}
+.b{border-radius:3px;flex:none}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:24px;padding:0 6px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.sg{display:block;width:26px;height:10px;border-radius:3px;background:#C6D0DD}.sg.on{background:#72251F}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 768px; min-height: 1700px">
+  <div style="background: #192B51; color: #ECE4E5">
+    <header class="wrap" style="height: 68px; display: flex; align-items: center; justify-content: space-between">
+      <a href="#" class="logo">my-shelfie</a>
+      <a href="#" class="btn" style="height: 42px; padding: 0 16px; color: #ECE4E5; border-color: rgba(198,208,221,.55); font-size: 15px">Sign in</a>
+    </header>
+    <section class="wrap" style="padding: 56px 0 0; display: flex; flex-direction: column; gap: 22px">
+      <p style="margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #C6D0DD">For people who collect paper books</p>
+      <h1 class="serif" style="margin: 0; font-size: 56px; font-weight: 600; line-height: 1.04">Your books, <span style="font-style: italic; font-weight: 500; color: #E0D1CA">shelved by series.</span></h1>
+      <p style="margin: 0; max-width: 520px; font-size: 18px; line-height: 1.6; color: #C6D0DD">Catalogue the books you own, keep a wishlist, and always know which volume is missing and where to buy it.</p>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <a href="#" class="btn" style="background: #E0D1CA; color: #2E1819">Start your shelf<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"></path></svg></a>
+        <a href="#" class="btn" style="color: #ECE4E5; text-decoration: underline; text-underline-offset: 4px; font-weight: 500; padding: 0 12px">I already have an account</a>
+      </div>
+      <div aria-hidden="true" style="display: flex; flex-direction: column; margin-top: 36px">
+        <div style="display: flex; align-items: flex-end; justify-content: center; gap: 5px; height: 240px">
+          <div class="b" style="width: 36px; height: 190px; background: #72251F"></div>
+          <div class="b" style="width: 40px; height: 206px; border: 2px dashed #E0D1CA; display: flex; align-items: center; justify-content: center"><span class="serif" style="color: #E0D1CA; font-size: 16px; writing-mode: vertical-rl">#2</span></div>
+          <div class="b" style="width: 36px; height: 196px; background: #72251F"></div>
+          <div class="b" style="width: 38px; height: 200px; background: #72251F; opacity: .45"></div>
+          <div style="width: 20px"></div>
+          <div class="b" style="width: 30px; height: 162px; background: #C6D0DD"></div>
+          <div class="b" style="width: 32px; height: 172px; background: #C6D0DD"></div>
+          <div class="b" style="width: 30px; height: 178px; background: #C6D0DD"></div>
+          <div class="b" style="width: 40px; height: 150px; background: #E0D1CA; transform: rotate(-10deg); transform-origin: bottom left; margin-left: 27px"></div>
+          <div style="width: 60px"></div>
+        </div>
+        <div style="height: 14px; border-radius: 3px 3px 0 0; background: #8090A8"></div>
+      </div>
+    </section>
+  </div>
+
+  <main class="wrap" style="padding: 56px 0 72px; display: flex; flex-direction: column; gap: 28px">
+    <h2 class="serif" style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.15">Made for series readers who buy books in more than one language.</h2>
+    <article class="card">
+      <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 8px; padding-top: 6px"><span style="display: flex; gap: 3px"><i class="sg on"></i><i class="sg"></i><i class="sg on"></i><i class="sg"></i></span><b style="font-size: 13px">Own 2 of 4</b></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><h3 class="serif" style="margin: 0; font-size: 22px; font-weight: 600">Collect by series</h3><p class="muted" style="margin: 0">Books are grouped into series with their number, so each shelf reads in order. Standalones get a shelf of their own.</p></div>
+    </article>
+    <article class="card">
+      <div aria-hidden="true" style="padding-top: 4px"><span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 999px; background: #72251F; color: #F6F1F1; font-size: 12px; font-weight: 600">Gap: own #1 and #3</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><h3 class="serif" style="margin: 0; font-size: 22px; font-weight: 600">Spot the gaps</h3><p class="muted" style="margin: 0">Next to buy lists every missing volume of the series you collect, plus the standalone books you want.</p></div>
+    </article>
+    <article class="card">
+      <div aria-hidden="true" style="display: flex; gap: 6px; padding-top: 4px"><span class="lang" style="background: #2E1819; color: #ECE4E5">RU</span><span class="lang" style="background: #192B51; color: #ECE4E5">UK</span><span class="lang" style="background: #72251F; color: #F6F1F1">EN</span><span class="lang" style="background: #E0D1CA; color: #5A4546">OTH</span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><h3 class="serif" style="margin: 0; font-size: 22px; font-weight: 600">Know where to buy</h3><p class="muted" style="margin: 0">Save shop links for each book, marked by language, and filter by the shops you can actually order from.</p></div>
+    </article>
+  </main>
+
+  <footer style="border-top: 1px solid #C6D0DD">
+    <div class="wrap" style="min-height: 72px; display: flex; align-items: center; justify-content: space-between; font-size: 14px">
+      <span class="muted"><span class="serif" style="font-weight: 600; color: #72251F">my-shelfie</span> · a book-catalogue pet project</span>
+      <nav aria-label="Footer" style="display: flex; gap: 4px"><a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 8px">GitHub</a><a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 8px">Privacy</a></nav>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

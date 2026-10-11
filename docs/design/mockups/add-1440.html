@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a book, search, 1440</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:1024px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:24px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bb{background:#E0D1CA;color:#2E1819}
+.bn{background:#192B51;color:#ECE4E5}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.bt{color:#192B51;text-decoration:underline;text-underline-offset:3px;font-weight:500;padding:0 8px}
+.card{background:#F6F1F1;border-radius:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.want{background:#C6D0DD;color:#192B51}
+.th{width:60px;flex:none;aspect-ratio:2/3;border-radius:2px 4px 4px 2px;box-shadow:0 8px 12px -8px rgba(46,24,25,.6),inset 3px 0 0 rgba(236,228,229,.15)}
+.res{display:flex;align-items:center;gap:20px;padding:16px 20px;border-top:1px solid #ECE4E5}
+.res:first-child{border-top:0}
+.step{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.dot{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 1440px; min-height: 1200px">
+  <header class="nav">
+    <div class="wrap" style="height: 68px; display: flex; align-items: center; gap: 6px">
+      <a href="#" class="logo" style="margin-right: 28px">my-shelfie</a>
+      <a href="#" class="nl">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn bb" aria-current="page" style="margin-left: auto; height: 40px; padding: 0 16px; box-shadow: 0 0 0 2px #ECE4E5"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main style="width: 800px; margin: 0 auto; padding: 48px 0 80px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+      <h1 class="serif" style="margin: 0; font-size: 44px; font-weight: 600; line-height: 1.1">Add a book</h1>
+      <ol aria-label="Steps" style="margin: 0 0 6px; padding: 0; list-style: none; display: flex; align-items: center; gap: 12px">
+        <li class="step" aria-current="step"><span class="dot" style="background: #72251F; color: #F6F1F1">1</span>Find it</li>
+        <li aria-hidden="true" style="width: 28px; height: 2px; background: #C6D0DD"></li>
+        <li class="step muted"><span class="dot" style="border: 1.5px solid #8090A8; color: #6B5557">2</span>Details <span style="font-weight: 400">(optional)</span></li>
+      </ol>
+    </div>
+
+    <form role="search" style="display: flex; gap: 8px">
+      <div style="position: relative; flex: 1">
+        <label for="gb" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search Google Books</label>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 18px; top: 18px; width: 22px; height: 22px; color: #6B5557"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input id="gb" type="search" value="Песнь глубины" lang="ru" style="width: 100%; height: 58px; padding: 0 18px 0 52px; border: 2px solid #192B51; border-radius: 12px; background: #F6F1F1; color: #2E1819; font-size: 18px">
+      </div>
+      <button type="submit" class="btn bn" style="height: 58px; padding: 0 28px; border-radius: 12px">Search</button>
+    </form>
+    <p class="muted" style="margin: -12px 0 0; font-size: 13px">Search Google Books by title, author or ISBN. 4 results.</p>
+
+    <section aria-label="Results" class="card" style="overflow: hidden">
+      <div class="res">
+        <div class="th" style="background: #2E1819"></div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <div style="font-weight: 600; font-size: 16px" lang="ru">Песнь глубины</div>
+          <div class="muted" style="font-size: 14px"><span lang="ru">Елена Сорокина</span> · 2025</div>
+          <span class="chip want" style="align-self: flex-start; margin-top: 2px">Already on your wishlist</span>
+        </div>
+        <button type="button" class="btn bp">Move to library</button>
+      </div>
+      <div class="res" style="background: #ECE4E5">
+        <div class="th" style="background: #192B51"></div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <div style="font-weight: 600; font-size: 16px" lang="ru">Песнь глубины. Подарочное издание</div>
+          <div class="muted" style="font-size: 14px"><span lang="ru">Елена Сорокина</span> · 2026</div>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="btn bo">Add to wishlist</button>
+          <button type="button" class="btn bp">Add to library</button>
+        </div>
+      </div>
+      <div class="res">
+        <div class="th" style="background: #8090A8"></div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <div style="font-weight: 600; font-size: 16px" lang="ru">Голос глубины</div>
+          <div class="muted" style="font-size: 14px"><span lang="ru">Марк Левин</span> · 2018</div>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="btn bo">Add to wishlist</button>
+          <button type="button" class="btn bp">Add to library</button>
+        </div>
+      </div>
+      <div class="res">
+        <div class="th" style="background: #F6F1F1; border: 1.5px dashed #8090A8; box-shadow: none" role="img" aria-label="No cover"></div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <div style="font-weight: 600; font-size: 16px" lang="ru">Песни глубоких вод</div>
+          <div class="muted" style="font-size: 14px"><span lang="ru">Анна Ветрова</span> · 2021</div>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="btn bo">Add to wishlist</button>
+          <button type="button" class="btn bp">Add to library</button>
+        </div>
+      </div>
+    </section>
+
+    <div role="status" style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 12px; background: #192B51; color: #ECE4E5">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #E0D1CA"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      <span style="flex: 1"><b lang="ru">Голос глубины</b> added to your library.</span>
+      <a href="#" class="btn bb" style="height: 40px">Add series &amp; tags</a>
+      <a href="#" class="btn" style="height: 40px; color: #ECE4E5; text-decoration: underline; font-weight: 500">Done</a>
+    </div>
+
+    <p class="muted" style="margin: 0; font-size: 14px; text-align: center">Not on Google Books? <a href="#" style="display: inline-flex; align-items: center; height: 40px; font-weight: 600">Add it without search</a></p>
+  </main>
+</div>
+</body>
+</html>

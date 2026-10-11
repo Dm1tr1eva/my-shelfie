@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empty library, 768</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:704px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:22px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 12px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500;font-size:14px}
+.nl.on{background:rgba(198,208,221,.18);color:#ECE4E5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bb{background:#E0D1CA;color:#2E1819}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 768px; min-height: 1000px">
+  <header class="nav">
+    <div class="wrap" style="height: 64px; display: flex; align-items: center; gap: 2px">
+      <a href="#" class="logo" style="margin-right: 16px">my-shelfie</a>
+      <a href="#" class="nl on" aria-current="page">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn bb" style="margin-left: auto; height: 40px; padding: 0 14px; font-size: 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding: 32px 0 72px; display: flex; flex-direction: column; gap: 20px">
+    <h1 class="serif" style="margin: 0; font-size: 38px; font-weight: 600; line-height: 1.1">Library</h1>
+    <div role="tablist" aria-label="Library sections" style="display: flex; gap: 20px; border-bottom: 1px solid #C6D0DD">
+      <button type="button" role="tab" aria-selected="true" style="height: 48px; padding: 0 4px; margin-bottom: -1px; border: 0; border-bottom: 3px solid #72251F; background: transparent; color: #2E1819; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px">My library <span class="chip" style="background: #E0D1CA; color: #5A4546">0</span></button>
+      <button type="button" role="tab" aria-selected="false" style="height: 48px; padding: 0 4px; border: 0; background: transparent; color: #6B5557; font-size: 16px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px">Wishlist <span class="chip" style="background: #E0D1CA; color: #5A4546">0</span></button>
+    </div>
+
+    <section style="margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 0">
+      <div aria-hidden="true" style="width: 420px; display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 150px">
+        <div style="width: 30px; height: 120px; border-radius: 3px; border: 1.5px dashed #8090A8"></div>
+        <div style="width: 38px; height: 146px; border-radius: 3px; border: 1.5px dashed #8090A8"></div>
+        <div style="width: 26px; height: 104px; border-radius: 3px; border: 1.5px dashed #8090A8"></div>
+        <div style="width: 34px; height: 132px; border-radius: 3px; background: #72251F; transform: rotate(-9deg); transform-origin: bottom left; margin-left: 19px"></div>
+      </div>
+      <div aria-hidden="true" style="width: 420px; height: 12px; border-radius: 3px; background: #8090A8; box-shadow: 0 12px 16px -10px rgba(46,24,25,.5)"></div>
+      <h2 class="serif" style="margin: 36px 0 8px; font-size: 30px; font-weight: 600; text-align: center">Your shelf is empty</h2>
+      <p class="muted" style="margin: 0 0 24px; max-width: 420px; text-align: center; font-size: 16px">Add the paper books you own. Find them on Google Books, then group them into series as you go.</p>
+      <a href="#" class="btn bp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add your first book</a>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Series, 768</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.wrap{width:704px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:22px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 12px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500;font-size:14px}
+.nl.on{background:rgba(198,208,221,.18);color:#ECE4E5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:8px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bb{background:#E0D1CA;color:#2E1819}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.card{background:#F6F1F1;border-radius:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.own{background:#72251F;color:#F6F1F1}.want{background:#C6D0DD;color:#192B51}.ongo{background:#192B51;color:#ECE4E5}
+.g{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;background:#8090A8;color:#2E1819;font-size:14px;font-weight:600}
+.tr{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;border:1px solid #8090A8;color:#2E1819;font-size:14px;background:#F6F1F1}
+.ct{font-size:12px;font-weight:700;opacity:.75}
+.cv{aspect-ratio:2/3;width:100%;border-radius:3px 6px 6px 3px;padding:12%;display:flex;flex-direction:column;justify-content:flex-end;color:#ECE4E5;font-family:'Playfair Display',Georgia,serif;font-style:italic;line-height:1.1;font-size:16px;box-shadow:0 1px 2px rgba(46,24,25,.2),0 14px 20px -12px rgba(46,24,25,.55),inset 5px 0 0 rgba(236,228,229,.14)}
+.want-cv{opacity:.55;filter:saturate(.7)}
+.gap{position:absolute;inset:0;border-radius:3px 6px 6px 3px;border:2px dashed #72251F}
+.shelf{height:12px;border-radius:3px;background:#8090A8;box-shadow:0 12px 16px -10px rgba(46,24,25,.5)}
+.no{position:absolute;top:8px;left:8px;height:24px;min-width:30px;padding:0 8px;border-radius:999px;background:#F6F1F1;color:#2E1819;font-size:12px;font-weight:700;line-height:24px;text-align:center;font-style:normal;font-family:Inter,sans-serif}
+.t2{font-size:14px;font-weight:600;line-height:1.3}
+.sg{display:block;flex:1;height:10px;border-radius:3px;background:rgba(198,208,221,.3)}.sg.on{background:#E0D1CA}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 768px; min-height: 1700px">
+  <header class="nav">
+    <div class="wrap" style="height: 64px; display: flex; align-items: center; gap: 2px">
+      <a href="#" class="logo" style="margin-right: 16px">my-shelfie</a>
+      <a href="#" class="nl on" aria-current="page">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn bb" style="margin-left: auto; height: 40px; padding: 0 14px; font-size: 14px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding: 20px 0 72px; display: flex; flex-direction: column; gap: 24px">
+    <a href="#" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 40px; font-weight: 500; text-decoration: none"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>Library</a>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <span class="chip ongo" style="align-self: flex-start">Ongoing series</span>
+      <h1 class="serif" style="margin: 0; font-size: 46px; font-weight: 600; line-height: 1.05" lang="uk">Корона з попелу</h1>
+      <p style="margin: 0; font-size: 17px" class="muted" lang="uk">Мирослава Дейнека</p>
+      <div style="display: flex; align-items: center; gap: 10px; align-self: flex-start; padding: 8px 8px 8px 16px; border-radius: 10px; background: #E0D1CA; font-size: 15px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" style="color: #72251F"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg><span>Book 4 delayed to 2027</span><button type="button" class="btn" style="height: 40px; padding: 0 10px; font-size: 13px; text-decoration: underline; color: #192B51; font-weight: 500">Edit note</button></div>
+    </div>
+
+    <section aria-label="Progress" style="border-radius: 12px; background: #192B51; color: #ECE4E5; padding: 22px 24px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 24px; align-items: center">
+      <p style="margin: 0; display: flex; align-items: baseline; gap: 6px"><span class="serif" style="font-size: 48px; font-weight: 600; line-height: 1">2</span><span class="serif" style="font-size: 24px; color: #C6D0DD">of 4</span></p>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div role="img" aria-label="Own books 1 and 3 of 4" style="display: flex; gap: 4px"><i class="sg on"></i><i class="sg"></i><i class="sg on"></i><i class="sg"></i></div>
+        <p style="margin: 0; font-size: 14px; color: #C6D0DD">Missing: <b style="color: #ECE4E5">#2 (a gap)</b> and <b style="color: #ECE4E5">#4</b></p>
+      </div>
+      <a href="#" class="btn bb"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add the next book</a>
+    </section>
+
+    <section aria-label="Books in order" style="display: flex; flex-direction: column">
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; padding: 0 10px">
+        <a href="#" lang="uk" style="position: relative; display: block"><div class="cv" style="background: #72251F">Корона з попелу</div><span class="no">#1</span></a>
+        <a href="#" lang="uk" style="position: relative; display: block"><div class="cv want-cv" style="background: #8090A8; color: #2E1819">Попіл і терен</div><span class="gap"></span><span class="no">#2</span></a>
+        <a href="#" lang="uk" style="position: relative; display: block"><div class="cv" style="background: #2E1819">Терновий трон</div><span class="no">#3</span></a>
+        <a href="#" lang="uk" style="position: relative; display: block"><div class="cv want-cv" style="background: #192B51">Трон без короля</div><span class="no">#4</span></a>
+      </div>
+      <div class="shelf"></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; padding: 14px 10px 0">
+        <div style="display: flex; flex-direction: column; gap: 6px"><div class="t2" lang="uk">Корона з попелу</div><span class="chip own" style="align-self: flex-start">In my library</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><div class="t2" lang="uk">Попіл і терен</div><span class="chip want" style="align-self: flex-start">Wishlist · gap</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><div class="t2" lang="uk">Терновий трон</div><span class="chip own" style="align-self: flex-start">In my library</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><div class="t2" lang="uk">Трон без короля</div><span class="chip want" style="align-self: flex-start">Wishlist</span></div>
+      </div>
+    </section>
+
+    <section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h2 class="serif" style="margin: 0; font-size: 21px; font-weight: 600">Genres in this series</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px"><span class="g">Romantasy <span class="ct">4</span></span><span class="g">Fantasy <span class="ct">2</span></span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <h2 class="serif" style="margin: 0; font-size: 21px; font-weight: 600">Tropes</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px"><span class="tr">Enemies to lovers <span class="ct">3</span></span><span class="tr">Fated mates <span class="ct">2</span></span><span class="tr">Slow burn <span class="ct">2</span></span><span class="tr">Morally grey <span class="ct">1</span></span></div>
+      </div>
+    </section>
+    <button type="button" class="btn bo" style="align-self: flex-end">Edit series</button>
+  </main>
+</div>
+</body>
+</html>

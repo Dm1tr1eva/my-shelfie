@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy, 375</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.65;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:22px;color:#ECE4E5;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 14px;border-radius:8px;border:1px solid rgba(198,208,221,.55);font-weight:600;font-size:15px;text-decoration:none;color:#ECE4E5}
+h2{margin:0 0 6px;font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:600;line-height:1.25}
+p{margin:0 0 12px}
+ul{margin:0 0 12px;padding-left:20px}
+li{margin-bottom:6px}
+.ph{background:#E0D1CA;color:#5A4546;border-radius:4px;padding:1px 6px;font-weight:600;font-size:14px}
+</style>
+</head>
+<body>
+<div class="app" style="width: 375px; min-height: 1700px">
+  <div style="background: #192B51; color: #ECE4E5">
+    <header style="height: 60px; padding: 0 12px 0 16px; display: flex; align-items: center; justify-content: space-between"><a href="#" class="logo">my-shelfie</a><a href="#" class="btn">Sign in</a></header>
+    <div style="padding: 28px 16px 36px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(198,208,221,.2)">
+      <h1 class="serif" style="margin: 0; font-size: 38px; font-weight: 600; line-height: 1.1">Privacy</h1>
+      <p style="margin: 0; color: #C6D0DD; font-size: 15px">What my-shelfie keeps about you, and why. Last updated <span class="ph">[DATE]</span></p>
+    </div>
+  </div>
+  <main style="padding: 28px 16px 48px; display: flex; flex-direction: column; gap: 28px">
+    <section>
+      <h2>What we store</h2>
+      <p>To run your catalogue, my-shelfie keeps:</p>
+      <ul>
+        <li>your account: name and email address, and a password hash if you sign up with email;</li>
+        <li>your books and series: titles, authors, covers, series numbers, ownership, reading status, ratings, genres and tropes;</li>
+        <li>what you write: notes, annotations and shop links.</li>
+      </ul>
+      <p>Your shelves are private. Other users can’t see them.</p>
+    </section>
+    <section>
+      <h2>Google sign-in and search</h2>
+      <p>If you choose Continue with Google, we receive your name and email from Google and nothing else. <span class="ph">[CONFIRM SCOPES]</span></p>
+      <p>When you add a book, your search text is sent to Google Books to find matches. The result you pick is saved to your shelf.</p>
+    </section>
+    <section>
+      <h2>Shop links</h2>
+      <p>Links are stored exactly as you paste them. my-shelfie doesn’t track clicks and doesn’t use affiliate links. <span class="ph">[CONFIRM]</span></p>
+    </section>
+    <section>
+      <h2>Deleting your data</h2>
+      <p>Deleting a book removes it and its notes and links. To delete your whole account, <span class="ph">[HOW]</span>.</p>
+    </section>
+    <section>
+      <h2>Contact</h2>
+      <p>Questions about your data: <span class="ph">[YOUR EMAIL]</span></p>
+    </section>
+  </main>
+  <footer style="border-top: 1px solid #C6D0DD; padding: 12px 16px 24px; font-size: 14px; display: flex; gap: 8px">
+    <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding-right: 8px">Source on GitHub</a><a href="#" aria-current="page" style="display: inline-flex; align-items: center; height: 44px; padding: 0 8px; font-weight: 600">Privacy</a>
+  </footer>
+</div>
+</body>
+</html>

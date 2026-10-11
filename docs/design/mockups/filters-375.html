@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filters sheet, 375</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}
+button,input,select{font-family:inherit;font-size:inherit}
+.app{position:relative;overflow:hidden;background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 18px;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:15px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.bp{background:#72251F;color:#F6F1F1}
+.bo{border-color:#8090A8;background:#F6F1F1}
+.tg{height:40px;padding:0 14px;border-radius:999px;border:1px solid #8090A8;background:#F6F1F1;color:#2E1819;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.tg.on{background:#192B51;border-color:#192B51;color:#ECE4E5;font-weight:600}
+.lang{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:20px;padding:0 5px;border-radius:4px;font-size:10px;font-weight:700}
+.ru{background:#2E1819;color:#ECE4E5}.uk{background:#192B51;color:#ECE4E5;box-shadow:0 0 0 1px #ECE4E5}.en{background:#72251F;color:#F6F1F1}.ot{background:#E0D1CA;color:#5A4546}
+.fs{border:0;margin:0;padding:16px 0;border-top:1px solid #C6D0DD;display:flex;flex-direction:column;gap:10px}
+.lg{padding:0;font-size:15px;font-weight:700;margin-bottom:10px}
+.inp{height:48px;width:100%;padding:0 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819;font-size:16px}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 375px; height: 1000px">
+  <header style="background: #192B51; height: 56px; padding: 0 16px; display: flex; align-items: center"><span class="serif" style="font-weight: 700; font-size: 22px; color: #ECE4E5">my-shelfie</span></header>
+  <div style="padding: 20px 16px; display: flex; flex-direction: column; gap: 14px">
+    <h1 class="serif" style="margin: 0; font-size: 32px; font-weight: 600">Library</h1>
+    <button type="button" class="btn bo" aria-expanded="true" style="align-self: flex-start"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"></path></svg>Filters · 2</button>
+  </div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: rgba(46,24,25,.45)"></div>
+
+  <section role="dialog" aria-modal="true" aria-labelledby="ft" style="position: absolute; left: 0; right: 0; top: 96px; bottom: 0; background: #F6F1F1; border-radius: 20px 20px 0 0; display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 8px 6px 20px">
+      <h2 id="ft" class="serif" style="margin: 0; font-size: 22px; font-weight: 600">Filters</h2>
+      <button type="button" aria-label="Close filters" style="width: 44px; height: 44px; border: 0; background: transparent; color: #2E1819; display: flex; align-items: center; justify-content: center"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+    <div style="flex: 1; overflow: auto; padding: 0 20px">
+      <fieldset class="fs" style="border-top: 0">
+        <legend class="lg">Genre</legend>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" class="tg" aria-pressed="false">Fantasy</button>
+          <button type="button" class="tg on" aria-pressed="true">Romantasy</button>
+          <button type="button" class="tg" aria-pressed="false">Romance</button>
+          <button type="button" class="tg" aria-pressed="false">Mystery &amp; thriller</button>
+          <button type="button" class="tg" aria-pressed="false">Historical fiction</button>
+          <button type="button" class="tg" aria-pressed="false" style="border-style: dashed">+7 more</button>
+        </div>
+      </fieldset>
+      <fieldset class="fs">
+        <legend class="lg">Trope</legend>
+        <label for="tq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Find a trope</label>
+        <input id="tq" class="inp" placeholder="Find a trope">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" class="tg" aria-pressed="false">Enemies to lovers</button>
+          <button type="button" class="tg" aria-pressed="false">Found family</button>
+          <button type="button" class="tg" aria-pressed="false">Slow burn</button>
+        </div>
+      </fieldset>
+      <fieldset class="fs">
+        <legend class="lg">Series status</legend>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" class="tg" aria-pressed="false">Ongoing</button>
+          <button type="button" class="tg" aria-pressed="false">Complete</button>
+          <button type="button" class="tg" aria-pressed="false">Unknown</button>
+        </div>
+      </fieldset>
+      <fieldset class="fs">
+        <legend class="lg">Author</legend>
+        <label for="au" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Author</label>
+        <select id="au" class="inp"><option>Any author</option></select>
+      </fieldset>
+      <fieldset class="fs">
+        <legend class="lg">Shop language</legend>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <button type="button" class="tg on" aria-pressed="true"><span class="lang uk">UK</span>Ukrainian</button>
+          <button type="button" class="tg" aria-pressed="false"><span class="lang ru">RU</span>Russian</button>
+          <button type="button" class="tg" aria-pressed="false"><span class="lang en">EN</span>English</button>
+          <button type="button" class="tg" aria-pressed="false"><span class="lang ot">OTH</span>Other</button>
+        </div>
+      </fieldset>
+    </div>
+    <div style="display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 12px 16px 20px; border-top: 1px solid #C6D0DD">
+      <button type="button" class="btn" style="color: #192B51; text-decoration: underline; font-weight: 500">Clear all</button>
+      <button type="button" class="btn bp">Show 14 books</button>
+    </div>
+  </section>
+</div>
+</body>
+</html>

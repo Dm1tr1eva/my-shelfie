@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in, 375</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}a:hover{color:#72251F}
+button,input{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.muted{color:#6B5557}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:22px;color:#ECE4E5;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;width:100%;padding:0 20px;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:16px;text-decoration:none;white-space:nowrap;background:transparent;color:#2E1819}
+.lbl{font-size:14px;font-weight:600}
+.inp{height:48px;width:100%;padding:0 14px;border:1px solid #6F7C93;border-radius:8px;background:#F6F1F1;color:#2E1819;font-size:16px}
+.inp::placeholder{color:#6B5557;opacity:1}
+.gmark{width:22px;height:22px;border-radius:50%;border:1.5px solid #2E1819;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 375px; min-height: 1050px">
+  <header style="background: #192B51; padding: 0 16px">
+    <div style="height: 60px; display: flex; align-items: center"><a href="#" class="logo">my-shelfie</a></div>
+    <div aria-hidden="true" style="display: flex; align-items: flex-end; gap: 3px; height: 54px">
+      <div style="width: 12px; height: 30px; border-radius: 2px 2px 0 0; background: #72251F"></div>
+      <div style="width: 16px; height: 40px; border-radius: 2px 2px 0 0; background: #E0D1CA"></div>
+      <div style="width: 10px; height: 26px; border-radius: 2px 2px 0 0; background: #8090A8"></div>
+      <div style="width: 14px; height: 36px; border-radius: 2px 2px 0 0; background: #C6D0DD"></div>
+    </div>
+  </header>
+  <div style="height: 8px; background: #8090A8"></div>
+  <main style="padding: 28px 16px 40px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 class="serif" style="margin: 0; font-size: 30px; font-weight: 600; line-height: 1.15">Welcome back</h1>
+      <p class="muted" style="margin: 0">Sign in to open your shelves.</p>
+    </div>
+    <a href="#" class="btn" style="border-color: #8090A8; background: #F6F1F1"><span class="gmark" aria-hidden="true">G</span>Continue with Google</a>
+    <div aria-hidden="true" style="display: flex; align-items: center; gap: 12px; color: #6B5557; font-size: 13px"><span style="flex: 1; height: 1px; background: #C6D0DD"></span>or with email<span style="flex: 1; height: 1px; background: #C6D0DD"></span></div>
+    <form style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><label for="em" class="lbl">Email</label><input id="em" class="inp" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <label for="pw" class="lbl">Password</label>
+        <div style="position: relative"><input id="pw" class="inp" type="password" autocomplete="current-password" style="padding-right: 52px"><button type="button" aria-label="Show password" style="position: absolute; top: 2px; right: 2px; width: 44px; height: 44px; border: 0; border-radius: 6px; background: transparent; color: #6B5557; display: flex; align-items: center; justify-content: center"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div>
+        <a href="#" style="align-self: flex-end; display: inline-flex; align-items: center; height: 44px; font-size: 14px">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn" style="background: #72251F; color: #F6F1F1">Sign in</button>
+    </form>
+    <p class="muted" style="margin: 0; padding-top: 16px; border-top: 1px solid #C6D0DD; text-align: center">New here? <a href="#" style="display: inline-flex; align-items: center; height: 44px; font-weight: 600">Create an account</a></p>
+  </main>
+  <footer style="border-top: 1px solid #C6D0DD; padding: 12px 16px 24px; font-size: 14px; display: flex; gap: 8px; margin-top: auto">
+    <a href="#" style="display: inline-flex; align-items: center; height: 44px; padding-right: 8px">Source on GitHub</a><a href="#" style="display: inline-flex; align-items: center; height: 44px; padding: 0 8px">Privacy</a>
+  </footer>
+</div>
+</body>
+</html>

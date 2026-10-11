@@ -11,6 +11,7 @@ the area you are about to change.
 | [designs/](designs/) | Design docs, written before non-trivial work, at most 600 words |
 | [features/](features/) | One doc per feature. The shape is defined by [features/TEMPLATE.md](features/TEMPLATE.md) |
 | `adr/` | One decision per file. Empty so far. |
+| [design/](design/) | The design handoff: tokens, components, product decisions and HTML mockups at 375, 768 and 1440 |
 | [testing.md](testing.md) | Pitfalls hit while testing, recorded here because the code has no comments |
 | [../CLAUDE.md](../CLAUDE.md) | Working agreements: what precedes code, what counts as done |
 

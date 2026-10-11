@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library loading, 1440</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap">
+<style>
+body{margin:0}
+*{box-sizing:border-box}
+a{color:#192B51}
+button{font-family:inherit;font-size:inherit}
+.app{background:#ECE4E5;color:#2E1819;font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;flex-direction:column}
+.serif{font-family:'Playfair Display',Georgia,serif}
+.wrap{width:1024px;margin:0 auto}
+.nav{background:#192B51}
+.logo{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:24px;color:#ECE4E5;text-decoration:none}
+.nl{display:inline-flex;align-items:center;height:40px;padding:0 14px;border-radius:8px;color:#C6D0DD;text-decoration:none;font-weight:500}
+.nl.on{background:rgba(198,208,221,.18);color:#ECE4E5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:8px;font-weight:600;text-decoration:none;background:#E0D1CA;color:#2E1819}
+.sk{background:#E0D1CA;border-radius:6px}
+.skc{aspect-ratio:2/3;border-radius:3px 6px 6px 3px;background:#E0D1CA}
+.shelf{height:10px;border-radius:3px;background:#C6D0DD}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+</style>
+</head>
+<body>
+<div class="app" style="width: 1440px; min-height: 1100px">
+  <header class="nav">
+    <div class="wrap" style="height: 68px; display: flex; align-items: center; gap: 6px">
+      <a href="#" class="logo" style="margin-right: 28px">my-shelfie</a>
+      <a href="#" class="nl on" aria-current="page">Library</a>
+      <a href="#" class="nl">Wishlist</a>
+      <a href="#" class="nl">Next to buy</a>
+      <a href="#" class="btn" style="margin-left: auto"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add a book</a>
+      <button type="button" aria-label="Account: Daryna" style="width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; border: 0; background: #8090A8; color: #2E1819; font-weight: 700">D</button>
+    </div>
+  </header>
+  <main class="wrap" aria-busy="true" style="padding: 40px 0 80px; display: flex; flex-direction: column; gap: 24px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <h1 class="serif" style="margin: 0; font-size: 44px; font-weight: 600; line-height: 1.1">Library</h1>
+      <div class="sk" style="width: 380px; height: 44px; border-radius: 8px"></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 28px; height: 48px; border-bottom: 1px solid #C6D0DD">
+      <div class="sk" style="width: 120px; height: 18px"></div>
+      <div class="sk" style="width: 90px; height: 18px"></div>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 12px; border-radius: 12px; background: #F6F1F1">
+      <div class="sk" style="width: 96px; height: 40px; border-radius: 8px"></div>
+      <div class="sk" style="width: 92px; height: 40px; border-radius: 8px"></div>
+      <div class="sk" style="width: 130px; height: 40px; border-radius: 8px"></div>
+      <div class="sk" style="width: 96px; height: 40px; border-radius: 8px"></div>
+      <div class="sk" style="width: 140px; height: 40px; border-radius: 8px"></div>
+    </div>
+    <p role="status" style="margin: 0; font-size: 14px; color: #6B5557">Loading your shelves…</p>
+    <section aria-hidden="true" style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="sk" style="width: 280px; height: 26px"></div><div class="sk" style="width: 180px; height: 14px"></div></div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; padding: 0 12px">
+        <div style="display: flex; flex-direction: column; gap: 8px"><div class="skc"></div><div class="sk" style="height: 14px; width: 80%"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div class="skc"></div><div class="sk" style="height: 14px; width: 65%"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div class="skc"></div><div class="sk" style="height: 14px; width: 75%"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div class="skc" style="opacity: .6"></div><div class="sk" style="height: 14px; width: 60%; opacity: .6"></div></div>
+      </div>
+      <div class="shelf"></div>
+    </section>
+    <section aria-hidden="true" style="display: flex; flex-direction: column; gap: 16px; padding-top: 16px; opacity: .6">
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="sk" style="width: 220px; height: 26px"></div><div class="sk" style="width: 140px; height: 14px"></div></div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; padding: 0 12px">
+        <div class="skc"></div><div class="skc"></div><div class="skc"></div>
+      </div>
+      <div class="shelf"></div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
