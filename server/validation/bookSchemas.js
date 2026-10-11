@@ -29,7 +29,6 @@ const baseBookSchema = z
     links: z.array(linkSchema).max(10).optional(),
     notes: z.string().max(5000).optional(),
     annotation: z.string().max(5000).optional(),
-    priority: z.boolean().optional(),
     status: z.enum(["want", "reading", "dropped", "read"]).optional(),
     rating: z.number().min(1).max(5).optional(),
     review: z.string().optional(),

@@ -7,7 +7,6 @@ const baseSeriesSchema = z
     author: z.string().trim().min(1).max(200).optional(),
     status: z.enum(SERIES_STATUSES).optional(),
     note: z.string().max(2000).optional(),
-    priority: z.boolean().optional(),
   })
   .strict();
 

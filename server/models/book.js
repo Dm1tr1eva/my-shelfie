@@ -29,7 +29,6 @@ const bookSchema = new mongoose.Schema(
     links: [linkSchema],
     notes: String,
     annotation: String,
-    priority: { type: Boolean, default: false },
     status: {
       type: String,
       enum: ["want", "reading", "dropped", "read"],

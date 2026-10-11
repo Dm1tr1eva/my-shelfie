@@ -40,20 +40,32 @@ Decisions:
 - **The annotation is optional and the author's own text** — Google's description cannot be
   stored.
 - **No Firebase** for the submission; revisit only after the mentor's review.
-- **"Next to buy"** — the next wanted book of every series plus wanted standalone books, with
-  filters — is the feature the README presents as the algorithm.
+- **"Next to buy"** — for every series of which she owns at least one book, all its wanted
+  books, gaps (a wanted number below her highest owned number) first, then the rest in series
+  order, then standalone wishlist books; with filters and an "I bought it" action — is the
+  feature the README presents as the algorithm. No priority star.
+- **The design handoff** is in [design/](design/) (tokens, components, decisions and 39 HTML
+  mockups at 375, 768 and 1440). Where it and an older decision disagree, the handoff wins.
+- **Light theme only** for the submission: the header switch goes, the dark theme returns
+  later with its own design.
+- **No Google sign-in** for now: email and password only, and the privacy text says only what
+  is true.
 
 In order:
 
 1. ✅ Data model and API, 2026-10-11 — `Series`, and on `Book` ownership, series and number,
-   genres, tropes, links, notes, annotation, priority; `/api/series`, `/api/next-to-buy`,
-   `/api/tropes`; 81 server tests. Existing books read as owned with no migration.
+   genres, tropes, links, notes, annotation; `/api/series`, `/api/next-to-buy`,
+   `/api/tropes`; 82 server tests. Existing books read as owned with no migration.
    [features/series.md](features/series.md)
-2. ⬜ Screens: library tabs grouped by series, series page, book page, add flow, "Next to buy"
-   (2026-10-15 to 10-17). The author designs them in parallel; without a design by
-   2026-10-14 they are built in the current visual style and polished later
-3. ⬜ Home page texts for the new purpose, README (what it does, the algorithm, screenshots)
-4. ⬜ Check the deployed site again, then submit; decide on a demo account at that point
+2. ⬜ Screens, from the handoff in [design/](design/), in three waves:
+   - **A, by 10-14 — the core path:** tokens and light-only, the shell (navy nav bar from
+     768, tab bar below), Library (tabs, series groups, gap tiles, grid and list, search,
+     stats), Book page, Add a book (both steps), Next to buy
+   - **B, by 10-16:** Series page, filters (popover and bottom sheet), empty, loading and
+     error states
+   - **C, by 10-17:** Home, sign in, create account and privacy restyled
+3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
+4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 
 After the submission: the AI assistant (stage 8, repurposed to fill series order, status and
 tropes), importing the Notion table, live Google annotations.

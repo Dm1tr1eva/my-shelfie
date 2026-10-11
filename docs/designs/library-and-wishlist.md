@@ -26,14 +26,13 @@ One user: hundreds of books, tens of series, a few links per book. The 100-book 
 (`ongoing | complete | unknown`), `note`. `Book` gains `ownership` (`owned | wanted`, independent
 of reading status), `seriesId` and `seriesNumber` (absent means a standalone book), `genres` from
 a fixed list, `tropes` as free text with suggestions from the user's own, `links` as
-`{ language: ru | uk | en | other, url }`, `notes`, `annotation` (her own text) and `priority`, a star
-for standalone books. A series has `priority` too. Adding the next book of a series copies the
-previous book's genres and tropes.
+`{ language: ru | uk | en | other, url }`, `notes` and `annotation` (her own text). Adding the next book of a
+series copies the previous book's genres and tropes.
 
-**Next to buy.** For each series with a wanted book, its lowest-numbered wanted book; plus every
-wanted standalone book. Starred items come first, then the most recently added. Filters: link
-language, genre, trope, series status; they apply to the chosen book, so a series whose next
-book has no link in that language drops out. The README presents this as the algorithm.
+**Next to buy.** For each series she has started (owns one book of), all its wanted books, gaps
+first, then the rest by series and number, then standalone wishlist books. Filters: link
+language, genre, trope, series status. "I bought it" makes the book owned. The README presents
+this as the algorithm. The screens follow the handoff in `docs/design/`.
 
 **Screens.** A library with two tabs, "My library" (owned) and "Wishlist" (wanted), grouped by
 series; a series page; a book page; an add flow (Google search, pick a result, "Add to library"

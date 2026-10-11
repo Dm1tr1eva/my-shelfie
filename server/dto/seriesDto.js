@@ -3,7 +3,6 @@ function toSeriesDto(series, counts = { owned: 0, wanted: 0 }) {
     id: series._id.toString(),
     title: series.title,
     status: series.status ?? "unknown",
-    priority: Boolean(series.priority),
     ownedCount: counts.owned,
     wantedCount: counts.wanted,
     createdAt: series.createdAt,

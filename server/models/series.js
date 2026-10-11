@@ -12,7 +12,6 @@ const seriesSchema = new mongoose.Schema(
     author: String,
     status: { type: String, enum: SERIES_STATUSES, default: "unknown" },
     note: String,
-    priority: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

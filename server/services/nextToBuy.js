@@ -12,41 +12,57 @@ function matchesBookFilters(book, { language, genre, trope }) {
   return true;
 }
 
-function pickNextToBuy({ series, wantedBooks, filters = {} }) {
+function compareItems(a, b) {
+  if (a.gap !== b.gap) return a.gap ? -1 : 1;
+  if (a.type !== b.type) return a.type === "series" ? -1 : 1;
+
+  if (a.type === "series") {
+    const byTitle = a.series.title.localeCompare(b.series.title);
+    if (byTitle !== 0) return byTitle;
+    return byNumberThenAge(a.book, b.book);
+  }
+
+  return new Date(b.book.createdAt) - new Date(a.book.createdAt);
+}
+
+function pickNextToBuy({ series, books, filters = {} }) {
   const seriesById = new Map(series.map((item) => [item.id, item]));
-  const wantedBySeries = new Map();
+  const booksBySeries = new Map();
   const items = [];
 
-  for (const book of wantedBooks) {
+  for (const book of books) {
     const owner = book.seriesId ? seriesById.get(book.seriesId) : undefined;
 
     if (!owner) {
-      items.push({
-        type: "standalone",
-        book,
-        addedAt: book.createdAt,
-        priority: book.priority,
-      });
+      if (book.ownership === "wanted") {
+        items.push({ type: "standalone", book, gap: false });
+      }
       continue;
     }
 
-    const group = wantedBySeries.get(owner.id) ?? [];
+    const group = booksBySeries.get(owner.id) ?? [];
     group.push(book);
-    wantedBySeries.set(owner.id, group);
+    booksBySeries.set(owner.id, group);
   }
 
-  for (const [seriesId, books] of wantedBySeries) {
+  for (const [seriesId, group] of booksBySeries) {
     const owner = seriesById.get(seriesId);
-    const [next] = [...books].sort(byNumberThenAge);
+    const owned = group.filter((book) => book.ownership !== "wanted");
+    if (owned.length === 0) continue;
 
-    items.push({
-      type: "series",
-      series: owner,
-      book: next,
-      wantedCount: books.length,
-      addedAt: owner.createdAt,
-      priority: owner.priority,
-    });
+    const ownedNumbers = owned.flatMap((book) =>
+      book.seriesNumber === undefined ? [] : [book.seriesNumber],
+    );
+    const highestOwned = ownedNumbers.length > 0 ? Math.max(...ownedNumbers) : -Infinity;
+
+    for (const book of group.filter((item) => item.ownership === "wanted")) {
+      items.push({
+        type: "series",
+        series: owner,
+        book,
+        gap: book.seriesNumber !== undefined && book.seriesNumber < highestOwned,
+      });
+    }
   }
 
   return items
@@ -54,11 +70,7 @@ function pickNextToBuy({ series, wantedBooks, filters = {} }) {
       if (filters.seriesStatus && item.series?.status !== filters.seriesStatus) return false;
       return matchesBookFilters(item.book, filters);
     })
-    .sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority ? -1 : 1;
-      return new Date(b.addedAt) - new Date(a.addedAt);
-    })
-    .map(({ addedAt, priority, ...item }) => item);
+    .sort(compareItems);
 }
 
 module.exports = { pickNextToBuy };

@@ -45,28 +45,32 @@ array clears them.
 
 ## "Next to buy"
 
-Over the user's wanted books, computed in `services/nextToBuy.js` as a pure function:
+Computed in `services/nextToBuy.js` as a pure function over the user's series and the books
+that are wanted or belong to a series:
 
-1. Group wanted books by series. From each group take the lowest-numbered book (a book with no
-   number counts as last, ties by age). Books with no series are standalone items.
-2. Keep an item if its chosen book matches the filters: a link in the language, the genre, the
-   trope; and, for `seriesStatus`, if its series has that status (standalone items then drop
-   out).
-3. Sort starred items first (a series' `priority`, or a standalone book's), then the most
-   recently added: the series' `createdAt`, or the book's.
+1. For each series of which the user owns **at least one** book, take **all** its wanted books.
+   A series she owns nothing of is left out; it is not "started".
+2. A wanted book is a **gap** when its number is below the highest number she owns in that
+   series (own #1 and #3 → #2 is a gap). A wanted book with no number is never a gap.
+3. A wanted book that belongs to no series (or whose series is gone) is a standalone item.
+4. Keep an item if its book matches the filters: a link in the language, the genre, the trope;
+   and for `seriesStatus`, if its series has that status (standalone items then drop out).
+5. Order: gaps first; then the other series books, series by title and books by number
+   (unnumbered last); then standalone books, newest first.
 
-Each item is `{ type: "series" | "standalone", series?, book, wantedCount? }`. Because filters
-apply to the chosen book, a series whose next book has no link in the language is hidden rather
-than replaced by a later book: buying out of order is not what the list is for.
+Each item is `{ type: "series" | "standalone", series?, book, gap }`. "I bought it" is a
+`PATCH` of the book's `ownership` to `owned`; the book then leaves the list on its own.
+A gap number with no book record at all cannot appear here: the Library draws it as a dashed
+tile from the series' numbers.
 
 ## Data
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
-(`ongoing | complete | unknown`), `note`, `priority`, timestamps; index `{ userId, createdAt }`.
+(`ongoing | complete | unknown`), `note`, timestamps; index `{ userId, createdAt }`.
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (from the
 fixed list in `server/constants/library.js`), `tropes`, `links` (`{ language, url }`, http(s)
-only), `notes`, `annotation` and `priority`; index `{ userId, seriesId, seriesNumber }`. The
+only), `notes` and `annotation`; index `{ userId, seriesId, seriesNumber }`. The
 client keeps its own copy of the genre list.
 
 ## Trade-offs accepted
@@ -77,8 +81,10 @@ client keeps its own copy of the genre list.
 - **No uniqueness on series titles.** Two series may share a title; the author tells them
   apart by author and notes.
 - **Genres and tropes live on books**, so a series' tags are the union of its books'.
-- **A series' `priority` and a standalone book's `priority` are different fields on different
-  documents**; a star on a book inside a series is stored but ignored by "next to buy".
+- **A series you have not started never shows up.** A new wishlist series appears in "Next
+  to buy" only after you own one of its books, as the design intends.
+- **"Gap" only covers numbers you have a book record for.** Series numbers are not stored as a
+  list, so a missing number with no record is shown by the Library, not by this endpoint.
 
 ## Recovery
 

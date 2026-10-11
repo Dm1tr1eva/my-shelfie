@@ -64,8 +64,11 @@ async function deleteOneForUser(userId, id) {
   return Book.findOneAndDelete({ _id: id, userId });
 }
 
-async function findWantedForUser(userId) {
-  return Book.find({ userId, ownership: "wanted" }).limit(1000);
+async function findForNextToBuy(userId) {
+  return Book.find({
+    userId,
+    $or: [{ ownership: "wanted" }, { seriesId: { $exists: true } }],
+  }).limit(2000);
 }
 
 async function findBySeries(userId, seriesId) {
@@ -115,7 +118,7 @@ module.exports = {
   findOneForUser,
   updateOneForUser,
   deleteOneForUser,
-  findWantedForUser,
+  findForNextToBuy,
   findBySeries,
   countBySeries,
   unlinkSeries,

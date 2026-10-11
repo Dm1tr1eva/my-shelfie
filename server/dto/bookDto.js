@@ -19,7 +19,6 @@ function toBookDto(book) {
     author: book.author,
     status: book.status,
     ownership: book.ownership ?? "owned",
-    priority: Boolean(book.priority),
     genres: book.genres ?? [],
     tropes: book.tropes ?? [],
     links: (book.links ?? []).map((link) => ({ language: link.language, url: link.url })),
