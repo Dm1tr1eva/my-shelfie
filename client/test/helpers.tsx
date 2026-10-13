@@ -87,6 +87,8 @@ export function series(overrides: Partial<Series> = {}): Series {
     status: "ongoing",
     ownedCount: 0,
     wantedCount: 0,
+    genres: [],
+    tropes: [],
     createdAt: "",
     updatedAt: "",
     ...overrides,

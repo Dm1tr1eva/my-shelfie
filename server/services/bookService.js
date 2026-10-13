@@ -16,7 +16,25 @@ async function createBook(userId, data) {
     await seriesService.assertSeriesExists(userId, data.seriesId);
   }
 
-  return bookRepository.create(userId, data);
+  const book = await bookRepository.create(userId, data);
+
+  if (data.seriesId) {
+    await seriesService.absorbTags(userId, data.seriesId, book);
+  }
+
+  return book;
+}
+
+async function seriesMapFor(userId, books) {
+  const wanted = new Set(
+    books.filter((book) => book.seriesId).map((book) => String(book.seriesId)),
+  );
+  if (wanted.size === 0) return new Map();
+
+  const docs = await seriesService.listDocs(userId);
+  return new Map(
+    docs.filter((doc) => wanted.has(String(doc._id))).map((doc) => [String(doc._id), doc]),
+  );
 }
 
 async function listBooks(userId, { page = DEFAULT_PAGE, limit = DEFAULT_LIMIT, ...filters } = {}) {
@@ -54,7 +72,13 @@ async function updateBook(userId, id, updates) {
     }
   }
 
-  return bookRepository.updateOneForUser(userId, id, changes);
+  const updated = await bookRepository.updateOneForUser(userId, id, changes);
+
+  if (updated && typeof updates.seriesId === "string") {
+    await seriesService.absorbTags(userId, updates.seriesId, updated);
+  }
+
+  return updated;
 }
 
 async function deleteBook(userId, id) {
@@ -68,4 +92,5 @@ module.exports = {
   updateBook,
   deleteBook,
   SeriesNumberWithoutSeriesError,
+  seriesMapFor,
 };

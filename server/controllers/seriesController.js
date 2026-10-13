@@ -42,7 +42,7 @@ async function getSeries(req, res) {
 
     res.json({
       series: toSeriesDto(found.series, found.counts),
-      books: found.books.map(toBookDto),
+      books: found.books.map((book) => toBookDto(book, found.series)),
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch series" });

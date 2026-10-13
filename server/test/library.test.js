@@ -674,3 +674,238 @@ describe("next to buy API", () => {
     assert.equal(response.status, 400);
   });
 });
+
+describe("tags and description on the series", () => {
+  const Series = require("../models/series");
+
+  async function setUpSeries(cookie, tags = {}) {
+    return addSeries(cookie, { title: "Shared", ...tags });
+  }
+
+  it("stores genres, tropes and a description on a series and clears the description with null", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, {
+      genres: ["Romantasy"],
+      tropes: ["slow burn"],
+      annotation: "Fae courts and one bargain.",
+    });
+
+    assert.deepEqual(series.genres, ["Romantasy"]);
+    assert.deepEqual(series.tropes, ["slow burn"]);
+    assert.equal(series.annotation, "Fae courts and one bargain.");
+
+    const cleared = await api(`/api/series/${series.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { annotation: null, tropes: [] },
+    });
+
+    assert.equal(cleared.status, 200);
+    assert.equal(cleared.body.annotation, undefined);
+    assert.deepEqual(cleared.body.tropes, []);
+  });
+
+  it("rejects an unknown genre, a duplicate genre and a trope that is too long", async () => {
+    const alice = await signIn("alice@example.com");
+
+    for (const body of [
+      { title: "X", genres: ["Cooking"] },
+      { title: "X", genres: ["Fantasy", "Fantasy"] },
+      { title: "X", tropes: ["x".repeat(61)] },
+    ]) {
+      const response = await api("/api/series", { method: "POST", cookie: alice, body });
+      assert.equal(response.status, 400, JSON.stringify(body));
+    }
+  });
+
+  it("shows a book of a series the tags and description of the series wherever a book is returned", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, {
+      genres: ["Romantasy"],
+      tropes: ["slow burn"],
+      annotation: "About the series.",
+    });
+    const book = await addBook(alice, {
+      title: "One",
+      seriesId: series.id,
+      seriesNumber: 1,
+      genres: ["Horror"],
+      tropes: ["own trope"],
+      annotation: "own words",
+    });
+
+    const single = await api(`/api/books/${book.id}`, { cookie: alice });
+    const list = await api("/api/books", { cookie: alice });
+    const inSeries = await api(`/api/series/${series.id}`, { cookie: alice });
+
+    for (const shown of [single.body, list.body.books[0], inSeries.body.books[0]]) {
+      assert.deepEqual(shown.genres, ["Romantasy", "Horror"]);
+      assert.deepEqual(shown.tropes, ["slow burn", "own trope"]);
+      assert.equal(shown.annotation, "About the series.");
+    }
+  });
+
+  it("gives a book its own tags back when it leaves the series", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, { tropes: ["shared"] });
+    const book = await addBook(alice, {
+      seriesId: series.id,
+      seriesNumber: 1,
+      tropes: ["mine"],
+      annotation: "my words",
+    });
+
+    const left = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesId: null },
+    });
+
+    assert.deepEqual(left.body.tropes, ["mine"]);
+    assert.equal(left.body.annotation, "my words");
+  });
+
+  it("adds the tags of a book to the series when the book is put into it", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, { genres: ["Romance"], tropes: ["a"] });
+    const book = await addBook(alice, {
+      genres: ["Fantasy"],
+      tropes: ["b"],
+      annotation: "from book",
+    });
+
+    await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesId: series.id, seriesNumber: 1 },
+    });
+    const after = await api(`/api/series/${series.id}`, { cookie: alice });
+
+    assert.deepEqual(after.body.series.genres, ["Romance", "Fantasy"]);
+    assert.deepEqual(after.body.series.tropes, ["a", "b"]);
+    assert.equal(after.body.series.annotation, "from book");
+  });
+
+  it("makes the first book's tags the tags of the series, and keeps a description it already has", async () => {
+    const alice = await signIn("alice@example.com");
+    const empty = await setUpSeries(alice);
+    const described = await addSeries(alice, { title: "Described", annotation: "kept" });
+
+    await addBook(alice, { seriesId: empty.id, seriesNumber: 1, tropes: ["first"] });
+    await addBook(alice, {
+      seriesId: described.id,
+      seriesNumber: 1,
+      annotation: "would replace",
+    });
+
+    const a = await api(`/api/series/${empty.id}`, { cookie: alice });
+    const b = await api(`/api/series/${described.id}`, { cookie: alice });
+
+    assert.deepEqual(a.body.series.tropes, ["first"]);
+    assert.equal(b.body.series.annotation, "kept");
+  });
+
+  it("does not bring a removed trope back when the book is updated later", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice);
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1, tropes: ["gone"] });
+    await api(`/api/series/${series.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { tropes: [] },
+    });
+
+    await api(`/api/books/${book.id}`, { method: "PATCH", cookie: alice, body: { rating: 4 } });
+    const after = await api(`/api/series/${series.id}`, { cookie: alice });
+
+    assert.deepEqual(after.body.series.tropes, []);
+  });
+
+  it("builds the tags of a series saved before this existed from its books, once", async () => {
+    const alice = await signIn("alice@example.com");
+    const me = await api("/api/auth/me", { cookie: alice });
+    const old = await Series.create({ userId: me.body.id, title: "Legacy", status: "ongoing" });
+    await Book.create({
+      userId: me.body.id,
+      title: "L1",
+      author: "A",
+      seriesId: old._id,
+      seriesNumber: 1,
+      genres: ["Fantasy"],
+      tropes: ["x", "y"],
+      annotation: "legacy text",
+    });
+    await Book.create({
+      userId: me.body.id,
+      title: "L2",
+      author: "A",
+      seriesId: old._id,
+      seriesNumber: 2,
+      genres: ["Fantasy", "Romance"],
+      tropes: ["y", "z"],
+    });
+
+    const first = await api("/api/series", { cookie: alice });
+    assert.deepEqual(first.body.series[0].genres, ["Fantasy", "Romance"]);
+    assert.deepEqual(first.body.series[0].tropes, ["x", "y", "z"]);
+    assert.equal(first.body.series[0].annotation, "legacy text");
+
+    await api(`/api/series/${old._id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { tropes: [] },
+    });
+    const second = await api("/api/series", { cookie: alice });
+
+    assert.deepEqual(second.body.series[0].tropes, []);
+  });
+
+  it("does not fill a series made through the API from the tags the books store themselves", async () => {
+    const alice = await signIn("alice@example.com");
+    const me = await api("/api/auth/me", { cookie: alice });
+    const series = await setUpSeries(alice);
+    await Book.create({
+      userId: me.body.id,
+      title: "Own tags",
+      author: "A",
+      seriesId: series.id,
+      seriesNumber: 1,
+      genres: ["Horror"],
+      tropes: ["only on the book"],
+    });
+
+    const response = await api(`/api/series/${series.id}`, { cookie: alice });
+
+    assert.deepEqual(response.body.series.tropes, []);
+    assert.deepEqual(response.body.series.genres, []);
+  });
+
+  it("lists the tropes of series along with those of books", async () => {
+    const alice = await signIn("alice@example.com");
+    await setUpSeries(alice, { tropes: ["series trope"] });
+    await addBook(alice, { tropes: ["book trope"] });
+
+    const response = await api("/api/tropes", { cookie: alice });
+
+    assert.deepEqual(response.body.tropes, ["book trope", "series trope"]);
+  });
+
+  it("filters the shopping list by a trope the series carries", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, { tropes: ["slow burn"] });
+    await addBook(alice, { seriesId: series.id, seriesNumber: 1, ownership: "owned" });
+    await addBook(alice, {
+      title: "Two",
+      seriesId: series.id,
+      seriesNumber: 2,
+      ownership: "wanted",
+    });
+
+    const response = await api("/api/next-to-buy?trope=slow%20burn", { cookie: alice });
+
+    assert.deepEqual(
+      response.body.items.map((item) => item.book.title),
+      ["Two"],
+    );
+  });
+});

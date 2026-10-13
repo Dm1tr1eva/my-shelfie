@@ -62,20 +62,55 @@ describe("SeriesPage", () => {
     );
   });
 
-  it("counts genres and tropes across the series", async () => {
-    serve();
+  it("shows the tags and the description of the series itself", async () => {
+    serve({
+      ...SAGA,
+      genres: ["Fantasy", "Romance"],
+      tropes: ["slow burn"],
+      annotation: "Fae courts and one bargain.",
+    });
     renderApp(<SeriesPage id="saga" />);
 
-    const tropes = (await screen.findByRole("heading", { name: "Tropes" })).closest(
+    const about = (await screen.findByRole("heading", { name: "About this series" })).closest(
       "section",
     ) as HTMLElement;
-    const genres = screen
-      .getByRole("heading", { name: "Genres in this series" })
-      .closest("section") as HTMLElement;
 
-    expect(within(tropes).getByText("slow burn").parentElement).toHaveTextContent("2");
-    expect(within(genres).getByText("Fantasy").parentElement).toHaveTextContent("2");
-    expect(within(genres).getByText("Romance").parentElement).toHaveTextContent("1");
+    expect(within(about).getByText("Fae courts and one bargain.")).toBeInTheDocument();
+    expect(within(about).getByText("Fantasy")).toBeInTheDocument();
+    expect(within(about).getByText("Romance")).toBeInTheDocument();
+    expect(within(about).getByText("slow burn")).toBeInTheDocument();
+  });
+
+  it("saves the genres, tropes and description you edit", async () => {
+    const calls = serve();
+    renderApp(<SeriesPage id="saga" />);
+    await screen.findByRole("heading", { name: "Saga of Ash" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
+    const form = screen.getByRole("form", { name: "Edit series" });
+    fireEvent.click(within(form).getByRole("button", { name: /Choose genres/ }));
+    fireEvent.click(within(form).getByRole("checkbox", { name: "Horror" }));
+    const tropes = within(form).getByRole("textbox", { name: "Tropes" });
+    fireEvent.change(tropes, { target: { value: "slow burn" } });
+    fireEvent.keyDown(tropes, { key: "Enter" });
+    fireEvent.change(within(form).getByLabelText("Description"), {
+      target: { value: "Dark and slow." },
+    });
+    fireEvent.click(within(form).getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          path: "/api/series/saga",
+          body: expect.objectContaining({
+            genres: ["Horror"],
+            tropes: ["slow burn"],
+            annotation: "Dark and slow.",
+          }),
+        }),
+      ),
+    );
   });
 
   it("saves the edited series details", async () => {
@@ -98,6 +133,9 @@ describe("SeriesPage", () => {
           note: null,
           status: "complete",
           totalBooks: null,
+          genres: [],
+          tropes: [],
+          annotation: null,
         },
       }),
     );

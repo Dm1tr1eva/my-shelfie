@@ -22,7 +22,7 @@ function DetailsForm({ book }: { book: Book }) {
   const { books } = useBooks();
   const { series, isLoading: seriesLoading } = useSeriesList();
   const { updateBook } = useBookActions();
-  const { createSeries } = useSeriesActions();
+  const { createSeries, updateSeries } = useSeriesActions();
 
   const initialSeries = params.get("series") ?? book.seriesId;
   const initialNumber = params.get("number");
@@ -46,26 +46,9 @@ function DetailsForm({ book }: { book: Book }) {
   }
   const suggestions = [...tropeCounts].map(([name, count]) => ({ name, count }));
 
-  const seriesGenres = (
-    choice.seriesId
-      ? [
-          ...new Set(
-            books
-              .filter((item) => item.seriesId === choice.seriesId && item.id !== book.id)
-              .flatMap((item) => item.genres),
-          ),
-        ]
-      : []
-  ) as Genre[];
-  const seriesTropes = choice.seriesId
-    ? [
-        ...new Set(
-          books
-            .filter((item) => item.seriesId === choice.seriesId && item.id !== book.id)
-            .flatMap((item) => item.tropes),
-        ),
-      ]
-    : [];
+  const chosenSeries = series.find((item) => item.id === choice.seriesId);
+  const seriesGenres = chosenSeries?.genres ?? [];
+  const seriesTropes = chosenSeries?.tropes ?? [];
   const genres = pickedGenres ?? (book.genres.length > 0 ? book.genres : seriesGenres);
   const tropes = pickedTropes ?? (book.tropes.length > 0 ? book.tropes : seriesTropes);
   const wanted = book.ownership === "wanted";
@@ -85,6 +68,15 @@ function DetailsForm({ book }: { book: Book }) {
         ...(seriesId !== book.seriesId && { seriesId: seriesId ?? null }),
         ...(seriesNumber !== book.seriesNumber && { seriesNumber: seriesNumber ?? null }),
       });
+      if (seriesId) {
+        const known = created ?? series.find((item) => item.id === seriesId);
+        const same = (a: string[], b: string[]) =>
+          a.length === b.length && a.every((value) => b.includes(value));
+
+        if (!known || !same(genres, known.genres) || !same(tropes, known.tropes)) {
+          await updateSeries(seriesId, { genres, tropes });
+        }
+      }
       router.push("/library");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");

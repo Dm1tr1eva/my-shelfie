@@ -24,7 +24,8 @@ async function createBook(req, res) {
 
   try {
     const book = await bookService.createBook(req.userId, parsed.data);
-    res.status(201).json(toBookDto(book));
+    const shared = await bookService.seriesMapFor(req.userId, [book]);
+    res.status(201).json(toBookDto(book, shared.get(String(book.seriesId))));
   } catch (err) {
     if (err instanceof SeriesNotFoundError) {
       return res.status(400).json({ error: "seriesId: unknown series" });
@@ -51,7 +52,13 @@ async function getBooks(req, res) {
       limit,
     });
 
-    res.json({ books: books.map(toBookDto), total, page, limit });
+    const shared = await bookService.seriesMapFor(req.userId, books);
+    res.json({
+      books: books.map((book) => toBookDto(book, shared.get(String(book.seriesId)))),
+      total,
+      page,
+      limit,
+    });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch books" });
   }
@@ -82,7 +89,8 @@ async function getBook(req, res) {
       return res.status(404).json({ error: "Book not found" });
     }
 
-    res.json(toBookDto(book));
+    const shared = await bookService.seriesMapFor(req.userId, [book]);
+    res.json(toBookDto(book, shared.get(String(book.seriesId))));
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch book" });
   }
@@ -101,7 +109,8 @@ async function updateBook(req, res) {
       return res.status(404).json({ error: "Book not found" });
     }
 
-    res.json(toBookDto(book));
+    const shared = await bookService.seriesMapFor(req.userId, [book]);
+    res.json(toBookDto(book, shared.get(String(book.seriesId))));
   } catch (err) {
     if (err instanceof SeriesNotFoundError) {
       return res.status(400).json({ error: "seriesId: unknown series" });

@@ -243,37 +243,45 @@ describe("BookPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("fills genres and tropes from the other books of a series you choose", async () => {
-    const sibling = book({
-      id: "sib",
-      title: "Sibling",
-      seriesId: "other",
+  it("shows the tags and description of the series, read-only, for a book that has one", async () => {
+    const owned = book({
+      id: "s1",
+      title: "In a series",
+      seriesId: "saga",
       seriesNumber: 1,
       genres: ["Romantasy"],
       tropes: ["slow burn"],
+      annotation: "About the whole series.",
     });
-    const solo = book({ id: "solo", title: "Alone" });
-    const other = series({ id: "other", title: "Other Saga" });
-    const calls = mockApi(({ method, path }) => {
-      if (method === "PATCH" && path === "/api/books/solo") return { body: solo };
+    mockApi(({ path }) => {
+      if (path === "/api/books/s1") return { body: owned };
+      if (path.startsWith("/api/books")) return booksResponse([owned]);
+      if (path === "/api/series") return { body: { series: [saga] } };
+    });
+    renderApp(<BookPage id="s1" />);
+    await screen.findByRole("heading", { name: "In a series" });
+
+    expect(screen.getByText("slow burn")).toBeInTheDocument();
+    expect(screen.getByText("About the whole series.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit tags" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/My annotation/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Edit the series" })).toHaveAttribute(
+      "href",
+      "/series/saga",
+    );
+  });
+
+  it("lets a standalone book keep its own tags and annotation", async () => {
+    const solo = book({ id: "solo", title: "Alone", tropes: ["mine"] });
+    mockApi(({ path }) => {
       if (path === "/api/books/solo") return { body: solo };
-      if (path.startsWith("/api/books")) return booksResponse([solo, sibling]);
-      if (path === "/api/series") return { body: { series: [other] } };
+      if (path.startsWith("/api/books")) return booksResponse([solo]);
+      if (path === "/api/series") return { body: { series: [saga] } };
     });
     renderApp(<BookPage id="solo" />);
     await screen.findByRole("heading", { name: "Alone" });
 
-    fireEvent.click(await screen.findByRole("button", { name: "Add to a series" }));
-    fireEvent.click(screen.getByRole("button", { name: "Show all series" }));
-    fireEvent.mouseDown(screen.getByRole("option", { name: /Other Saga/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-
-    await waitFor(() =>
-      expect(calls).toContainEqual({
-        method: "PATCH",
-        path: "/api/books/solo",
-        body: { seriesId: "other", genres: ["Romantasy"], tropes: ["slow burn"] },
-      }),
-    );
+    expect(screen.getByRole("button", { name: "Edit tags" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/My annotation/)).toBeInTheDocument();
   });
 });

@@ -117,24 +117,6 @@ function BookForm({ book }: { book: Book }) {
     setDraft((current) => ({ ...current, ...values }));
   }
 
-  function chooseSeries(value: SeriesChoice) {
-    const changed = value.seriesId !== draft.series.seriesId;
-    const siblings =
-      changed && value.seriesId
-        ? books.filter((item) => item.seriesId === value.seriesId && item.id !== book.id)
-        : [];
-
-    patch({
-      series: value,
-      ...(draft.genres.length === 0 && siblings.length > 0
-        ? { genres: [...new Set(siblings.flatMap((item) => item.genres))] as Genre[] }
-        : {}),
-      ...(draft.tropes.length === 0 && siblings.length > 0
-        ? { tropes: [...new Set(siblings.flatMap((item) => item.tropes))] }
-        : {}),
-    });
-  }
-
   async function save() {
     setPending(true);
     setError(null);
@@ -247,17 +229,26 @@ function BookForm({ book }: { book: Book }) {
                 {draft.genres.length + draft.tropes.length === 0 && (
                   <span className="text-sm text-muted">No genres or tropes yet.</span>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setEditingTags((current) => !current)}
-                  aria-expanded={editingTags}
-                  className="min-h-11 text-navy underline underline-offset-2"
-                >
-                  {editingTags ? "Done" : "Edit tags"}
-                </button>
+                {draft.series.seriesId && series ? (
+                  <Link
+                    href={`/series/${series.id}`}
+                    className="inline-flex min-h-11 items-center text-navy underline underline-offset-2"
+                  >
+                    Tags belong to the series
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingTags((current) => !current)}
+                    aria-expanded={editingTags}
+                    className="min-h-11 text-navy underline underline-offset-2"
+                  >
+                    {editingTags ? "Done" : "Edit tags"}
+                  </button>
+                )}
               </div>
 
-              {editingTags && (
+              {editingTags && !draft.series.seriesId && (
                 <div className="card flex flex-col gap-4 p-4">
                   <GenreMultiSelect value={draft.genres} onChange={(genres) => patch({ genres })} />
                   <TagInput
@@ -286,7 +277,7 @@ function BookForm({ book }: { book: Book }) {
                         books={books}
                         currentBookId={book.id}
                         value={draft.series}
-                        onChange={chooseSeries}
+                        onChange={(value) => patch({ series: value })}
                         onCreate={createSeries}
                         suggestion={
                           draft.series.seriesId
@@ -399,18 +390,35 @@ function BookForm({ book }: { book: Book }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span className="font-serif text-2xl font-semibold">
-                My annotation{" "}
-                <span className="font-sans text-sm font-normal text-muted">optional</span>
-              </span>
-              <textarea
-                value={draft.annotation}
-                onChange={(event) => patch({ annotation: event.target.value })}
-                rows={4}
-                className="field"
-              />
-            </label>
+            {draft.series.seriesId && series ? (
+              <div className="flex flex-col gap-1">
+                <h2 className="font-serif text-2xl font-semibold">About the series</h2>
+                {draft.annotation ? (
+                  <p className="whitespace-pre-line">{draft.annotation}</p>
+                ) : (
+                  <p className="text-muted">The series has no description yet.</p>
+                )}
+                <Link
+                  href={`/series/${series.id}`}
+                  className="inline-flex min-h-11 items-center self-start text-navy underline underline-offset-2"
+                >
+                  Edit the series
+                </Link>
+              </div>
+            ) : (
+              <label className="flex flex-col gap-1">
+                <span className="font-serif text-2xl font-semibold">
+                  My annotation{" "}
+                  <span className="font-sans text-sm font-normal text-muted">optional</span>
+                </span>
+                <textarea
+                  value={draft.annotation}
+                  onChange={(event) => patch({ annotation: event.target.value })}
+                  rows={4}
+                  className="field"
+                />
+              </label>
+            )}
           </section>
         </div>
 

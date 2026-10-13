@@ -11,7 +11,9 @@ const OPTIONAL_FIELDS = [
   "finishedAt",
 ];
 
-function toBookDto(book) {
+function toBookDto(book, series) {
+  const shared = book.seriesId && series ? series : null;
+
   const dto = {
     id: book._id.toString(),
     userId: book.userId.toString(),
@@ -19,8 +21,8 @@ function toBookDto(book) {
     author: book.author,
     status: book.status,
     ownership: book.ownership ?? "owned",
-    genres: book.genres ?? [],
-    tropes: book.tropes ?? [],
+    genres: shared ? (shared.genres ?? []) : (book.genres ?? []),
+    tropes: shared ? (shared.tropes ?? []) : (book.tropes ?? []),
     links: (book.links ?? []).map((link) => ({ language: link.language, url: link.url })),
     createdAt: book.createdAt,
     updatedAt: book.updatedAt,
@@ -31,8 +33,9 @@ function toBookDto(book) {
   }
 
   for (const field of OPTIONAL_FIELDS) {
-    if (book[field] !== undefined && book[field] !== null) {
-      dto[field] = book[field];
+    const value = field === "annotation" && shared ? shared.annotation : book[field];
+    if (value !== undefined && value !== null && value !== "") {
+      dto[field] = value;
     }
   }
 

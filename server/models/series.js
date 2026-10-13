@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { SERIES_STATUSES } = require("../constants/library");
+const { SERIES_STATUSES, GENRES } = require("../constants/library");
 
 const seriesSchema = new mongoose.Schema(
   {
@@ -13,6 +13,10 @@ const seriesSchema = new mongoose.Schema(
     status: { type: String, enum: SERIES_STATUSES, default: "unknown" },
     note: String,
     totalBooks: { type: Number, min: 1 },
+    genres: { type: [{ type: String, enum: GENRES }], default: [] },
+    tropes: { type: [String], default: [] },
+    annotation: String,
+    tagsMerged: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

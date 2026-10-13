@@ -1,6 +1,6 @@
 # Feature: series, ownership and "next to buy"
 
-**Last verified against code:** 2026-10-13
+**Last verified against code:** 2026-10-14
 
 ## What it does
 
@@ -76,7 +76,9 @@ as a dashed tile from the series' numbers.
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
 (`ongoing | complete | unknown`), `note`, `totalBooks` (optional whole number, 1 to 200: how
-many books the series has or has announced), timestamps; index `{ userId, createdAt }`.
+many books the series has or has announced), `genres` (the fixed list), `tropes` (up to 30, 60
+characters each), `annotation` (up to 5000 characters), `tagsMerged` (internal), timestamps;
+index `{ userId, createdAt }`.
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (from the
 fixed list in `server/constants/library.js`), `tropes`, `links` (`{ language, url }`, http(s)
@@ -90,7 +92,15 @@ client keeps its own copy of the genre list.
 - **The wanted-books query is capped at 1,000.** A personal wishlist is far below that.
 - **No uniqueness on series titles.** Two series may share a title; the author tells them
   apart by author and notes.
-- **Genres and tropes live on books**, so a series' tags are the union of its books'.
+- **Genres, tropes and the description live on the series.** A book with a `seriesId` is
+  returned with the series' values in `genres`, `tropes` and `annotation` (the overlay is
+  `toBookDto(book, series)`); the values stored on the book are kept and come back if it leaves
+  the series. Putting a book into a series adds its genres and tropes to the series and gives
+  the series the book's description if it has none. A series saved before this took the union
+  of its books' tags the first time it was read and was marked `tagsMerged`; one created
+  through the API is born merged, so tags an author removes are not brought back. Design:
+  [series-tags.md](../designs/series-tags.md).
+- **A trope cannot be true of one book of a series only.**
 - **A series you have not started never shows up.** A new wishlist series appears in "Next
   to buy" only after you own one of its books, as the design intends.
 - **A missing number has no title.** Only the count of the series is stored, not its list of

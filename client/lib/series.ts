@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
-import { isLibraryKey, type Book } from "./books";
+import { isLibraryKey, type Book, type Genre } from "./books";
 import { SERIES_STATUS_LABELS, type SeriesStatus } from "./catalogue-constants";
 
 export { SERIES_STATUS_LABELS };
@@ -34,6 +34,9 @@ export type Series = {
   author?: string;
   note?: string;
   totalBooks?: number;
+  genres: Genre[];
+  tropes: string[];
+  annotation?: string;
 };
 
 export type NewSeries = {
@@ -42,6 +45,9 @@ export type NewSeries = {
   status?: SeriesStatus;
   note?: string;
   totalBooks?: number;
+  genres?: Genre[];
+  tropes?: string[];
+  annotation?: string;
 };
 
 export type SeriesChanges = Partial<{
@@ -50,6 +56,9 @@ export type SeriesChanges = Partial<{
   status: SeriesStatus;
   note: string | null;
   totalBooks: number | null;
+  genres: Genre[];
+  tropes: string[];
+  annotation: string | null;
 }>;
 
 export function useSeriesList() {

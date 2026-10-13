@@ -113,8 +113,8 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
   step 1 finds a book and adds it in one click and goes straight to step 2 (opened from a
   series, the book arrives with that series and number); step 2 adds series, genres, tropes and
-  links and can be skipped. Genres and tropes default to those of the series' other books until
-  you pick your own; shop links are asked for a wishlist book only, and a book that is on the
+  links and can be skipped. Genres and tropes are those of the series when the book has one, and what you
+  edit there is written to the series; shop links are asked for a wishlist book only, and a book that is on the
   shelf keeps whatever links it has. A book with
   no series starts the series field from its own title, with its author ready in the "new
   series" form, so a series named after its first book is one click (an existing series of

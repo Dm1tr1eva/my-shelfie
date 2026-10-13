@@ -11,7 +11,12 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => route.params,
 }));
 
-const saga = series({ id: "saga", title: "Saga of Ash" });
+const saga = series({
+  id: "saga",
+  title: "Saga of Ash",
+  genres: ["Romantasy", "Fantasy"],
+  tropes: ["slow burn", "found family"],
+});
 const NEW_BOOK = book({ id: "new", title: "Ash Four", seriesId: "saga", seriesNumber: 4 });
 const SIBLINGS = [
   book({ seriesId: "saga", seriesNumber: 1, genres: ["Romantasy", "Fantasy"] }),
@@ -21,6 +26,7 @@ const SIBLINGS = [
 function serve() {
   return mockApi(({ method, path }) => {
     if (method === "PATCH" && path === "/api/books/new") return { body: NEW_BOOK };
+    if (method === "PATCH" && path === "/api/series/saga") return { body: saga };
     if (path === "/api/books/new") return { body: NEW_BOOK };
     if (path.startsWith("/api/books")) return booksResponse([...SIBLINGS, NEW_BOOK]);
     if (path === "/api/series") return { body: { series: [saga] } };
@@ -37,7 +43,7 @@ describe("AddDetails", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts the genres from the other books of the series", async () => {
+  it("starts the genres from the series itself", async () => {
     serve();
     renderApp(<AddDetails id="new" />);
 
@@ -67,7 +73,28 @@ describe("AddDetails", () => {
         }),
       ),
     );
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          path: "/api/series/saga",
+          body: expect.objectContaining({ genres: ["Horror"] }),
+        }),
+      ),
+    );
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+  });
+
+  it("leaves the series alone when you change nothing", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    expect(calls.some((call) => call.path === "/api/series/saga" && call.method === "PATCH")).toBe(
+      false,
+    );
   });
 
   it("returns to the library without changes when you skip", async () => {
@@ -201,6 +228,7 @@ describe("AddDetails", () => {
 
     function serveBook(target: ReturnType<typeof book>) {
       return mockApi(({ method, path }) => {
+        if (method === "PATCH" && path === "/api/series/saga") return { body: saga };
         if (method === "PATCH" && path === `/api/books/${target.id}`) return { body: target };
         if (path === `/api/books/${target.id}`) return { body: target };
         if (path.startsWith("/api/books")) return booksResponse([sibling, target]);
@@ -208,7 +236,7 @@ describe("AddDetails", () => {
       });
     }
 
-    it("starts the tropes from the other books of the series, and keeps your own once you edit", async () => {
+    it("starts the tropes from the series and writes your edit back to the series", async () => {
       const target = book({ id: "t1", title: "New one", seriesId: "saga", seriesNumber: 2 });
       const calls = serveBook(target);
       route.params = new URLSearchParams();
@@ -224,7 +252,8 @@ describe("AddDetails", () => {
         expect(calls).toContainEqual(
           expect.objectContaining({
             method: "PATCH",
-            body: expect.objectContaining({ tropes: ["slow burn"], genres: ["Fantasy"] }),
+            path: "/api/series/saga",
+            body: { genres: ["Romantasy", "Fantasy"], tropes: ["slow burn"] },
           }),
         ),
       );

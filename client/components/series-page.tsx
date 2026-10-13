@@ -9,10 +9,12 @@ import { ErrorState, NotFound } from "@/components/error-state";
 import { OwnProgress } from "@/components/own-progress";
 import { PlusIcon } from "@/components/icons";
 import { SeriesStatePills } from "@/components/form-controls";
+import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { Shelf } from "@/components/shelf";
 import { ShelfSkeleton } from "@/components/skeleton";
+import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
-import type { Book } from "@/lib/books";
+import { useBooks, type Book, type Genre } from "@/lib/books";
 import { gapNumbersOf, highestNumberOf, isOwned, ownedNumbersOf } from "@/lib/catalogue";
 import {
   SERIES_STATUS_LABELS,
@@ -23,12 +25,6 @@ import {
 } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
-function countBy(values: string[]) {
-  const counts = new Map<string, number>();
-  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
-  return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-}
-
 function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const router = useRouter();
   const { updateSeries, deleteSeries } = useSeriesActions();
@@ -38,6 +34,15 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const [note, setNote] = useState(series.note ?? "");
   const [status, setStatus] = useState<SeriesStatus>(series.status);
   const [totalText, setTotalText] = useState(series.totalBooks ? String(series.totalBooks) : "");
+  const [genres, setGenres] = useState<Genre[]>(series.genres);
+  const [tropes, setTropes] = useState<string[]>(series.tropes);
+  const [annotation, setAnnotation] = useState(series.annotation ?? "");
+  const { books: allBooks } = useBooks();
+  const tropeCounts = new Map<string, number>();
+  for (const item of allBooks) {
+    for (const trope of item.tropes) tropeCounts.set(trope, (tropeCounts.get(trope) ?? 0) + 1);
+  }
+  const suggestions = [...tropeCounts].map(([name, count]) => ({ name, count }));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -64,6 +69,9 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         note: note.trim() === "" ? null : note.trim(),
         status,
         totalBooks: totalText.trim() === "" ? null : Number(totalText),
+        genres,
+        tropes,
+        annotation: annotation.trim() === "" ? null : annotation,
       });
       setEditing(false);
     } catch (err) {
@@ -200,35 +208,32 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         )}
       </section>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <section aria-labelledby="genres-heading" className="card flex flex-col gap-3 p-5">
-          <h2 id="genres-heading" className="text-xl font-semibold">
-            Genres in this series
-          </h2>
-          <ul className="flex flex-wrap gap-2">
-            {countBy(books.flatMap((book) => book.genres)).map(([genre, count]) => (
-              <li key={genre} className="flex items-center gap-1">
-                <GenreChip genre={genre} />
-                <span className="text-sm text-muted">{count}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section aria-labelledby="tropes-heading" className="card flex flex-col gap-3 p-5">
-          <h2 id="tropes-heading" className="text-xl font-semibold">
-            Tropes
-          </h2>
-          <ul className="flex flex-wrap gap-2">
-            {countBy(books.flatMap((book) => book.tropes)).map(([trope, count]) => (
-              <li key={trope} className="flex items-center gap-1">
-                <TropeChip trope={trope} />
-                <span className="text-sm text-muted">{count}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      <section aria-labelledby="about-heading" className="card flex flex-col gap-4 p-5">
+        <h2 id="about-heading" className="text-xl font-semibold">
+          About this series
+        </h2>
+        {series.annotation ? (
+          <p className="max-w-3xl whitespace-pre-line">{series.annotation}</p>
+        ) : (
+          <p className="text-muted">No description yet. Add one with Edit series.</p>
+        )}
+        <ul aria-label="Genres and tropes" className="flex flex-wrap gap-2">
+          {series.genres.map((genre) => (
+            <li key={genre}>
+              <GenreChip genre={genre} />
+            </li>
+          ))}
+          {series.tropes.map((trope) => (
+            <li key={trope}>
+              <TropeChip trope={trope} />
+            </li>
+          ))}
+          {series.genres.length + series.tropes.length === 0 && (
+            <li className="text-sm text-muted">No genres or tropes yet.</li>
+          )}
+        </ul>
+        <p className="text-sm text-muted">These are shared by every book of the series.</p>
+      </section>
 
       <section className="flex flex-col gap-3">
         {!editing ? (
@@ -251,6 +256,23 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
               <input value={author} onChange={(e) => setAuthor(e.target.value)} className="field" />
             </label>
             <SeriesStatePills value={status} onChange={setStatus} />
+            <GenreMultiSelect value={genres} onChange={setGenres} />
+            <TagInput
+              label="Tropes"
+              value={tropes}
+              onChange={setTropes}
+              suggestions={suggestions}
+            />
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold">Description</span>
+              <textarea
+                value={annotation}
+                onChange={(e) => setAnnotation(e.target.value)}
+                rows={5}
+                placeholder="What the series is about, in your words"
+                className="field"
+              />
+            </label>
             <label className="flex flex-col gap-1">
               <span className="font-semibold">Books in the series</span>
               <input

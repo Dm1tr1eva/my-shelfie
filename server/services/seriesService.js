@@ -17,12 +17,47 @@ function byNumberThenAge(a, b) {
   return a.createdAt - b.createdAt;
 }
 
+function union(...lists) {
+  return [...new Set(lists.flat())];
+}
+
+async function ensureTags(userId, docs) {
+  for (const doc of docs.filter((item) => !item.tagsMerged)) {
+    const books = await bookRepository.findBySeries(userId, doc._id);
+
+    doc.genres = union(doc.genres ?? [], ...books.map((book) => book.genres ?? []));
+    doc.tropes = union(doc.tropes ?? [], ...books.map((book) => book.tropes ?? []));
+    if (!doc.annotation) {
+      doc.annotation = books.find((book) => book.annotation)?.annotation;
+    }
+    doc.tagsMerged = true;
+    await doc.save();
+  }
+
+  return docs;
+}
+
+async function listDocs(userId) {
+  return ensureTags(userId, await seriesRepository.findManyForUser(userId));
+}
+
+async function absorbTags(userId, seriesId, book) {
+  const series = await seriesRepository.findOneForUser(userId, seriesId);
+  if (!series) return;
+
+  await ensureTags(userId, [series]);
+  series.genres = union(series.genres ?? [], book.genres ?? []);
+  series.tropes = union(series.tropes ?? [], book.tropes ?? []);
+  if (!series.annotation && book.annotation) series.annotation = book.annotation;
+  await series.save();
+}
+
 async function createSeries(userId, data) {
-  return seriesRepository.create(userId, data);
+  return seriesRepository.create(userId, { ...data, tagsMerged: true });
 }
 
 async function listSeries(userId) {
-  const series = await seriesRepository.findManyForUser(userId);
+  const series = await listDocs(userId);
   const counts = await bookRepository.countBySeries(
     userId,
     series.map((item) => item._id),
@@ -37,6 +72,7 @@ async function listSeries(userId) {
 async function getSeries(userId, id) {
   const series = await seriesRepository.findOneForUser(userId, id);
   if (!series) return null;
+  await ensureTags(userId, [series]);
 
   const books = await bookRepository.findBySeries(userId, id);
   const counts = { owned: 0, wanted: 0 };
@@ -72,4 +108,6 @@ module.exports = {
   updateSeries,
   deleteSeries,
   assertSeriesExists,
+  listDocs,
+  absorbTags,
 };
