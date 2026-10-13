@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PasswordField, TextField } from "@/components/auth-fields";
@@ -17,7 +17,10 @@ function validate(values: Record<Field, string>): Errors {
 
   if (values.name.trim() === "") errors.name = "Enter your name.";
   if (!EMAIL_SHAPE.test(values.email.trim())) errors.email = "Enter a valid email address.";
-  if (values.password.length < MIN_PASSWORD) errors.password = "Use at least 8 characters.";
+  if (values.password === "") errors.password = "Enter a password.";
+  else if (values.password.length < MIN_PASSWORD) {
+    errors.password = `Too short: ${values.password.length} of the ${MIN_PASSWORD} characters needed.`;
+  }
   if (new TextEncoder().encode(values.password).length > 72) {
     errors.password = "That password is too long.";
   }
@@ -38,6 +41,13 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [banner, setBanner] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const form = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (failedAttempts === 0) return;
+    form.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [failedAttempts]);
 
   function set(field: Field, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -50,7 +60,10 @@ export function RegisterForm() {
 
     const found = validate(values);
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      setFailedAttempts((count) => count + 1);
+      return;
+    }
 
     setPending(true);
     try {
@@ -85,6 +98,7 @@ export function RegisterForm() {
   return (
     <main className="flex flex-1 items-start justify-center px-4 py-10 sm:py-16">
       <form
+        ref={form}
         onSubmit={handleSubmit}
         noValidate
         aria-labelledby="register-heading"

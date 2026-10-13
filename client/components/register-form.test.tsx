@@ -62,6 +62,40 @@ describe("RegisterForm", () => {
     expect(calls).toEqual([]);
   });
 
+  it("says how short the password is, in words that differ from the hint", async () => {
+    await open();
+
+    fill("Name", "Alice");
+    fill("Email", "alice@example.com");
+    fill("Password", "123");
+    fill("Confirm password", "123");
+    submit();
+
+    expect(await screen.findByText("Too short: 3 of the 8 characters needed.")).toBeInTheDocument();
+    expect(screen.queryByText("Use at least 8 characters.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("asks for a password when the field is empty", async () => {
+    await open();
+
+    submit();
+
+    expect(await screen.findByText("Enter a password.")).toBeInTheDocument();
+  });
+
+  it("moves the focus to the first field that needs attention", async () => {
+    await open();
+
+    fill("Name", "Alice");
+    fill("Email", "alice@example.com");
+    fill("Password", "123");
+    fill("Confirm password", "123");
+    submit();
+
+    await waitFor(() => expect(screen.getByLabelText("Password")).toHaveFocus());
+  });
+
   it("clears a field's message as soon as you edit that field", async () => {
     await open();
 
