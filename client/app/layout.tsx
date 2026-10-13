@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { AppFrame } from "@/components/app-frame";
 import { AuthProvider } from "@/lib/auth-context";
-import { THEME_INIT_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,7 +16,8 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: { default: "my-shelfie", template: "%s · my-shelfie" },
-  description: "A personal tracker for the books you want to read, are reading and have finished.",
+  description:
+    "A personal catalogue of the paper books you own, with a wishlist organised by series.",
 };
 
 export default function RootLayout({
@@ -27,19 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
-    >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col">
         <AuthProvider>
-          <SiteHeader />
-          {children}
-          <SiteFooter />
+          <AppFrame>{children}</AppFrame>
         </AuthProvider>
       </body>
     </html>

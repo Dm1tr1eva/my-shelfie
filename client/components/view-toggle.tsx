@@ -1,8 +1,9 @@
+import { GridIcon, ListIcon } from "@/components/icons";
 import type { ViewMode } from "@/lib/use-view-mode";
 
-const OPTIONS: { value: ViewMode; label: string }[] = [
-  { value: "list", label: "List" },
-  { value: "grid", label: "Grid" },
+const OPTIONS: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
+  { value: "grid", label: "Grid", icon: <GridIcon size={18} /> },
+  { value: "list", label: "List", icon: <ListIcon size={18} /> },
 ];
 
 export function ViewToggle({
@@ -13,21 +14,18 @@ export function ViewToggle({
   onChange: (mode: ViewMode) => void;
 }) {
   return (
-    <div
-      role="group"
-      aria-label="View"
-      className="flex rounded-lg border border-border-strong p-0.5"
-    >
+    <div role="group" aria-label="View" className="flex rounded-control border border-field p-0.5">
       {OPTIONS.map((option) => (
         <button
           key={option.value}
           type="button"
           aria-pressed={mode === option.value}
           onClick={() => onChange(option.value)}
-          className={`rounded-md px-3 py-1 text-sm ${
-            mode === option.value ? "bg-accent text-accent-foreground" : "hover:bg-surface-alt"
+          className={`inline-flex min-h-10 items-center gap-2 rounded-[6px] px-3 text-sm font-semibold ${
+            mode === option.value ? "bg-navy text-page" : "hover:bg-beige"
           }`}
         >
+          {option.icon}
           {option.label}
         </button>
       ))}

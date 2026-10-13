@@ -57,11 +57,12 @@ In order:
    genres, tropes, links, notes, annotation; `/api/series`, `/api/next-to-buy`,
    `/api/tropes`; 82 server tests. Existing books read as owned with no migration.
    [features/series.md](features/series.md)
-2. ⬜ Screens, from the handoff in [design/](design/), in three waves:
-   - **A, by 10-14 — the core path:** tokens and light-only, the shell (navy nav bar from
+2. 🟨 Screens, from the handoff in [design/](design/), in three waves (A written and tested
+   2026-10-11, in the working tree and not yet committed):
+   - ✅ **A, by 10-14 — the core path:** tokens and light-only, the shell (navy nav bar from
      768, tab bar below), Library (tabs, series groups, gap tiles, grid and list, search,
      stats), Book page, Add a book (both steps), Next to buy
-   - **B, by 10-16:** Series page, filters (popover and bottom sheet), empty, loading and
+   - **B, by 10-16:** a plain Series page already exists from A; still to do: its polish, filters (popover and bottom sheet), empty, loading and
      error states
    - **C, by 10-17:** Home, sign in, create account and privacy restyled
 3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again

@@ -84,31 +84,45 @@ the terms it honours: [google-books-search.md](../designs/google-books-search.md
 
 ## Frontend consumer
 
-`client/lib/books.ts`: `useBooks(status)` and `useBook(id)` (`swr` hooks) read;
-`useBookActions()` creates, updates and deletes, then revalidates every list key through the
-current `SWRConfig` cache. After a delete only list keys are revalidated — refetching the
-deleted book's own key would answer `404` and put an error in the browser console.
+`client/lib/books.ts`: `useBooks()` and `useBook(id)` (`swr` hooks) read; `useBookActions()`
+creates, updates and deletes, then revalidates every library key (`/api/books`,
+`/api/series`, `/api/next-to-buy`, `/api/tropes`) through the current `SWRConfig` cache. After a
+delete the deleted book's own key is left alone — refetching it would answer `404` and put an
+error in the browser console.
 
-The dashboard loads the whole list once (`?limit=100` explicitly — no pagination UI yet, so a
-list past that size would be silently truncated, and the stats under-count with it) and
-derives everything else on the client: stat cards from `lib/book-stats.ts`, a "Currently
-reading" strip, and the status filter, which no longer asks the API again. The library shows as
-a list or a cover grid, the choice kept in `localStorage` (`lib/use-view-mode.ts`).
-`/dashboard/books/[id]` edits title, author, status, rating and review, and deletes after
-`window.confirm`. Designs: [book-list.md](../designs/book-list.md),
-[book-forms.md](../designs/book-forms.md), [visual-refresh.md](../designs/visual-refresh.md).
+The screens, from the handoff in [../design/](../design/), are described in
+[series.md](series.md) and [../designs/library-and-wishlist.md](../designs/library-and-wishlist.md).
+The list is loaded once with `?limit=500` — no pagination UI, so a shelf past that size would be
+silently truncated, and the counts and gaps with it — and everything else is derived on the
+client in `lib/catalogue.ts`: the library and wishlist tabs, series groups, gaps, "own n of m"
+and the stats. A number is a gap when it is wanted or missing and lower than the highest owned
+number in the series, which is the rule `server/services/nextToBuy.js` applies; a novella such as
+#2.5 counts. The shelf shows as a list or a cover grid, the choice kept in `localStorage`
+(`lib/use-view-mode.ts`).
 
-**Search in the add form.** `components/book-search.tsx` sits above the form's fields (outside
-the `<form>`, so Enter in the search box cannot submit it) and `lib/book-search.ts`
-(`useBookSearch`) drives it: it waits 400 ms after the last keystroke, needs three characters,
-aborts a request that has been overtaken, and keeps nothing between searches — no SWR cache,
-because the results may not be stored. A picked result fills title and author, which stay
-editable, and the form then sends `googleVolumeId` and `coverUrl` with the book. The
-"Powered by Google" mark (`client/public/powered-by-google.png`, unaltered) shows beside any
-results, each result links to Google, and a failed search says so and leaves manual entry
-working. The shelf rows (`components/book-row.tsx`) show the cover through a plain `<img>`;
-`next/image` would copy it into Vercel's optimizer. `/privacy` states what is stored and gives
-the takedown contact.
+- `/library` and `/wishlist` — `components/library.tsx`
+- `/books/[id]` — `components/book-page.tsx`: edits are a local draft, saved together from a
+  "You have unsaved changes" bar that sends only the fields that changed; deleting asks
+  `window.confirm`
+- `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
+  step 1 finds a book and adds it in one click (opened from a series, the book arrives with
+  that series and number), step 2 adds series, genres, tropes and links and is optional; the
+  genres default to those of the series' other books until you pick your own
+- `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
+- `/dashboard` and `/dashboard/books/[id]` only redirect to `/library` and `/books/[id]`
+
+**Search.** `/add` calls `GET /api/books/search` on submit (three characters at least) and
+keeps nothing between searches — no SWR cache, because the results may not be stored. A result
+already on the shelf shows "Already in your library", or "Already on your wishlist" with a
+"Move to library" action, instead of a second add. The "Powered by Google" mark
+(`client/public/powered-by-google.png`, unaltered) shows beside any results, each result links
+to Google, and a failed search says so and leaves adding by hand working. Covers are drawn
+through a plain `<img>` (`components/book-cover.tsx`); `next/image` would copy them into
+Vercel's optimizer. A book with no cover gets a generated one instead of an empty box: a
+palette colour picked from a hash of its title, so it never changes between renders, with the
+real title in Playfair italic, as in the handoff's stand-in covers. Choices from a short list
+use `components/select.tsx`, a listbox styled with the tokens, never the browser's native
+`<select>`. `/privacy` states what is stored and gives the takedown contact.
 
 ## Data
 

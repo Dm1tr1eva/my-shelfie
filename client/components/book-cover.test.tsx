@@ -5,7 +5,10 @@ import { BookCover } from "./book-cover";
 describe("BookCover", () => {
   it("shows the cover without Google's page-curl corner", () => {
     const { container } = render(
-      <BookCover url="https://books.google.com/books/content?id=vol1&zoom=1&edge=curl&source=gbs_api" />,
+      <BookCover
+        title="Dune"
+        url="https://books.google.com/books/content?id=vol1&zoom=1&edge=curl&source=gbs_api"
+      />,
     );
 
     expect(container.querySelector("img")).toHaveAttribute(
@@ -15,7 +18,9 @@ describe("BookCover", () => {
   });
 
   it("leaves a cover address that has no page curl as it is", () => {
-    const { container } = render(<BookCover url="https://books.google.com/cover?id=vol1" />);
+    const { container } = render(
+      <BookCover title="Dune" url="https://books.google.com/cover?id=vol1" />,
+    );
 
     expect(container.querySelector("img")).toHaveAttribute(
       "src",
@@ -23,10 +28,35 @@ describe("BookCover", () => {
     );
   });
 
-  it("draws an empty placeholder instead of an image when there is no cover", () => {
-    const { container } = render(<BookCover />);
+  it("draws a cover with the real title instead of an image when there is no cover", () => {
+    const { container, getByText } = render(<BookCover title="Корона з попелу" />);
 
     expect(container.querySelector("img")).toBeNull();
-    expect(container.firstChild).toHaveAttribute("aria-hidden", "true");
+    expect(getByText("Корона з попелу")).toBeInTheDocument();
+    expect(container.querySelector("[aria-hidden='true']")).not.toBeNull();
+  });
+
+  it("gives the same book the same colour every time and spreads books over the palette", () => {
+    const colourOf = (title: string) => {
+      const { container } = render(<BookCover title={title} />);
+      return (container.querySelector("[aria-hidden='true']") as HTMLElement).className.match(
+        /bg-\w+ text-\w+/,
+      )?.[0];
+    };
+    const titles = Array.from({ length: 40 }, (_, index) => `Book number ${index}`);
+    const colours = new Set(titles.map(colourOf));
+
+    expect(colourOf("Dune")).toBe(colourOf("Dune"));
+    expect(colours.size).toBeGreaterThan(3);
+  });
+
+  it("labels the cover with its number in the series when one is given", () => {
+    const { getByText, queryByText, rerender } = render(<BookCover title="Dune" number={3} />);
+
+    expect(getByText("#3")).toBeInTheDocument();
+
+    rerender(<BookCover title="Dune" />);
+
+    expect(queryByText("#3")).toBeNull();
   });
 });

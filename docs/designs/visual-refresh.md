@@ -1,5 +1,9 @@
 # Design: visual refresh — palette, type, dashboard
 
+**Superseded in part, 2026-10-11:** the dashboard, the stat cards, "Currently reading" and the
+theme switch were replaced by the library screens of the handoff in [../design/](../design/);
+the light theme only ships for now. The palette and type decisions below still hold.
+
 ## Problem
 
 The site still has the `create-next-app` look: white or near-black, black buttons, Geist, which

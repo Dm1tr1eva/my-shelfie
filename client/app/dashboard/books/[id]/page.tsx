@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import { BookEditor } from "@/components/book-editor";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Edit book",
-};
-
-export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function DashboardBookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <BookEditor id={id} />;
+  redirect(`/books/${id}`);
 }

@@ -16,9 +16,12 @@ request after a pause can take up to a minute.
   filled in. Typing a book in by hand still works.
 - A status for each book — want to read, reading, read or dropped — and a filter by status.
 - A rating from 1 to 5 and a text review.
-- A dashboard with stat cards, a "Currently reading" strip and a list or cover-grid view.
-- A public home page, a header with navigation, a mobile-first layout, and a light and a dark
-  theme: it starts from the system setting, and a button in the header switches it.
+- A library of the paper books you own and a wishlist, grouped by series, as a list or a
+  cover grid, with the gaps in a series marked.
+- A "Next to buy" list: the missing books of the series you collect, and the standalone
+  wishlist, with filters and an "I bought it" action.
+- A public home page, a navigation bar on wide screens and a tab bar on phones, and a light
+  theme.
 
 ## Stack
 

@@ -16,8 +16,8 @@ function jsonResponse(status: number, body: unknown) {
   );
 }
 
-function renderBooks(status: Parameters<typeof useBooks>[0] = "all") {
-  return renderHook(() => ({ auth: useAuth(), books: useBooks(status) }), {
+function renderBooks() {
+  return renderHook(() => ({ auth: useAuth(), books: useBooks() }), {
     wrapper: ({ children }) => (
       <SWRConfig value={{ provider: () => new Map() }}>
         <AuthProvider>{children}</AuthProvider>
@@ -58,6 +58,10 @@ describe("useBooks", () => {
         title: "Dune",
         author: "Frank Herbert",
         status: "want",
+        ownership: "owned",
+        genres: [],
+        tropes: [],
+        links: [],
         createdAt: "",
         updatedAt: "",
       },
@@ -78,18 +82,20 @@ describe("useBooks", () => {
     expect(result.current.books.total).toBe(1);
   });
 
-  it("includes the status filter in the request when it is not 'all'", async () => {
+  it("asks for the whole shelf in one request", async () => {
     const requestedUrls: string[] = [];
     vi.mocked(fetch).mockImplementation((url) => {
       requestedUrls.push(String(url));
       if (url === ME_URL) return jsonResponse(200, ALICE);
-      return jsonResponse(200, { books: [], total: 0, page: 1, limit: 100 });
+      return jsonResponse(200, { books: [], total: 0, page: 1, limit: 500 });
     });
 
-    const { result } = renderBooks("reading");
+    const { result } = renderBooks();
 
     await waitFor(() => expect(result.current.auth.status).toBe("authenticated"));
-    await waitFor(() => expect(requestedUrls.some((u) => u.includes("status=reading"))).toBe(true));
+    await waitFor(() =>
+      expect(requestedUrls.some((u) => u.includes("/api/books?limit=500"))).toBe(true),
+    );
   });
 
   it("surfaces a fetch failure as an error instead of throwing", async () => {

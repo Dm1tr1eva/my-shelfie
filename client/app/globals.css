@@ -1,112 +1,113 @@
 @import "tailwindcss";
 
-:root {
-  color-scheme: light dark;
-  --background: light-dark(#ece4e5, #2e1819);
-  --surface: light-dark(#f6f1f1, #3b2527);
-  --surface-alt: light-dark(#e0d1ca, #4a3032);
-  --foreground: light-dark(#2e1819, #ece4e5);
-  --muted: light-dark(#6b5557, #c2b3b4);
-  --border: light-dark(#c6d0dd, #5a4042);
-  --border-strong: light-dark(#6f7c93, #8090a8);
-  --accent: light-dark(#72251f, #e0d1ca);
-  --accent-foreground: light-dark(#f6f1f1, #2e1819);
-  --link: light-dark(#192b51, #c6d0dd);
-  --danger: light-dark(#72251f, #e9b0a8);
-  --success: light-dark(#1f4d3a, #a8d5be);
-  --want: light-dark(#c6d0dd, #2a3a5a);
-  --want-fg: light-dark(#192b51, #c6d0dd);
-  --reading: light-dark(#192b51, #c6d0dd);
-  --reading-fg: light-dark(#ece4e5, #192b51);
-  --read: light-dark(#72251f, #e0d1ca);
-  --read-fg: light-dark(#ece4e5, #2e1819);
-  --dropped: light-dark(#e0d1ca, #4a3032);
-  --dropped-fg: light-dark(#5a4546, #c2b3b4);
-  --paper: #f6f1f1;
-}
+@theme {
+  --color-page: #ece4e5;
+  --color-card: #f6f1f1;
+  --color-ink: #2e1819;
+  --color-ink-soft: #5a4546;
+  --color-muted: #6b5557;
+  --color-navy: #192b51;
+  --color-burgundy: #72251f;
+  --color-beige: #e0d1ca;
+  --color-mist: #c6d0dd;
+  --color-slate: #8090a8;
+  --color-field: #6f7c93;
+  --color-success: #1f4d3a;
 
-:root[data-theme="light"] {
-  color-scheme: light;
-}
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-cover: 3px 6px 6px 3px;
+
+  --shadow-cover:
+    0 1px 2px rgb(46 24 25 / 0.2), 0 12px 18px -12px rgb(46 24 25 / 0.55),
+    inset 5px 0 0 rgb(236 228 229 / 0.14);
+  --shadow-shelf: 0 10px 14px -10px rgb(46 24 25 / 0.5);
+  --shadow-pop: 0 18px 32px -16px rgb(46 24 25 / 0.45);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-alt: var(--surface-alt);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-link: var(--link);
-  --color-danger: var(--danger);
-  --color-success: var(--success);
-  --color-paper: var(--paper);
-  --color-want: var(--want);
-  --color-want-fg: var(--want-fg);
-  --color-reading: var(--reading);
-  --color-reading-fg: var(--reading-fg);
-  --color-read: var(--read);
-  --color-read-fg: var(--read-fg);
-  --color-dropped: var(--dropped);
-  --color-dropped-fg: var(--dropped-fg);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-playfair);
+  --font-display: var(--font-serif);
+  --color-background: var(--color-page);
+  --color-surface: var(--color-card);
+  --color-surface-alt: var(--color-beige);
+  --color-foreground: var(--color-ink);
+  --color-border: var(--color-mist);
+  --color-border-strong: var(--color-field);
+  --color-accent: var(--color-burgundy);
+  --color-accent-foreground: var(--color-card);
+  --color-link: var(--color-navy);
+  --color-danger: var(--color-burgundy);
+  --color-paper: var(--color-card);
+  --color-want: var(--color-mist);
+  --color-want-fg: var(--color-navy);
+  --color-reading: var(--color-navy);
+  --color-reading-fg: var(--color-page);
+  --color-read: var(--color-burgundy);
+  --color-read-fg: var(--color-card);
+  --color-dropped: var(--color-beige);
+  --color-dropped-fg: var(--color-ink-soft);
+}
+
+:root {
+  color-scheme: light;
 }
 
 @layer base {
   *,
   ::before,
   ::after {
-    border-color: var(--border);
+    border-color: var(--color-mist);
   }
 
   body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    background: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
   }
 
   h1,
   h2 {
-    font-family: var(--font-display), Georgia, serif;
+    font-family: var(--font-serif);
   }
 
   :focus-visible {
-    outline: 2px solid var(--link);
+    outline: 2px solid var(--color-navy);
     outline-offset: 2px;
   }
 }
 
 @layer components {
   .btn-primary,
-  .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium transition-colors disabled:opacity-50;
+  .btn-outline,
+  .btn-beige {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-4 py-2 font-semibold transition-colors disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply bg-accent text-accent-foreground hover:opacity-90;
+    @apply bg-burgundy text-card hover:opacity-90;
   }
 
   .btn-outline {
-    @apply border border-border-strong text-foreground hover:bg-surface-alt;
+    @apply border border-field text-ink hover:bg-beige;
+  }
+
+  .btn-beige {
+    @apply bg-beige text-ink hover:opacity-90;
   }
 
   .field {
-    @apply w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-foreground placeholder:text-muted;
+    @apply min-h-11 w-full rounded-control border border-field bg-card px-3 py-2 text-ink placeholder:text-muted;
   }
 
   .card {
-    @apply rounded-xl border border-border bg-surface;
+    @apply rounded-card border border-mist bg-card;
   }
 
   .chip {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-sm;
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium;
   }
 
   .chip-want {
@@ -126,6 +127,6 @@
   }
 
   .link {
-    @apply text-link underline underline-offset-2 hover:no-underline;
+    @apply text-navy underline underline-offset-2 hover:no-underline;
   }
 }
