@@ -179,4 +179,20 @@ describe("BookPage", () => {
 
     expect(await screen.findByText("Book not found.")).toBeInTheDocument();
   });
+
+  it("treats a number left on a book with no series as nothing: no 'Book 1', no unsaved bar", async () => {
+    const LEGACY = book({ id: "legacy", title: "Жнець без коси", seriesNumber: 1 });
+    mockApi(({ path }) => {
+      if (path === "/api/books/legacy") return { body: LEGACY };
+      if (path.startsWith("/api/books")) return booksResponse([LEGACY]);
+      if (path === "/api/series") return { body: { series: [] } };
+    });
+    renderApp(<BookPage id="legacy" />);
+
+    await screen.findByRole("heading", { name: "Жнець без коси" });
+
+    expect(screen.getByText("Standalone")).toBeInTheDocument();
+    expect(screen.queryByText("Book 1")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Unsaved changes" })).not.toBeInTheDocument();
+  });
 });

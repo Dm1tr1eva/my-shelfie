@@ -12,6 +12,7 @@ const seriesSchema = new mongoose.Schema(
     author: String,
     status: { type: String, enum: SERIES_STATUSES, default: "unknown" },
     note: String,
+    totalBooks: { type: Number, min: 1 },
   },
   { timestamps: true },
 );

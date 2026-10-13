@@ -21,6 +21,12 @@ export const SERIES_STATUS_OPTIONS = SERIES_STATUSES.map((value) => ({
   label: SERIES_STATUS_LABELS[value],
 }));
 
+export const SERIES_STATE_CHOICES: { value: SeriesStatus; label: string }[] = [
+  { value: "ongoing", label: "Still coming out" },
+  { value: "complete", label: "Finished" },
+  { value: "unknown", label: "Don't know" },
+];
+
 export type Series = {
   id: string;
   title: string;
@@ -31,6 +37,7 @@ export type Series = {
   updatedAt: string;
   author?: string;
   note?: string;
+  totalBooks?: number;
 };
 
 export type NewSeries = {
@@ -38,6 +45,7 @@ export type NewSeries = {
   author?: string;
   status?: SeriesStatus;
   note?: string;
+  totalBooks?: number;
 };
 
 export type SeriesChanges = Partial<{
@@ -45,6 +53,7 @@ export type SeriesChanges = Partial<{
   author: string | null;
   status: SeriesStatus;
   note: string | null;
+  totalBooks: number | null;
 }>;
 
 export function useSeriesList() {

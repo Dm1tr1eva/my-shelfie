@@ -6,7 +6,7 @@ import type { Book, Ownership } from "@/lib/books";
 import type { Series } from "@/lib/series";
 
 export type Call = { method: string; path: string; body: unknown };
-type Reply = { status?: number; body?: unknown };
+type Reply = { status?: number; body?: unknown; wait?: Promise<unknown> };
 type Handler = (call: Call) => Reply | undefined;
 
 const ALICE = { id: "1", email: "alice@example.com", name: "Alice" };
@@ -35,8 +35,11 @@ export function mockApi(handler: Handler, signedIn = true) {
       }
 
       const status = reply.status ?? 200;
-      if (status === 204) return Promise.resolve(new Response(null, { status }));
-      return Promise.resolve(new Response(JSON.stringify(reply.body ?? null), { status }));
+      const response =
+        status === 204
+          ? new Response(null, { status })
+          : new Response(JSON.stringify(reply.body ?? null), { status });
+      return reply.wait ? reply.wait.then(() => response) : Promise.resolve(response);
     }),
   );
 

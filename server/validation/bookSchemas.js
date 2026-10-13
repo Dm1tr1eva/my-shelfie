@@ -1,5 +1,6 @@
 const { z } = require("zod");
 const { OWNERSHIP, LINK_LANGUAGES, GENRES } = require("../constants/library");
+const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
 
@@ -70,6 +71,7 @@ const updateBookSchema = baseBookSchema
 const searchBooksQuerySchema = z
   .object({
     q: z.string().trim().min(3).max(200),
+    startIndex: z.coerce.number().int().min(0).max(SEARCH_MAX_START_INDEX).optional(),
   })
   .strict();
 

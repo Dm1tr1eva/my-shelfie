@@ -207,6 +207,36 @@ describe("series API", () => {
     assert.equal(updated.body.note, undefined);
   });
 
+  it("stores how many books a series has and clears it with null", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice, { totalBooks: 5 });
+
+    const fetched = await api(`/api/series/${series.id}`, { cookie: alice });
+    const cleared = await api(`/api/series/${series.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { totalBooks: null },
+    });
+
+    assert.equal(series.totalBooks, 5);
+    assert.equal(fetched.body.series.totalBooks, 5);
+    assert.equal(cleared.status, 200);
+    assert.equal(cleared.body.totalBooks, undefined);
+  });
+
+  it("rejects a series size that is not a whole number from 1 to 200", async () => {
+    const alice = await signIn("alice@example.com");
+
+    for (const totalBooks of [0, -1, 2.5, 201, "5"]) {
+      const response = await api("/api/series", {
+        method: "POST",
+        cookie: alice,
+        body: { title: "Size", totalBooks },
+      });
+      assert.equal(response.status, 400, `totalBooks=${JSON.stringify(totalBooks)}`);
+    }
+  });
+
   it("keeps the books of a deleted series and makes them standalone", async () => {
     const alice = await signIn("alice@example.com");
     const series = await addSeries(alice);
@@ -334,6 +364,57 @@ describe("library fields on books", () => {
 
     assert.equal(genre.status, 400);
     assert.equal(language.status, 400);
+  });
+
+  it("clears the number too when PATCH takes a book out of its series", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice);
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 2 });
+
+    const response = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesId: null },
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.seriesId, undefined);
+    assert.equal(response.body.seriesNumber, undefined);
+  });
+
+  it("rejects giving a standalone book a number without a series", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice);
+
+    const response = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesNumber: 4 },
+    });
+
+    assert.equal(response.status, 400);
+    assert.match(response.body.error, /seriesId/);
+  });
+
+  it("accepts a series and a number together on a standalone book, and a new number later", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice);
+    const book = await addBook(alice);
+
+    const linked = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesId: series.id, seriesNumber: 1 },
+    });
+    const renumbered = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { seriesNumber: 2 },
+    });
+
+    assert.equal(linked.status, 200);
+    assert.equal(renumbered.status, 200);
+    assert.equal(renumbered.body.seriesNumber, 2);
   });
 
   it("takes a book out of its series when PATCH sends null", async () => {
@@ -504,6 +585,26 @@ describe("next to buy API", () => {
     );
     assert.equal(response.body.items[0].series.title, "Saga");
     assert.equal(response.body.items[2].type, "standalone");
+  });
+
+  it("lists the numbers of a series of known size that have no book yet", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice, { totalBooks: 4 });
+    await addBook(alice, { title: "One", seriesId: series.id, seriesNumber: 1 });
+    await addBook(alice, { title: "Three", seriesId: series.id, seriesNumber: 3 });
+
+    const response = await api("/api/next-to-buy", { cookie: alice });
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      response.body.items.map((item) => [item.type, item.number, item.gap]),
+      [
+        ["missing", 2, true],
+        ["missing", 4, false],
+      ],
+    );
+    assert.equal(response.body.items[0].series.totalBooks, 4);
+    assert.equal(response.body.items[0].book, undefined);
   });
 
   it("drops a book from the list once it is marked owned", async () => {

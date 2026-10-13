@@ -1,19 +1,18 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useImperativeHandle, useState } from "react";
 import { SeriesStatusChip } from "@/components/chips";
 import { CheckIcon } from "@/components/icons";
-import { Select } from "@/components/select";
+import { SeriesStatePills } from "@/components/form-controls";
 import { gapNumbersOf, highestNumberOf, isOwned } from "@/lib/catalogue";
 import type { Book } from "@/lib/books";
-import {
-  SERIES_STATUS_OPTIONS,
-  type NewSeries,
-  type Series,
-  type SeriesStatus,
-} from "@/lib/series";
+import { type NewSeries, type Series, type SeriesStatus } from "@/lib/series";
 
 export type SeriesChoice = { seriesId?: string; seriesNumber?: number };
+
+export type SeriesSuggestion = { title: string; author?: string };
+
+export type SeriesPickerHandle = { createPending: () => Promise<Series | undefined> };
 
 export function SeriesPicker({
   series,
@@ -22,6 +21,9 @@ export function SeriesPicker({
   value,
   onChange,
   onCreate,
+  suggestion,
+  onPendingChange,
+  ref,
 }: {
   series: Series[];
   books: Book[];
@@ -29,15 +31,20 @@ export function SeriesPicker({
   value: SeriesChoice;
   onChange: (value: SeriesChoice) => void;
   onCreate: (input: NewSeries) => Promise<Series>;
+  suggestion?: SeriesSuggestion;
+  onPendingChange?: (pending: boolean) => void;
+  ref?: React.Ref<SeriesPickerHandle>;
 }) {
   const inputId = useId();
   const listId = useId();
   const selected = series.find((item) => item.id === value.seriesId);
-  const [query, setQuery] = useState(selected?.title ?? "");
+  const [query, setQuery] = useState(selected?.title ?? suggestion?.title ?? "");
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newAuthor, setNewAuthor] = useState("");
+  const [newAuthor, setNewAuthor] = useState(suggestion?.author ?? "");
+  const [dismissed, setDismissed] = useState(false);
   const [newStatus, setNewStatus] = useState<SeriesStatus>("unknown");
+  const [newTotal, setNewTotal] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [markedStandalone, setMarkedStandalone] = useState(false);
 
@@ -47,6 +54,15 @@ export function SeriesPicker({
   );
   const exact = series.some((item) => item.title.toLowerCase() === typed.toLowerCase());
   const canCreate = typed !== "" && !exact;
+  const suggested =
+    suggestion !== undefined &&
+    value.seriesId === undefined &&
+    !markedStandalone &&
+    typed.toLowerCase() === suggestion.title.trim().toLowerCase();
+  const showCreate = creating || (suggested && canCreate && !dismissed);
+  const existingSuggested = suggested
+    ? series.find((item) => item.title.toLowerCase() === typed.toLowerCase())
+    : undefined;
 
   const seriesBooks = (id: string) =>
     books.filter((book) => book.seriesId === id && book.id !== currentBookId);
@@ -55,7 +71,7 @@ export function SeriesPicker({
     const linked = seriesBooks(item.id);
     return {
       owned: linked.filter(isOwned).length,
-      total: Math.max(highestNumberOf(linked), linked.length),
+      total: Math.max(item.totalBooks ?? 0, highestNumberOf(linked), linked.length),
     };
   }
 
@@ -66,22 +82,51 @@ export function SeriesPicker({
     onChange({ seriesId: item.id, seriesNumber: value.seriesNumber });
   }
 
-  async function createSeries() {
+  const totalInvalid =
+    newTotal.trim() !== "" &&
+    !(Number.isInteger(Number(newTotal)) && Number(newTotal) >= 1 && Number(newTotal) <= 200);
+  const pending = showCreate && typed !== "";
+
+  async function submitNewSeries() {
+    if (totalInvalid) {
+      setError("Books in the series must be a whole number from 1 to 200.");
+      throw new Error("invalid series size");
+    }
+
     setError(null);
     try {
       const created = await onCreate({
         title: typed,
         author: newAuthor.trim() || undefined,
         status: newStatus,
+        ...(newTotal.trim() !== "" && { totalBooks: Number(newTotal) }),
       });
       setCreating(false);
       setMarkedStandalone(false);
       setQuery(created.title);
       onChange({ seriesId: created.id, seriesNumber: value.seriesNumber });
-    } catch {
-      setError("Could not create the series. Try again.");
+      return created;
+    } catch (err) {
+      setError((current) => current ?? "Could not create the series. Try again.");
+      throw err;
     }
   }
+
+  async function createSeries() {
+    try {
+      await submitNewSeries();
+    } catch {
+      return;
+    }
+  }
+
+  useImperativeHandle(ref, () => ({
+    createPending: async () => (pending ? submitNewSeries() : undefined),
+  }));
+
+  useEffect(() => {
+    onPendingChange?.(pending);
+  }, [pending, onPendingChange]);
 
   function markStandalone() {
     setQuery("");
@@ -188,23 +233,34 @@ export function SeriesPicker({
         </label>
       </div>
 
-      {creating && (
+      {showCreate && (
         <div className="card flex flex-col gap-3 p-4">
           <p className="font-semibold">New series “{typed}”</p>
           <label className="flex flex-col gap-1">
-            <span>Author</span>
+            <span className="font-semibold">Author</span>
             <input
               value={newAuthor}
               onChange={(e) => setNewAuthor(e.target.value)}
               className="field"
             />
           </label>
-          <Select
-            label="Status"
-            value={newStatus}
-            onChange={(value) => setNewStatus(value as SeriesStatus)}
-            options={SERIES_STATUS_OPTIONS}
-          />
+          <SeriesStatePills value={newStatus} onChange={setNewStatus} />
+          <label className="flex flex-col gap-1">
+            <span className="font-semibold">Books in the series</span>
+            <input
+              type="number"
+              min={1}
+              max={200}
+              inputMode="numeric"
+              placeholder="Optional"
+              value={newTotal}
+              onChange={(e) => setNewTotal(e.target.value)}
+              className="field sm:w-40"
+            />
+            <span className="text-sm text-muted">
+              How many books the series has, or has announced. You can change it later.
+            </span>
+          </label>
           {error && (
             <p role="alert" className="font-semibold text-burgundy">
               {error}
@@ -214,11 +270,28 @@ export function SeriesPicker({
             <button type="button" onClick={createSeries} className="btn-primary">
               Create series
             </button>
-            <button type="button" onClick={() => setCreating(false)} className="btn-outline">
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(false);
+                setDismissed(true);
+              }}
+              className="btn-outline"
+            >
               Cancel
             </button>
           </div>
         </div>
+      )}
+
+      {existingSuggested && (
+        <button
+          type="button"
+          onClick={() => choose(existingSuggested)}
+          className="self-start font-semibold text-navy underline"
+        >
+          Use the existing series “{existingSuggested.title}”
+        </button>
       )}
 
       {gapFilled && value.seriesNumber !== undefined && (

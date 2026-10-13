@@ -79,7 +79,7 @@ export function Select({
   return (
     <div ref={root} className={`relative flex flex-col gap-1 ${className}`}>
       {!hideLabel && (
-        <span id={labelId} className="text-sm font-semibold">
+        <span id={labelId} className="font-semibold">
           {label}
         </span>
       )}

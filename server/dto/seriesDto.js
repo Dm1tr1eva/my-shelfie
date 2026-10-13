@@ -11,6 +11,7 @@ function toSeriesDto(series, counts = { owned: 0, wanted: 0 }) {
 
   if (series.author) dto.author = series.author;
   if (series.note) dto.note = series.note;
+  if (series.totalBooks) dto.totalBooks = series.totalBooks;
 
   return dto;
 }

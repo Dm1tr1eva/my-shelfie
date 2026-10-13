@@ -74,8 +74,10 @@ function changesBetween(book: Book, draft: Draft): BookChanges {
   if (draft.series.seriesId !== before.series.seriesId) {
     changes.seriesId = draft.series.seriesId ?? null;
   }
-  if (draft.series.seriesNumber !== before.series.seriesNumber) {
-    changes.seriesNumber = draft.series.seriesNumber ?? null;
+  const draftNumber = draft.series.seriesId ? draft.series.seriesNumber : undefined;
+  const beforeNumber = before.series.seriesId ? before.series.seriesNumber : undefined;
+  if (draftNumber !== beforeNumber) {
+    changes.seriesNumber = draftNumber ?? null;
   }
 
   return changes;
@@ -101,7 +103,7 @@ function BookForm({ book }: { book: Book }) {
   const dirty = Object.keys(changes).length > 0;
   const series = seriesList.find((item) => item.id === draft.series.seriesId);
   const seriesBooks = books.filter((item) => item.seriesId === series?.id);
-  const total = Math.max(highestNumberOf(seriesBooks), seriesBooks.length);
+  const total = Math.max(series?.totalBooks ?? 0, highestNumberOf(seriesBooks), seriesBooks.length);
 
   const tropeCounts = new Map<string, number>();
   for (const item of books) {
@@ -168,7 +170,7 @@ function BookForm({ book }: { book: Book }) {
         )}
         <span aria-hidden="true">/</span>
         <span aria-current="page">
-          {draft.series.seriesNumber !== undefined
+          {draft.series.seriesId && draft.series.seriesNumber !== undefined
             ? `Book ${draft.series.seriesNumber}`
             : book.title}
         </span>
@@ -256,6 +258,11 @@ function BookForm({ book }: { book: Book }) {
                         value={draft.series}
                         onChange={(value) => patch({ series: value })}
                         onCreate={createSeries}
+                        suggestion={
+                          draft.series.seriesId
+                            ? undefined
+                            : { title: book.title, author: book.author }
+                        }
                       />
                     </div>
                   )}

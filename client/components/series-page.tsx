@@ -7,18 +7,12 @@ import { BookCover } from "@/components/book-cover";
 import { GenreChip, OwnershipChip, SeriesStatusChip, TropeChip } from "@/components/chips";
 import { OwnProgress } from "@/components/own-progress";
 import { PlusIcon } from "@/components/icons";
-import { Select } from "@/components/select";
+import { SeriesStatePills } from "@/components/form-controls";
 import { Shelf } from "@/components/shelf";
 import { ApiError } from "@/lib/api";
 import type { Book } from "@/lib/books";
 import { gapNumbersOf, highestNumberOf, isOwned, ownedNumbersOf } from "@/lib/catalogue";
-import {
-  SERIES_STATUS_OPTIONS,
-  useSeries,
-  useSeriesActions,
-  type Series,
-  type SeriesStatus,
-} from "@/lib/series";
+import { useSeries, useSeriesActions, type Series, type SeriesStatus } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 function countBy(values: string[]) {
@@ -35,12 +29,13 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const [author, setAuthor] = useState(series.author ?? "");
   const [note, setNote] = useState(series.note ?? "");
   const [status, setStatus] = useState<SeriesStatus>(series.status);
+  const [totalText, setTotalText] = useState(series.totalBooks ? String(series.totalBooks) : "");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const ownedNumbers = ownedNumbersOf(books);
   const ownedCount = books.filter(isOwned).length;
-  const total = Math.max(highestNumberOf(books), books.length);
+  const total = Math.max(series.totalBooks ?? 0, highestNumberOf(books), books.length);
   const gaps = gapNumbersOf(books);
   const recorded = new Set(books.map((book) => book.seriesNumber));
   const missing = Array.from({ length: total }, (_, index) => index + 1).filter(
@@ -60,6 +55,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         author: author.trim() === "" ? null : author.trim(),
         note: note.trim() === "" ? null : note.trim(),
         status,
+        totalBooks: totalText.trim() === "" ? null : Number(totalText),
       });
       setEditing(false);
     } catch (err) {
@@ -240,12 +236,20 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
               <span className="font-semibold">Author</span>
               <input value={author} onChange={(e) => setAuthor(e.target.value)} className="field" />
             </label>
-            <Select
-              label="Status"
-              value={status}
-              onChange={(value) => setStatus(value as SeriesStatus)}
-              options={SERIES_STATUS_OPTIONS}
-            />
+            <SeriesStatePills value={status} onChange={setStatus} />
+            <label className="flex flex-col gap-1">
+              <span className="font-semibold">Books in the series</span>
+              <input
+                type="number"
+                min={1}
+                max={200}
+                inputMode="numeric"
+                placeholder="Optional"
+                value={totalText}
+                onChange={(e) => setTotalText(e.target.value)}
+                className="field sm:w-40"
+              />
+            </label>
             <label className="flex flex-col gap-1">
               <span className="font-semibold">Note</span>
               <textarea

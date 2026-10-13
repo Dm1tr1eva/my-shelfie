@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { CheckIcon, SearchIcon, XIcon } from "@/components/icons";
 import { ApiError, apiFetch } from "@/lib/api";
-import type { BookSearchResult } from "@/lib/book-search";
+import { SEARCH_DEBOUNCE_MS, SEARCH_MIN_LENGTH, type BookSearchResult } from "@/lib/book-search";
 import { useBookActions, useBooks, type Book, type Ownership } from "@/lib/books";
 import { useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 type Phase = "idle" | "loading" | "done" | "failed";
 type Added = { id: string; title: string; ownership: Ownership };
+type SearchPage = { results: BookSearchResult[]; nextStartIndex?: number };
 
 function Stepper() {
   return (
@@ -138,6 +139,14 @@ export function AddBook() {
   const [query, setQuery] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [results, setResults] = useState<BookSearchResult[]>([]);
+  const [searchedText, setSearchedText] = useState("");
+  const [nextStart, setNextStart] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [moreFailed, setMoreFailed] = useState(false);
+  const activeSearch = useRef(0);
+  const controller = useRef<AbortController | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastRequested = useRef("");
   const [sheetFor, setSheetFor] = useState<BookSearchResult | null>(null);
   const [added, setAdded] = useState<Added | null>(null);
   const [busy, setBusy] = useState(false);
@@ -147,26 +156,99 @@ export function AddBook() {
   const [manualAuthor, setManualAuthor] = useState("");
   const [manualOwnership, setManualOwnership] = useState<Ownership>("owned");
 
+  const runSearch = useCallback(async (text: string) => {
+    controller.current?.abort();
+    const request = new AbortController();
+    controller.current = request;
+    const id = (activeSearch.current += 1);
+    lastRequested.current = text;
+    setPhase("loading");
+    setError(null);
+    setNextStart(null);
+    setMoreFailed(false);
+
+    try {
+      const body = await apiFetch<SearchPage>(`/api/books/search?q=${encodeURIComponent(text)}`, {
+        signal: request.signal,
+      });
+      if (id !== activeSearch.current) return;
+      setResults(body.results);
+      setSearchedText(text);
+      setNextStart(body.nextStartIndex ?? null);
+      setPhase("done");
+    } catch {
+      if (id !== activeSearch.current) return;
+      setResults([]);
+      setNextStart(null);
+      setPhase("failed");
+    }
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      controller.current?.abort();
+    },
+    [],
+  );
+
   if (status !== "authenticated" || !user) {
     return null;
   }
 
-  async function search(event: React.FormEvent) {
+  function changeQuery(text: string) {
+    setQuery(text);
+    if (timer.current) clearTimeout(timer.current);
+    activeSearch.current += 1;
+    controller.current?.abort();
+    setNextStart(null);
+    setMoreFailed(false);
+    setLoadingMore(false);
+
+    const trimmed = text.trim();
+    if (trimmed.length < SEARCH_MIN_LENGTH) {
+      lastRequested.current = "";
+      setPhase("idle");
+      setResults([]);
+      return;
+    }
+
+    timer.current = setTimeout(() => runSearch(trimmed), SEARCH_DEBOUNCE_MS);
+  }
+
+  function submit(event: React.FormEvent) {
     event.preventDefault();
     const text = (query || targetSeries?.title || "").trim();
-    if (text.length < 3) return;
+    if (text.length < SEARCH_MIN_LENGTH) return;
 
-    setPhase("loading");
-    setError(null);
+    if (timer.current) clearTimeout(timer.current);
+    runSearch(text);
+  }
+
+  function retry() {
+    if (lastRequested.current) runSearch(lastRequested.current);
+  }
+
+  async function loadMore() {
+    if (nextStart === null) return;
+
+    const id = activeSearch.current;
+    setLoadingMore(true);
+    setMoreFailed(false);
     try {
-      const body = await apiFetch<{ results: BookSearchResult[] }>(
-        `/api/books/search?q=${encodeURIComponent(text)}`,
+      const body = await apiFetch<SearchPage>(
+        `/api/books/search?q=${encodeURIComponent(searchedText)}&startIndex=${nextStart}`,
       );
-      setResults(body.results);
-      setPhase("done");
+      if (id !== activeSearch.current) return;
+      setResults((current) => {
+        const seen = new Set(current.map((result) => result.volumeId));
+        return [...current, ...body.results.filter((result) => !seen.has(result.volumeId))];
+      });
+      setNextStart(body.nextStartIndex ?? null);
     } catch {
-      setResults([]);
-      setPhase("failed");
+      if (id === activeSearch.current) setMoreFailed(true);
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -235,7 +317,7 @@ export function AddBook() {
         </p>
       )}
 
-      <form onSubmit={search} className="flex flex-col gap-2 sm:flex-row" role="search">
+      <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row" role="search">
         <label className="relative flex-1">
           <span className="sr-only">Search Google Books</span>
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
@@ -245,7 +327,7 @@ export function AddBook() {
             type="search"
             value={query}
             placeholder={targetSeries ? `${targetSeries.title} …` : "Search Google Books"}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => changeQuery(event.target.value)}
             className="field pl-10"
           />
         </label>
@@ -294,7 +376,7 @@ export function AddBook() {
           <p className="font-serif text-xl font-semibold">Google Books isn&apos;t answering</p>
           <p className="text-muted">You can try again, or add the book without search.</p>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={search} className="btn-primary">
+            <button type="button" onClick={retry} className="btn-primary">
               Try again
             </button>
             <button type="button" onClick={() => setManual(true)} className="btn-outline">
@@ -304,12 +386,18 @@ export function AddBook() {
         </div>
       )}
 
-      {phase === "done" && (
-        <section aria-label="Search results" className="flex flex-col gap-3">
+      {(phase === "done" || (phase === "loading" && results.length > 0)) && (
+        <section
+          aria-label="Search results"
+          aria-busy={phase === "loading" || query.trim() !== searchedText}
+          className={`flex flex-col gap-3 ${
+            phase === "loading" || query.trim() !== searchedText ? "opacity-60" : ""
+          }`}
+        >
           <p className="text-sm text-muted">
             {results.length} {results.length === 1 ? "result" : "results"}.
           </p>
-          {results.length === 0 && (
+          {phase === "done" && results.length === 0 && (
             <p>No books found. Try fewer words, or add it without search.</p>
           )}
           <ul className="flex flex-col gap-3">
@@ -325,6 +413,22 @@ export function AddBook() {
               />
             ))}
           </ul>
+
+          {moreFailed && (
+            <p role="alert" className="font-semibold text-burgundy">
+              Could not load more results.
+            </p>
+          )}
+          {nextStart !== null && (
+            <button
+              type="button"
+              disabled={loadingMore}
+              onClick={loadMore}
+              className="btn-outline self-center"
+            >
+              {loadingMore ? "Loading..." : "Show more results"}
+            </button>
+          )}
         </section>
       )}
 

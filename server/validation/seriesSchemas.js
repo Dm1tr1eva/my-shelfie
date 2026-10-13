@@ -7,6 +7,7 @@ const baseSeriesSchema = z
     author: z.string().trim().min(1).max(200).optional(),
     status: z.enum(SERIES_STATUSES).optional(),
     note: z.string().max(2000).optional(),
+    totalBooks: z.number().int().min(1).max(200).optional(),
   })
   .strict();
 
@@ -17,6 +18,7 @@ const updateSeriesSchema = baseSeriesSchema
   .extend({
     author: baseSeriesSchema.shape.author.nullable(),
     note: baseSeriesSchema.shape.note.nullable(),
+    totalBooks: baseSeriesSchema.shape.totalBooks.nullable(),
   })
   .strict()
   .refine((data) => Object.keys(data).length > 0, {

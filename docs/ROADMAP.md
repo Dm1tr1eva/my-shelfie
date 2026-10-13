@@ -48,6 +48,9 @@ Decisions:
   mockups at 375, 768 and 1440). Where it and an older decision disagree, the handoff wins.
 - **Light theme only** for the submission: the header switch goes, the dark theme returns
   later with its own design.
+- **Series size and add-flow fixes**, 2026-10-13 — [designs/series-size-and-add-flow.md](designs/series-size-and-add-flow.md):
+  an optional "books in the series" count (so "own 2 of 5" and the missing numbers are real),
+  search as you type, "Save details" creates the typed series, a number never without a series.
 - **No Google sign-in** for now: email and password only, and the privacy text says only what
   is true.
 

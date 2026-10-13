@@ -171,4 +171,266 @@ describe("AddBook", () => {
       }),
     );
   });
+
+  describe("more results", () => {
+    const FIRST = { ...RESULT, volumeId: "p1", title: "First Page Book" };
+    const SECOND = { ...RESULT, volumeId: "p2", title: "Second Page Book" };
+    const NEWER = { ...RESULT, volumeId: "n1", title: "Newer Search Book" };
+
+    function servePages(
+      options: { secondFails?: boolean; secondHasMore?: boolean; repeatsFirst?: boolean } = {},
+    ) {
+      return mockApi(({ path }) => {
+        if (path.startsWith("/api/books/search")) {
+          if (path.includes("q=roses")) return { body: { results: [NEWER] } };
+          if (path.includes("startIndex=10")) {
+            if (options.secondFails) return { status: 502, body: { error: "upstream" } };
+            return {
+              body: {
+                results: options.repeatsFirst ? [FIRST, SECOND] : [SECOND],
+                ...(options.secondHasMore && { nextStartIndex: 20 }),
+              },
+            };
+          }
+          return { body: { results: [FIRST], nextStartIndex: 10 } };
+        }
+        if (path.startsWith("/api/books")) return booksResponse([]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+    }
+
+    it("leaves out a book that the next page lists again", async () => {
+      servePages({ repeatsFirst: true });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+
+      expect(await screen.findByText("Second Page Book")).toBeInTheDocument();
+      expect(screen.getAllByText("First Page Book")).toHaveLength(1);
+    });
+
+    it("shows the next page below the first", async () => {
+      const calls = servePages();
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+
+      expect(await screen.findByText("Second Page Book")).toBeInTheDocument();
+      expect(screen.getByText("First Page Book")).toBeInTheDocument();
+      expect(calls.map((call) => call.path)).toContain("/api/books/search?q=thorns&startIndex=10");
+      expect(screen.queryByRole("button", { name: "Show more results" })).not.toBeInTheDocument();
+    });
+
+    it("hides the more button at once when the text changes, and swaps the results when the new ones arrive", async () => {
+      servePages();
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "roses" } });
+
+      expect(screen.queryByRole("button", { name: "Show more results" })).not.toBeInTheDocument();
+      expect(screen.getByText("First Page Book")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Newer Search Book", {}, { timeout: 3000 }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("First Page Book")).not.toBeInTheDocument();
+    });
+
+    it("searches the new text from the first page when you press Search again", async () => {
+      const calls = servePages();
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      await searchFor("roses");
+
+      await waitFor(() =>
+        expect(calls.map((call) => call.path)).toContain("/api/books/search?q=roses"),
+      );
+      expect(await screen.findByText("Newer Search Book")).toBeInTheDocument();
+    });
+
+    it("ignores a first search that answers after the text was changed", async () => {
+      let release: () => void = () => {};
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      mockApi(({ path }) => {
+        if (path.includes("q=thorns")) return { body: { results: [FIRST] }, wait: slow };
+        if (path.startsWith("/api/books/search")) return { body: { results: [NEWER] } };
+        if (path.startsWith("/api/books")) return booksResponse([]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "roses" } });
+      await screen.findByText("Newer Search Book", {}, { timeout: 3000 });
+      release();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(screen.queryByText("First Page Book")).not.toBeInTheDocument();
+      expect(screen.getByText("Newer Search Book")).toBeInTheDocument();
+    });
+
+    it("ignores a page that arrives after the text was changed", async () => {
+      let release: () => void = () => {};
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      mockApi(({ path }) => {
+        if (path.includes("startIndex=10")) return { body: { results: [SECOND] }, wait: slow };
+        if (path.includes("q=roses")) return { body: { results: [NEWER] } };
+        if (path.startsWith("/api/books/search")) {
+          return { body: { results: [FIRST], nextStartIndex: 10 } };
+        }
+        if (path.startsWith("/api/books")) return booksResponse([]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "roses" } });
+      await screen.findByText("Newer Search Book", {}, { timeout: 3000 });
+      release();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(screen.queryByText("Second Page Book")).not.toBeInTheDocument();
+      expect(screen.getByText("Newer Search Book")).toBeInTheDocument();
+    });
+
+    it("does not add an old page to the results of a newer search", async () => {
+      let release: () => void = () => {};
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      mockApi(({ path }) => {
+        if (path.includes("startIndex=10")) return { body: { results: [SECOND] }, wait: slow };
+        if (path.startsWith("/api/books/search?q=roses")) return { body: { results: [NEWER] } };
+        if (path.startsWith("/api/books/search")) {
+          return { body: { results: [FIRST], nextStartIndex: 10 } };
+        }
+        if (path.startsWith("/api/books")) return booksResponse([]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+      await searchFor("roses");
+      await screen.findByText("Newer Search Book");
+      release();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(screen.queryByText("Second Page Book")).not.toBeInTheDocument();
+      expect(screen.getByText("Newer Search Book")).toBeInTheDocument();
+    });
+
+    it("offers another page while the server says there is one", async () => {
+      servePages({ secondHasMore: true });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+      await screen.findByText("Second Page Book");
+
+      expect(screen.getByRole("button", { name: "Show more results" })).toBeInTheDocument();
+    });
+
+    it("keeps the results you have and lets you retry when the next page fails", async () => {
+      servePages({ secondFails: true });
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("First Page Book");
+      fireEvent.click(screen.getByRole("button", { name: "Show more results" }));
+
+      expect(await screen.findByText("Could not load more results.")).toBeInTheDocument();
+      expect(screen.getByText("First Page Book")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Show more results" })).toBeInTheDocument();
+      expect(screen.queryByText("Google Books isn't answering")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("search as you type", () => {
+    const FOUND = { ...RESULT, volumeId: "t1", title: "Typed Search Book" };
+
+    function serveTyping() {
+      return mockApi(({ path }) => {
+        if (path.startsWith("/api/books/search")) return { body: { results: [FOUND] } };
+        if (path.startsWith("/api/books")) return booksResponse([]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+    }
+
+    const searches = (calls: { path: string }[]) =>
+      calls.filter((call) => call.path.startsWith("/api/books/search")).map((call) => call.path);
+
+    it("searches by itself once typing pauses, without pressing Search", async () => {
+      const calls = serveTyping();
+      renderApp(<AddBook />);
+
+      fireEvent.change(await screen.findByRole("searchbox"), { target: { value: "thorns" } });
+
+      expect(
+        await screen.findByText("Typed Search Book", {}, { timeout: 3000 }),
+      ).toBeInTheDocument();
+      expect(searches(calls)).toEqual(["/api/books/search?q=thorns"]);
+    });
+
+    it("sends one request for a burst of keystrokes, not one per key", async () => {
+      const calls = serveTyping();
+      renderApp(<AddBook />);
+      const box = await screen.findByRole("searchbox");
+
+      for (const text of ["tho", "thor", "thorn", "thorns"]) {
+        fireEvent.change(box, { target: { value: text } });
+      }
+
+      await screen.findByText("Typed Search Book", {}, { timeout: 3000 });
+      expect(searches(calls)).toEqual(["/api/books/search?q=thorns"]);
+    });
+
+    it("does not search while the text is shorter than three characters", async () => {
+      const calls = serveTyping();
+      renderApp(<AddBook />);
+
+      fireEvent.change(await screen.findByRole("searchbox"), { target: { value: "th" } });
+      await new Promise((resolve) => setTimeout(resolve, 700));
+
+      expect(searches(calls)).toEqual([]);
+    });
+
+    it("clears the list when the text is cut down below three characters", async () => {
+      serveTyping();
+      renderApp(<AddBook />);
+      const box = await screen.findByRole("searchbox");
+
+      fireEvent.change(box, { target: { value: "thorns" } });
+      await screen.findByText("Typed Search Book", {}, { timeout: 3000 });
+      fireEvent.change(box, { target: { value: "th" } });
+
+      expect(screen.queryByText("Typed Search Book")).not.toBeInTheDocument();
+    });
+
+    it("does not search a second time after Search was pressed for the same text", async () => {
+      const calls = serveTyping();
+      renderApp(<AddBook />);
+
+      await searchFor("thorns");
+      await screen.findByText("Typed Search Book");
+      await new Promise((resolve) => setTimeout(resolve, 700));
+
+      expect(searches(calls)).toEqual(["/api/books/search?q=thorns"]);
+    });
+  });
 });

@@ -12,13 +12,22 @@ function matchesBookFilters(book, { language, genre, trope }) {
   return true;
 }
 
+function numberOf(item) {
+  return item.type === "missing" ? item.number : (item.book.seriesNumber ?? Infinity);
+}
+
 function compareItems(a, b) {
   if (a.gap !== b.gap) return a.gap ? -1 : 1;
-  if (a.type !== b.type) return a.type === "series" ? -1 : 1;
 
-  if (a.type === "series") {
+  const aInSeries = a.type !== "standalone";
+  const bInSeries = b.type !== "standalone";
+  if (aInSeries !== bInSeries) return aInSeries ? -1 : 1;
+
+  if (aInSeries) {
     const byTitle = a.series.title.localeCompare(b.series.title);
     if (byTitle !== 0) return byTitle;
+    if (numberOf(a) !== numberOf(b)) return numberOf(a) - numberOf(b);
+    if (a.type === "missing" || b.type === "missing") return a.type === "missing" ? 1 : -1;
     return byNumberThenAge(a.book, b.book);
   }
 
@@ -63,11 +72,24 @@ function pickNextToBuy({ series, books, filters = {} }) {
         gap: book.seriesNumber !== undefined && book.seriesNumber < highestOwned,
       });
     }
+
+    if (owner.totalBooks) {
+      const recorded = new Set(
+        group.flatMap((book) => (book.seriesNumber === undefined ? [] : [book.seriesNumber])),
+      );
+
+      for (let number = 1; number <= owner.totalBooks; number += 1) {
+        if (!recorded.has(number)) {
+          items.push({ type: "missing", series: owner, number, gap: number < highestOwned });
+        }
+      }
+    }
   }
 
   return items
     .filter((item) => {
       if (filters.seriesStatus && item.series?.status !== filters.seriesStatus) return false;
+      if (item.type === "missing") return !filters.language && !filters.genre && !filters.trope;
       return matchesBookFilters(item.book, filters);
     })
     .sort(compareItems);

@@ -1,6 +1,6 @@
 # Feature: series, ownership and "next to buy"
 
-**Last verified against code:** 2026-10-11
+**Last verified against code:** 2026-10-13
 
 ## What it does
 
@@ -15,7 +15,9 @@ series. Design and reasons: [library-and-wishlist.md](../designs/library-and-wis
   request body. Another user's series is indistinguishable from a missing one (`404`).
 - A book can only point at a series of the same user. Creating or updating a book with another
   user's `seriesId` answers `400`.
-- A `seriesNumber` without a `seriesId` is rejected on create.
+- A `seriesNumber` without a `seriesId` is rejected: on create by the schema, on update by
+  the book service. Taking a book out of its series (`seriesId: null`) clears the number with it.
+  Books saved before this rule may still hold a number with no series; the client ignores it.
 - A book stored without `ownership` is owned. Queries never match on `ownership: "owned"`;
   they exclude `"wanted"`.
 - Reading status and ownership are independent: a wanted book may be marked read, and an owned
@@ -29,10 +31,10 @@ Everything requires a session (`401` otherwise).
 
 | Method and path | Answers |
 |---|---|
-| `POST /api/series` | `201` with the series. `400` on an empty title, an unknown status or an unrecognised field. |
+| `POST /api/series` | `201` with the series. `400` on an empty title, an unknown status, a `totalBooks` that is not a whole number from 1 to 200, or an unrecognised field. |
 | `GET /api/series` | `200` with `{ series }`, each with `ownedCount` and `wantedCount`, newest first. |
 | `GET /api/series/:id` | `200` with `{ series, books }`; books by number, unnumbered last. `404` for a missing, foreign or malformed id. |
-| `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author` and `note`. `404` as above. |
+| `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note` and `totalBooks`. `404` as above. |
 | `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
 | `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
@@ -58,15 +60,23 @@ that are wanted or belong to a series:
 5. Order: gaps first; then the other series books, series by title and books by number
    (unnumbered last); then standalone books, newest first.
 
-Each item is `{ type: "series" | "standalone", series?, book, gap }`. "I bought it" is a
-`PATCH` of the book's `ownership` to `owned`; the book then leaves the list on its own.
-A gap number with no book record at all cannot appear here: the Library draws it as a dashed
-tile from the series' numbers.
+Each item is `{ type: "series" | "standalone", series?, book, gap }`, or, for a number of a
+series whose size is known, `{ type: "missing", series, number, gap }` with no book. "I bought
+it" is a `PATCH` of the book's `ownership` to `owned`; the book then leaves the list on its own.
+
+6. For a series she has started and whose `totalBooks` is set, every whole number from 1 to
+   `totalBooks` with no book record at all is a `missing` item. It is a gap when it is below
+   her highest owned number. The language, genre and trope filters drop `missing` items (there
+   is nothing to match); `seriesStatus` keeps them. They sort among the series' books by number.
+
+Without `totalBooks` a number with no record cannot appear here; the Library draws such a gap
+as a dashed tile from the series' numbers.
 
 ## Data
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
-(`ongoing | complete | unknown`), `note`, timestamps; index `{ userId, createdAt }`.
+(`ongoing | complete | unknown`), `note`, `totalBooks` (optional whole number, 1 to 200: how
+many books the series has or has announced), timestamps; index `{ userId, createdAt }`.
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (from the
 fixed list in `server/constants/library.js`), `tropes`, `links` (`{ language, url }`, http(s)
@@ -83,8 +93,11 @@ client keeps its own copy of the genre list.
 - **Genres and tropes live on books**, so a series' tags are the union of its books'.
 - **A series you have not started never shows up.** A new wishlist series appears in "Next
   to buy" only after you own one of its books, as the design intends.
-- **"Gap" only covers numbers you have a book record for.** Series numbers are not stored as a
-  list, so a missing number with no record is shown by the Library, not by this endpoint.
+- **A missing number has no title.** Only the count of the series is stored, not its list of
+  titles, so `missing` items say "Book 4" until the book is added. Fetching titles belongs to
+  the AI stage.
+- **The size is the author's word.** It is not checked against anything; a book numbered above
+  it raises the total shown, it does not fail.
 
 ## Recovery
 

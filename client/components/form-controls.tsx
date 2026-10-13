@@ -1,6 +1,8 @@
 "use client";
 
+import { useId } from "react";
 import { CheckIcon, StarIcon } from "@/components/icons";
+import { SERIES_STATE_CHOICES, type SeriesStatus } from "@/lib/series";
 import {
   OWNERSHIP_LABELS,
   STATUS_LABELS,
@@ -107,6 +109,44 @@ export function StarRating({
           Clear
         </button>
       )}
+    </div>
+  );
+}
+
+export function SeriesStatePills({
+  value,
+  onChange,
+}: {
+  value: SeriesStatus;
+  onChange: (value: SeriesStatus) => void;
+}) {
+  const labelId = useId();
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span id={labelId} className="font-semibold">
+        Is the series finished?
+      </span>
+      <div role="radiogroup" aria-labelledby={labelId} className="flex flex-wrap gap-2">
+        {SERIES_STATE_CHOICES.map((choice) => {
+          const selected = value === choice.value;
+          return (
+            <button
+              key={choice.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => onChange(choice.value)}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-semibold ${
+                selected ? "border-navy bg-navy text-page" : "border-field hover:bg-beige"
+              }`}
+            >
+              {selected && <CheckIcon size={16} />}
+              {choice.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

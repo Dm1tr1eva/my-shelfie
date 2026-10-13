@@ -404,6 +404,35 @@ describe("book search API", () => {
     });
   });
 
+  it("passes the page start to Google and reports where the next page begins", async () => {
+    const alice = await signIn("alice@example.com");
+    const items = Array.from({ length: 10 }, (_, index) => ({
+      id: `vol${index}`,
+      volumeInfo: { title: `Book ${index}` },
+    }));
+    const calls = stubGoogleBooks(() => googleResponse({ items }));
+
+    const response = await api("/api/books/search?q=dracula&startIndex=10", { cookie: alice });
+
+    assert.equal(response.status, 200);
+    assert.equal(calls[0].searchParams.get("startIndex"), "10");
+    assert.equal(response.body.nextStartIndex, 20);
+    assert.equal(response.body.results.length, 10);
+  });
+
+  it("rejects a page start that is not a whole number from 0 to 40 without calling Google", async () => {
+    const alice = await signIn("alice@example.com");
+    const calls = stubGoogleBooks(() => googleResponse({ items: [] }));
+
+    for (const bad of ["-1", "abc", "1.5", "41"]) {
+      const response = await api(`/api/books/search?q=dracula&startIndex=${bad}`, {
+        cookie: alice,
+      });
+      assert.equal(response.status, 400, `startIndex=${bad}`);
+    }
+    assert.equal(calls.length, 0);
+  });
+
   it("never lets the API key reach the response", async () => {
     const alice = await signIn("alice@example.com");
     stubGoogleBooks(() => googleResponse({ items: [] }));

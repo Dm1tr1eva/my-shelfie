@@ -1,0 +1,4 @@
+const SEARCH_PAGE_SIZE = 10;
+const SEARCH_MAX_START_INDEX = 40;
+
+module.exports = { SEARCH_PAGE_SIZE, SEARCH_MAX_START_INDEX };

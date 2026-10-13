@@ -1,5 +1,6 @@
+const { SEARCH_PAGE_SIZE, SEARCH_MAX_START_INDEX } = require("../constants/search");
+
 const GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes";
-const MAX_RESULTS = 10;
 const TIMEOUT_MS = 8000;
 const FIELDS =
   "items(id,volumeInfo(title,authors,publishedDate,imageLinks/thumbnail,canonicalVolumeLink,infoLink))";
@@ -31,7 +32,7 @@ function toSearchResult(item) {
   };
 }
 
-async function searchVolumes(query) {
+async function searchVolumes(query, startIndex = 0) {
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
   if (!apiKey) {
     throw new Error("GOOGLE_BOOKS_API_KEY is not set");
@@ -39,7 +40,8 @@ async function searchVolumes(query) {
 
   const params = new URLSearchParams({
     q: query,
-    maxResults: String(MAX_RESULTS),
+    maxResults: String(SEARCH_PAGE_SIZE),
+    startIndex: String(startIndex),
     printType: "books",
     fields: FIELDS,
     key: apiKey,
@@ -60,7 +62,12 @@ async function searchVolumes(query) {
 
   const body = await response.json();
 
-  return (body.items ?? []).filter((item) => item.id && item.volumeInfo?.title).map(toSearchResult);
+  const items = body.items ?? [];
+  const results = items.filter((item) => item.id && item.volumeInfo?.title).map(toSearchResult);
+  const next = startIndex + SEARCH_PAGE_SIZE;
+  const hasMore = items.length === SEARCH_PAGE_SIZE && next <= SEARCH_MAX_START_INDEX;
+
+  return { results, ...(hasMore && { nextStartIndex: next }) };
 }
 
 module.exports = { searchVolumes, UpstreamError, GOOGLE_BOOKS_URL };

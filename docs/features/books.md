@@ -40,7 +40,7 @@ it does not get silently dropped.
 |---|---|
 | `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field). |
 | `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). Also `?ownership=`, `?seriesId=`, `?genre=`, `?trope=`, `?q=` — see [series.md](series.md). |
-| `GET /search?q=` | `200` with `{ results }`, up to ten Google Books matches for the text. `400` unless `q` is 3–200 characters and the only parameter. `502` when Google fails. See "Book search" below. Registered before `/:id`, or `search` would be read as an id. |
+| `GET /search?q=&startIndex=` | `200` with `{ results, nextStartIndex? }`, up to ten Google Books matches for the text, starting at `startIndex` (0 to 40, default 0); `nextStartIndex` is present only when another page may follow. `400` unless `q` is 3–200 characters and `startIndex` is the only other parameter. `502` when Google fails. See "Book search" below. Registered before `/:id`, or `search` would be read as an id. |
 | `GET /:id` | `200` with the book. `404` if it does not exist, belongs to another user, or `:id` is not a valid ObjectId. |
 | `PATCH /:id` | `200` with the updated book. `400` if the body carries no recognized field, or a value fails schema validation. `404` under the same three conditions as `GET /:id`. |
 | `DELETE /:id` | `204` with no body. `404` under the same three conditions as `GET /:id`. |
@@ -67,6 +67,12 @@ the terms it honours: [google-books-search.md](../designs/google-books-search.md
 
 - **Free text only.** `q` goes to Google as typed: `inauthor:` and `intitle:` find nothing for
   Cyrillic, while plain text finds the book.
+- **Paging, five pages at most.** `startIndex` goes to Google as given; the page size is fixed
+  at ten. `nextStartIndex` is sent when Google returned a full page of ten volumes (counted
+  before volumes without a title are dropped) and the next page would still start at 40 or
+  below, so the most a search shows is fifty. Google's own `totalItems` is not used: it is an
+  estimate that changes between pages. Past fifty, narrowing the text finds the book faster
+  than scrolling.
 - **Covers are https.** Google returns `http://` thumbnails; the service rewrites them, or the
   deployed HTTPS site would log mixed-content warnings.
 - **Optional means optional.** Only `volumeId` and `title` are guaranteed; a volume without a
@@ -107,12 +113,27 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
   step 1 finds a book and adds it in one click (opened from a series, the book arrives with
   that series and number), step 2 adds series, genres, tropes and links and is optional; the
-  genres default to those of the series' other books until you pick your own
+  genres default to those of the series' other books until you pick your own, and a book with
+  no series starts the series field from its own title, with its author ready in the "new
+  series" form, so a series named after its first book is one click (an existing series of
+  that name is offered instead of a duplicate)
 - `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
 - `/dashboard` and `/dashboard/books/[id]` only redirect to `/library` and `/books/[id]`
+- Tropes use `components/tag-input.tsx`: a field that grows and wraps with its text, 60
+  characters a trope and 30 a book (the server's limits), a counter for the last ten characters,
+  and "Already added" with the existing chip highlighted when the typed text is a trope the book
+  has (case-insensitive); the text is kept.
+- The series state is chosen with pills (`SeriesStatePills`): "Still coming out", "Finished",
+  "Don't know". Chips and the Next to buy filter show Ongoing, Complete, Unknown.
 
 **Search.** `/add` calls `GET /api/books/search` on submit (three characters at least) and
-keeps nothing between searches — no SWR cache, because the results may not be stored. A result
+keeps nothing between searches — no SWR cache, because the results may not be stored. Below the
+results, "Show more results" asks for the next page of the text that was searched, appends it, and skips volumes it
+already listed; if that request fails the list stays and the button stays, with a message.
+Changing the text hides the button at once, and an answer that arrives after that (or after a
+newer search) is dropped, so a list never mixes two queries. The search starts by itself 400 ms after typing stops (three characters at least), aborting the
+previous request; Enter and the button search at once. While a new search runs the old list
+stays, dimmed, and is replaced when the answer arrives. A result
 already on the shelf shows "Already in your library", or "Already on your wishlist" with a
 "Move to library" action, instead of a second add. The "Powered by Google" mark
 (`client/public/powered-by-google.png`, unaltered) shows beside any results, each result links

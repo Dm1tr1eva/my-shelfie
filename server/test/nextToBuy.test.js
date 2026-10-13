@@ -49,6 +49,69 @@ describe("next to buy", () => {
     assert.ok(items.every((item) => item.type === "series" && item.series.id === saga.id));
   });
 
+  it("lists the numbers of a series of known size that have no record, among its books", () => {
+    const saga = series({ totalBooks: 5 });
+    const books = [
+      book({ title: "One", ownership: "owned", seriesId: saga.id, seriesNumber: 1 }),
+      book({ title: "Four", ownership: "owned", seriesId: saga.id, seriesNumber: 4 }),
+      book({ title: "Two", seriesId: saga.id, seriesNumber: 2 }),
+    ];
+
+    const items = pickNextToBuy({ series: [saga], books });
+
+    assert.deepEqual(
+      items.map((item) => [
+        item.type,
+        item.type === "missing" ? item.number : item.book.title,
+        item.gap,
+      ]),
+      [
+        ["series", "Two", true],
+        ["missing", 3, true],
+        ["missing", 5, false],
+      ],
+    );
+  });
+
+  it("reports no missing numbers when the size of the series is unknown", () => {
+    const saga = series();
+    const books = [
+      book({ title: "One", ownership: "owned", seriesId: saga.id, seriesNumber: 1 }),
+      book({ title: "Four", ownership: "owned", seriesId: saga.id, seriesNumber: 4 }),
+    ];
+
+    assert.deepEqual(pickNextToBuy({ series: [saga], books }), []);
+  });
+
+  it("does not report missing numbers for a series of which you own nothing", () => {
+    const saga = series({ totalBooks: 3 });
+    const books = [book({ title: "Two", seriesId: saga.id, seriesNumber: 2 })];
+
+    assert.deepEqual(pickNextToBuy({ series: [saga], books }), []);
+  });
+
+  it("drops missing numbers under a language, genre or trope filter and keeps them under a status filter", () => {
+    const saga = series({ totalBooks: 3, status: "ongoing" });
+    const books = [book({ ownership: "owned", seriesId: saga.id, seriesNumber: 1 })];
+
+    const byLanguage = pickNextToBuy({ series: [saga], books, filters: { language: "uk" } });
+    const byGenre = pickNextToBuy({ series: [saga], books, filters: { genre: "Fantasy" } });
+    const byTrope = pickNextToBuy({ series: [saga], books, filters: { trope: "slow burn" } });
+    const byStatus = pickNextToBuy({ series: [saga], books, filters: { seriesStatus: "ongoing" } });
+    const wrongStatus = pickNextToBuy({
+      series: [saga],
+      books,
+      filters: { seriesStatus: "complete" },
+    });
+
+    assert.deepEqual(
+      [byLanguage, byGenre, byTrope].map((items) => items.length),
+      [0, 0, 0],
+    );
+    assert.equal(byStatus.length, 2);
+    assert.equal(wrongStatus.length, 0);
+  });
+
   it("leaves out a series of which you own nothing", () => {
     const saga = series();
     const books = [

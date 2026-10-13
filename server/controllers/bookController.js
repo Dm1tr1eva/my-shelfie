@@ -1,4 +1,5 @@
 const bookService = require("../services/bookService");
+const { SeriesNumberWithoutSeriesError } = bookService;
 const googleBooksService = require("../services/googleBooksService");
 const { SeriesNotFoundError } = require("../services/seriesService");
 const {
@@ -63,8 +64,8 @@ async function searchBooks(req, res) {
   }
 
   try {
-    const results = await googleBooksService.searchVolumes(parsed.data.q);
-    res.json({ results });
+    const page = await googleBooksService.searchVolumes(parsed.data.q, parsed.data.startIndex);
+    res.json(page);
   } catch (err) {
     if (err instanceof googleBooksService.UpstreamError) {
       return res.status(502).json({ error: "Book search is unavailable right now" });
@@ -104,6 +105,9 @@ async function updateBook(req, res) {
   } catch (err) {
     if (err instanceof SeriesNotFoundError) {
       return res.status(400).json({ error: "seriesId: unknown series" });
+    }
+    if (err instanceof SeriesNumberWithoutSeriesError) {
+      return res.status(400).json({ error: "seriesNumber: needs a seriesId" });
     }
     res.status(500).json({ error: "Failed to update book" });
   }

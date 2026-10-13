@@ -178,6 +178,27 @@ describe("library view", () => {
   });
 });
 
+describe("series size", () => {
+  it("counts a series by its stated size when that is larger than the books on record", () => {
+    const saga = series({ title: "Saga", totalBooks: 5 });
+    const books = [book({ seriesId: saga.id, seriesNumber: 2 })];
+
+    const [group] = buildLibraryView(books, [saga], "library").groups;
+
+    expect(group.total).toBe(5);
+    expect(group.ownedCount).toBe(1);
+  });
+
+  it("grows past a stated size when a higher number is recorded", () => {
+    const saga = series({ title: "Saga", totalBooks: 3 });
+    const books = [book({ seriesId: saga.id, seriesNumber: 6 })];
+
+    const [group] = buildLibraryView(books, [saga], "library").groups;
+
+    expect(group.total).toBe(6);
+  });
+});
+
 describe("shelf stats", () => {
   it("counts owned, wishlist and read books", () => {
     const books = [

@@ -6,12 +6,13 @@ import { useAuth } from "./auth-context";
 import type { Book, Genre, LinkLanguage } from "./books";
 import type { Series, SeriesStatus } from "./series";
 
-export type NextToBuyItem = {
-  type: "series" | "standalone";
-  book: Book;
-  gap: boolean;
-  series?: Series;
-};
+export type BookItem =
+  | { type: "series"; book: Book; gap: boolean; series: Series }
+  | { type: "standalone"; book: Book; gap: boolean };
+
+export type MissingItem = { type: "missing"; number: number; gap: boolean; series: Series };
+
+export type NextToBuyItem = BookItem | MissingItem;
 
 export type NextToBuyFilters = {
   language?: LinkLanguage;

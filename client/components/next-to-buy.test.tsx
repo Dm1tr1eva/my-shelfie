@@ -93,4 +93,34 @@ describe("NextToBuy", () => {
       expect(requested).toContain("/api/next-to-buy?language=uk&seriesStatus=ongoing");
     });
   });
+
+  it("lists a number of a series with no book yet, with a link to add it", async () => {
+    mockApi(({ path }) => {
+      if (path.startsWith("/api/next-to-buy")) {
+        return {
+          body: {
+            items: [
+              { type: "missing", series: saga, number: 4, gap: false },
+              { type: "missing", series: saga, number: 2, gap: true },
+            ],
+          },
+        };
+      }
+      if (path.startsWith("/api/books")) return booksResponse([OWNED_ONE, OWNED_THREE]);
+    });
+    renderApp(<NextToBuy />);
+
+    const fromSeries = await screen.findByRole("region", { name: /From your series/ });
+
+    expect(within(fromSeries).getByText("Book 4")).toBeInTheDocument();
+    expect(within(fromSeries).getAllByText("Saga of Ash · not in your list yet")).toHaveLength(2);
+    expect(within(fromSeries).getAllByRole("link", { name: "Add this book" })[0]).toHaveAttribute(
+      "href",
+      "/add?series=saga&number=4",
+    );
+    expect(within(fromSeries).getByText("Gap: you own #1 and #3")).toBeInTheDocument();
+    expect(
+      within(fromSeries).queryByRole("button", { name: "I bought it" }),
+    ).not.toBeInTheDocument();
+  });
 });

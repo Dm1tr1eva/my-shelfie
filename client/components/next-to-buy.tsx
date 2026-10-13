@@ -18,7 +18,13 @@ import {
 } from "@/lib/books";
 import { ownedNumbersOf } from "@/lib/catalogue";
 import { hostOf } from "@/lib/links";
-import { useNextToBuy, type NextToBuyFilters, type NextToBuyItem } from "@/lib/next-to-buy";
+import {
+  useNextToBuy,
+  type BookItem,
+  type MissingItem,
+  type NextToBuyFilters,
+  type NextToBuyItem,
+} from "@/lib/next-to-buy";
 import { SERIES_STATUS_OPTIONS, type SeriesStatus } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
@@ -40,12 +46,13 @@ function Row({
   onBought,
   busy,
 }: {
-  item: NextToBuyItem;
+  item: BookItem;
   ownedNumbers: number[];
   onBought: (id: string) => void;
   busy: boolean;
 }) {
-  const { book, series } = item;
+  const { book } = item;
+  const series = item.type === "series" ? item.series : undefined;
 
   return (
     <li className="card flex flex-col gap-4 p-4 md:flex-row md:items-center">
@@ -103,6 +110,35 @@ function Row({
   );
 }
 
+function MissingRow({ item, ownedNumbers }: { item: MissingItem; ownedNumbers: number[] }) {
+  const { series, number } = item;
+
+  return (
+    <li className="card flex flex-col gap-4 p-4 md:flex-row md:items-center">
+      <div className="flex min-w-0 flex-1 gap-4">
+        <span
+          aria-hidden="true"
+          className="flex aspect-[2/3] w-16 shrink-0 items-center justify-center rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] text-lg font-bold text-burgundy"
+        >
+          #{number}
+        </span>
+        <div className="flex min-w-0 flex-col gap-2">
+          <p className="font-serif text-xl font-semibold">Book {number}</p>
+          <p className="text-sm text-muted">{series.title} · not in your list yet</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {item.gap && <GapChip text={gapText(ownedNumbers)} />}
+            <SeriesStatusChip status={series.status} />
+          </div>
+        </div>
+      </div>
+
+      <Link href={`/add?series=${series.id}&number=${number}`} className="btn-outline md:shrink-0">
+        Add this book
+      </Link>
+    </li>
+  );
+}
+
 export function NextToBuy() {
   const { user, status } = useRequireAuth();
   const [filters, setFilters] = useState<NextToBuyFilters>({});
@@ -120,12 +156,14 @@ export function NextToBuy() {
     a.localeCompare(b),
   );
   const hasFilters = Object.values(filters).some(Boolean);
-  const fromSeries = items.filter((item) => item.type === "series");
-  const standalone = items.filter((item) => item.type === "standalone");
+  const fromSeries = items.filter((item) => item.type !== "standalone");
+  const standalone = items.filter(
+    (item): item is Extract<NextToBuyItem, { type: "standalone" }> => item.type === "standalone",
+  );
 
   function ownedNumbersFor(item: NextToBuyItem) {
-    if (!item.series) return [];
-    return ownedNumbersOf(books.filter((book) => book.seriesId === item.series?.id));
+    if (item.type === "standalone") return [];
+    return ownedNumbersOf(books.filter((book) => book.seriesId === item.series.id));
   }
 
   function setFilter<K extends keyof NextToBuyFilters>(key: K, value: NextToBuyFilters[K] | "") {
@@ -232,15 +270,23 @@ export function NextToBuy() {
             <span className="font-sans text-base text-muted">{fromSeries.length}</span>
           </h2>
           <ul className="flex flex-col gap-3">
-            {fromSeries.map((item) => (
-              <Row
-                key={item.book.id}
-                item={item}
-                ownedNumbers={ownedNumbersFor(item)}
-                onBought={bought}
-                busy={busy}
-              />
-            ))}
+            {fromSeries.map((item) =>
+              item.type === "missing" ? (
+                <MissingRow
+                  key={`missing-${item.series.id}-${item.number}`}
+                  item={item}
+                  ownedNumbers={ownedNumbersFor(item)}
+                />
+              ) : (
+                <Row
+                  key={item.book.id}
+                  item={item}
+                  ownedNumbers={ownedNumbersFor(item)}
+                  onBought={bought}
+                  busy={busy}
+                />
+              ),
+            )}
           </ul>
         </section>
       )}

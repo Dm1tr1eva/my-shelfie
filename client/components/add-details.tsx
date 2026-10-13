@@ -1,10 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
-import { SeriesPicker, type SeriesChoice } from "@/components/series-picker";
+import {
+  SeriesPicker,
+  type SeriesChoice,
+  type SeriesPickerHandle,
+} from "@/components/series-picker";
 import { ShopLinkEditor, validLinks, type LinkRow } from "@/components/shop-link-editor";
 import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
@@ -16,7 +20,7 @@ function DetailsForm({ book }: { book: Book }) {
   const router = useRouter();
   const params = useSearchParams();
   const { books } = useBooks();
-  const { series } = useSeriesList();
+  const { series, isLoading: seriesLoading } = useSeriesList();
   const { updateBook } = useBookActions();
   const { createSeries } = useSeriesActions();
 
@@ -32,6 +36,8 @@ function DetailsForm({ book }: { book: Book }) {
     book.links.length > 0 ? book.links : [{ language: "uk", url: "" }],
   );
   const [pending, setPending] = useState(false);
+  const [newSeriesPending, setNewSeriesPending] = useState(false);
+  const pickerRef = useRef<SeriesPickerHandle>(null);
   const [error, setError] = useState<string | null>(null);
 
   const tropeCounts = new Map<string, number>();
@@ -40,27 +46,33 @@ function DetailsForm({ book }: { book: Book }) {
   }
   const suggestions = [...tropeCounts].map(([name, count]) => ({ name, count }));
 
-  const seriesGenres = [
-    ...new Set(
-      books
-        .filter((item) => item.seriesId === choice.seriesId && item.id !== book.id)
-        .flatMap((item) => item.genres),
-    ),
-  ] as Genre[];
+  const seriesGenres = (
+    choice.seriesId
+      ? [
+          ...new Set(
+            books
+              .filter((item) => item.seriesId === choice.seriesId && item.id !== book.id)
+              .flatMap((item) => item.genres),
+          ),
+        ]
+      : []
+  ) as Genre[];
   const genres = pickedGenres ?? (book.genres.length > 0 ? book.genres : seriesGenres);
 
   async function save() {
     setPending(true);
     setError(null);
     try {
+      const created = await pickerRef.current?.createPending();
+      const seriesId = created?.id ?? choice.seriesId;
+      const seriesNumber = seriesId ? choice.seriesNumber : undefined;
+
       await updateBook(book.id, {
         genres,
         tropes,
         links: validLinks(rows),
-        ...(choice.seriesId !== book.seriesId && { seriesId: choice.seriesId ?? null }),
-        ...(choice.seriesNumber !== book.seriesNumber && {
-          seriesNumber: choice.seriesNumber ?? null,
-        }),
+        ...(seriesId !== book.seriesId && { seriesId: seriesId ?? null }),
+        ...(seriesNumber !== book.seriesNumber && { seriesNumber: seriesNumber ?? null }),
       });
       router.push("/library");
     } catch (err) {
@@ -82,14 +94,19 @@ function DetailsForm({ book }: { book: Book }) {
         </div>
       </div>
 
-      <SeriesPicker
-        series={series}
-        books={books}
-        currentBookId={book.id}
-        value={choice}
-        onChange={setChoice}
-        onCreate={createSeries}
-      />
+      {!seriesLoading && (
+        <SeriesPicker
+          series={series}
+          books={books}
+          currentBookId={book.id}
+          value={choice}
+          onChange={setChoice}
+          onCreate={createSeries}
+          suggestion={choice.seriesId ? undefined : { title: book.title, author: book.author }}
+          onPendingChange={setNewSeriesPending}
+          ref={pickerRef}
+        />
+      )}
 
       <GenreMultiSelect value={genres} onChange={setPickedGenres} />
       <TagInput label="Tropes" value={tropes} onChange={setTropes} suggestions={suggestions} />
@@ -106,7 +123,11 @@ function DetailsForm({ book }: { book: Book }) {
           Skip for now
         </button>
         <button type="button" onClick={save} disabled={pending} className="btn-primary">
-          {pending ? "Saving..." : "Save details"}
+          {pending
+            ? "Saving..."
+            : newSeriesPending
+              ? "Save details & create series"
+              : "Save details"}
         </button>
       </div>
     </div>

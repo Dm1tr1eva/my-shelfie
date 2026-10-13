@@ -116,7 +116,11 @@ export function buildLibraryView(
       series: seriesById.get(seriesId) as Series,
       slots,
       ownedCount: allBooks.filter(isOwned).length,
-      total: Math.max(highestNumberOf(allBooks), allBooks.length),
+      total: Math.max(
+        seriesById.get(seriesId)?.totalBooks ?? 0,
+        highestNumberOf(allBooks),
+        allBooks.length,
+      ),
       ownedNumbers: ownedNumbersOf(allBooks),
       gaps,
     });

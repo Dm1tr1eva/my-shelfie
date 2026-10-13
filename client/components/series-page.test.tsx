@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { book, choose, mockApi, renderApp, series } from "@/test/helpers";
+import { book, mockApi, renderApp, series } from "@/test/helpers";
 import { SeriesPage } from "./series-page";
 
 vi.mock("next/navigation", () => ({
@@ -28,12 +28,12 @@ const BOOKS = [
   }),
 ];
 
-function serve() {
+function serve(saga = SAGA) {
   return mockApi(({ method, path }) => {
     if (method === "PATCH" && path === "/api/series/saga") {
       return { body: { ...SAGA, status: "complete" } };
     }
-    if (path === "/api/series/saga") return { body: { series: SAGA, books: BOOKS } };
+    if (path === "/api/series/saga") return { body: { series: saga, books: BOOKS } };
     if (path === "/api/series/gone") return { status: 404, body: { error: "Not found" } };
   });
 }
@@ -85,14 +85,20 @@ describe("SeriesPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
     const form = screen.getByRole("form", { name: "Edit series" });
-    choose(within(form).getByRole("combobox", { name: "Status" }), "Complete");
+    fireEvent.click(within(form).getByRole("radio", { name: "Finished" }));
     fireEvent.click(within(form).getByRole("button", { name: "Save" }));
 
     await waitFor(() =>
       expect(calls).toContainEqual({
         method: "PATCH",
         path: "/api/series/saga",
-        body: { title: "Saga of Ash", author: "A. Writer", note: null, status: "complete" },
+        body: {
+          title: "Saga of Ash",
+          author: "A. Writer",
+          note: null,
+          status: "complete",
+          totalBooks: null,
+        },
       }),
     );
   });
@@ -102,5 +108,34 @@ describe("SeriesPage", () => {
     renderApp(<SeriesPage id="gone" />);
 
     expect(await screen.findByText("Series not found.")).toBeInTheDocument();
+  });
+
+  it("counts against the stated size of the series and lists the numbers still missing", async () => {
+    serve({ ...SAGA, totalBooks: 5 });
+    renderApp(<SeriesPage id="saga" />);
+
+    expect(await screen.findByText("Own 2 of 5")).toBeInTheDocument();
+    expect(screen.getByText("Missing: #2 (a gap) and #4 and #5")).toBeInTheDocument();
+  });
+
+  it("saves the stated size, and clears it when the field is emptied", async () => {
+    const calls = serve({ ...SAGA, totalBooks: 5 });
+    renderApp(<SeriesPage id="saga" />);
+    await screen.findByRole("heading", { name: "Saga of Ash" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
+    const form = screen.getByRole("form", { name: "Edit series" });
+    expect(within(form).getByLabelText("Books in the series")).toHaveValue(5);
+    fireEvent.change(within(form).getByLabelText("Books in the series"), { target: { value: "" } });
+    fireEvent.click(within(form).getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          body: expect.objectContaining({ totalBooks: null }),
+        }),
+      ),
+    );
   });
 });
