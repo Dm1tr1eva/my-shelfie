@@ -133,7 +133,7 @@ function bookKey(id: string) {
 export function useBooks() {
   const { status: authStatus } = useAuth();
 
-  const { data, error, isLoading } = useSWR<BooksResponse>(
+  const { data, error, isLoading, mutate } = useSWR<BooksResponse>(
     authStatus === "authenticated" ? `/api/books?limit=${LIST_LIMIT}` : null,
     (path: string) => apiFetch<BooksResponse>(path),
   );
@@ -143,18 +143,19 @@ export function useBooks() {
     total: data?.total ?? 0,
     isLoading,
     error,
+    reload: () => mutate(),
   };
 }
 
 export function useBook(id: string) {
   const { status: authStatus } = useAuth();
 
-  const { data, error, isLoading } = useSWR<Book>(
+  const { data, error, isLoading, mutate } = useSWR<Book>(
     authStatus === "authenticated" ? bookKey(id) : null,
     (path: string) => apiFetch<Book>(path),
   );
 
-  return { book: data, error, isLoading };
+  return { book: data, error, isLoading, reload: () => mutate() };
 }
 
 export function useBookActions() {

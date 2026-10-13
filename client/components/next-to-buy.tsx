@@ -5,35 +5,29 @@ import { useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { GapChip, LangBadge, SeriesStatusChip } from "@/components/chips";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { FilterBar } from "@/components/filter-bar";
+import { RowsSkeleton } from "@/components/skeleton";
 import { ExternalLinkIcon } from "@/components/icons";
-import { Select, type SelectOption } from "@/components/select";
 import { ApiError } from "@/lib/api";
-import {
-  GENRES,
-  LINK_LANGUAGES,
-  useBookActions,
-  useBooks,
-  type Genre,
-  type LinkLanguage,
-} from "@/lib/books";
+import { useBookActions, useBooks } from "@/lib/books";
 import { ownedNumbersOf } from "@/lib/catalogue";
 import { hostOf } from "@/lib/links";
+import {
+  NO_FILTERS,
+  activeFilterCount,
+  applyFilters,
+  buildFilterGroups,
+  type Filters,
+  type Subject,
+} from "@/lib/filters";
 import {
   useNextToBuy,
   type BookItem,
   type MissingItem,
-  type NextToBuyFilters,
   type NextToBuyItem,
 } from "@/lib/next-to-buy";
-import { SERIES_STATUS_OPTIONS, type SeriesStatus } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
-
-const ANY: SelectOption = { value: "", label: "Any" };
-const LANGUAGE_FILTER_OPTIONS = [
-  ANY,
-  ...LINK_LANGUAGES.map((language) => ({ value: language.value, label: language.name })),
-];
-const GENRE_FILTER_OPTIONS = [ANY, ...GENRES.map((genre) => ({ value: genre, label: genre }))];
 
 function gapText(numbers: number[]) {
   if (numbers.length === 0) return "Gap";
@@ -141,10 +135,10 @@ function MissingRow({ item, ownedNumbers }: { item: MissingItem; ownedNumbers: n
 
 export function NextToBuy() {
   const { user, status } = useRequireAuth();
-  const [filters, setFilters] = useState<NextToBuyFilters>({});
-  const { items, isLoading, error } = useNextToBuy(filters);
+  const { items, isLoading, error, reload } = useNextToBuy();
   const { books } = useBooks();
   const { updateBook } = useBookActions();
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -152,27 +146,24 @@ export function NextToBuy() {
     return null;
   }
 
-  const tropes = [...new Set(books.flatMap((book) => book.tropes))].sort((a, b) =>
-    a.localeCompare(b),
-  );
-  const hasFilters = Object.values(filters).some(Boolean);
-  const fromSeries = items.filter((item) => item.type !== "standalone");
-  const standalone = items.filter(
+  const subjectOf = (item: NextToBuyItem): Subject => {
+    if (item.type === "missing") return { series: item.series };
+    return { book: item.book, series: item.type === "series" ? item.series : undefined };
+  };
+  const groups = buildFilterGroups(items, subjectOf, filters);
+  const visible = applyFilters(items, subjectOf, filters);
+  const countWith = (draft: Filters) => applyFilters(items, subjectOf, draft).length;
+  const hasFilters = activeFilterCount(filters) > 0;
+  const fromSeries = visible.filter((item) => item.type !== "standalone");
+  const standalone = visible.filter(
     (item): item is Extract<NextToBuyItem, { type: "standalone" }> => item.type === "standalone",
   );
+  const summary = `${visible.length} ${visible.length === 1 ? "book" : "books"}`;
+  const loaded = !isLoading && !error;
 
   function ownedNumbersFor(item: NextToBuyItem) {
     if (item.type === "standalone") return [];
     return ownedNumbersOf(books.filter((book) => book.seriesId === item.series.id));
-  }
-
-  function setFilter<K extends keyof NextToBuyFilters>(key: K, value: NextToBuyFilters[K] | "") {
-    setFilters((current) => {
-      const next = { ...current };
-      if (value === "") delete next[key];
-      else next[key] = value as NextToBuyFilters[K];
-      return next;
-    });
   }
 
   async function bought(id: string) {
@@ -196,55 +187,25 @@ export function NextToBuy() {
         </p>
       </div>
 
-      <div className="card flex flex-wrap items-end gap-3 p-4">
-        <Select
-          label="Shop language"
-          className="min-w-36 flex-1"
-          value={filters.language ?? ""}
-          onChange={(value) => setFilter("language", value as LinkLanguage | "")}
-          options={LANGUAGE_FILTER_OPTIONS}
-        />
-
-        <Select
-          label="Genre"
-          className="min-w-36 flex-1"
-          value={filters.genre ?? ""}
-          onChange={(value) => setFilter("genre", value as Genre | "")}
-          options={GENRE_FILTER_OPTIONS}
-        />
-
-        <Select
-          label="Trope"
-          className="min-w-36 flex-1"
-          value={filters.trope ?? ""}
-          onChange={(value) => setFilter("trope", value)}
-          options={[ANY, ...tropes.map((trope) => ({ value: trope, label: trope }))]}
-        />
-
-        <Select
-          label="Series status"
-          className="min-w-36 flex-1"
-          value={filters.seriesStatus ?? ""}
-          onChange={(value) => setFilter("seriesStatus", value as SeriesStatus | "")}
-          options={[ANY, ...SERIES_STATUS_OPTIONS]}
-        />
-
-        {hasFilters && (
-          <button type="button" onClick={() => setFilters({})} className="btn-outline">
-            Clear all
-          </button>
-        )}
-      </div>
-
-      {isLoading && (
-        <p role="status" aria-busy="true">
-          Loading...
-        </p>
+      {loaded && (items.length > 0 || hasFilters) && (
+        <div className="card p-4">
+          <FilterBar
+            groups={groups}
+            filters={filters}
+            onChange={setFilters}
+            countWith={countWith}
+            summary={summary}
+          />
+        </div>
       )}
+
+      {isLoading && <RowsSkeleton label="Loading your list…" />}
       {error && (
-        <p role="alert" className="text-burgundy">
-          Could not load the list.
-        </p>
+        <ErrorState
+          title="Could not load the list"
+          text="Check your connection and try again."
+          onRetry={reload}
+        />
       )}
       {actionError && (
         <p role="alert" className="font-semibold text-burgundy">
@@ -252,7 +213,7 @@ export function NextToBuy() {
         </p>
       )}
 
-      {!isLoading && !error && items.length === 0 && (
+      {loaded && visible.length === 0 && (
         <EmptyState
           title={hasFilters ? "No books match these filters" : "Nothing to buy"}
           text={

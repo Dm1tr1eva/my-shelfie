@@ -1,4 +1,5 @@
 import type { Book } from "./books";
+import { NO_FILTERS, activeFilterCount, matchesFilters, type Filters } from "./filters";
 import type { Series } from "./series";
 
 export type LibraryTab = "library" | "wishlist";
@@ -62,7 +63,11 @@ export function gapNumbersOf(books: Book[]): number[] {
   return [...gaps].sort((a, b) => a - b);
 }
 
-function matchesQuery(book: Book, query: string) {
+export function isInTab(book: Book, tab: LibraryTab) {
+  return isOwned(book) !== (tab === "wishlist");
+}
+
+export function matchesQuery(book: Book, query: string) {
   if (!query) return true;
   const needle = query.toLowerCase();
   return book.title.toLowerCase().includes(needle) || book.author.toLowerCase().includes(needle);
@@ -73,6 +78,7 @@ export function buildLibraryView(
   series: Series[],
   tab: LibraryTab,
   query = "",
+  filters: Filters = NO_FILTERS,
 ): LibraryView {
   const wantedTab = tab === "wishlist";
   const seriesById = new Map(series.map((item) => [item.id, item]));
@@ -83,7 +89,13 @@ export function buildLibraryView(
     const owner = book.seriesId ? seriesById.get(book.seriesId) : undefined;
 
     if (!owner) {
-      if (isOwned(book) !== wantedTab && matchesQuery(book, query)) standalone.push(book);
+      if (
+        isOwned(book) !== wantedTab &&
+        matchesQuery(book, query) &&
+        matchesFilters({ book }, filters)
+      ) {
+        standalone.push(book);
+      }
       continue;
     }
 
@@ -93,11 +105,16 @@ export function buildLibraryView(
   }
 
   const groups: SeriesGroup[] = [];
-  const searching = query.trim() !== "";
+  const searching = query.trim() !== "" || activeFilterCount(filters) > 0;
 
   for (const [seriesId, allBooks] of booksBySeries) {
     const visible = allBooks
-      .filter((book) => isOwned(book) !== wantedTab && matchesQuery(book, query))
+      .filter(
+        (book) =>
+          isOwned(book) !== wantedTab &&
+          matchesQuery(book, query) &&
+          matchesFilters({ book, series: seriesById.get(seriesId) }, filters),
+      )
       .sort(byNumberThenTitle);
     if (visible.length === 0) continue;
 

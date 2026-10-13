@@ -118,6 +118,16 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   series" form, so a series named after its first book is one click (an existing series of
   that name is offered instead of a duplicate)
 - `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
+- Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
+  and shop language. Values within a group are OR, groups are AND, and each option's count is
+  taken among the books that match the other groups. From 768 px each group is a button with a
+  checkbox popover (Clear / Apply) and removable chips; below it a "Filters · n" button opens a
+  bottom sheet of pills applied by "Show n books". Library and Wishlist filter the loaded list;
+  Next to buy fetches the list once and filters in the browser. A filter on the Library hides
+  gap tiles, like a search.
+- Loading shows `components/skeleton.tsx` with a visible status line; a failed load shows
+  `ErrorState` with "Try again" (the hooks expose `reload`); a missing book or series shows
+  `NotFound` with a way back.
 - `/dashboard` and `/dashboard/books/[id]` only redirect to `/library` and `/books/[id]`
 - Tropes use `components/tag-input.tsx`: a field that grows and wraps with its text, 60
   characters a trope and 30 a book (the server's limits), a counter for the last ten characters,

@@ -60,19 +60,36 @@ In order:
    genres, tropes, links, notes, annotation; `/api/series`, `/api/next-to-buy`,
    `/api/tropes`; 82 server tests. Existing books read as owned with no migration.
    [features/series.md](features/series.md)
-2. 🟨 Screens, from the handoff in [design/](design/), in three waves (A written and tested
-   2026-10-11, in the working tree and not yet committed):
+2. 🟨 Screens, from the handoff in [design/](design/), in three waves (A pushed 2026-10-11 and
+   13, B written and tested 2026-10-13):
    - ✅ **A, by 10-14 — the core path:** tokens and light-only, the shell (navy nav bar from
      768, tab bar below), Library (tabs, series groups, gap tiles, grid and list, search,
      stats), Book page, Add a book (both steps), Next to buy
-   - **B, by 10-16:** a plain Series page already exists from A; still to do: its polish, filters (popover and bottom sheet), empty, loading and
-     error states
+   - ✅ **B, by 10-16:** filter bar and sheet on Library, Wishlist and Next to buy, skeleton and
+     retry states, the series page as in the mockup —
+     [designs/filters-and-states.md](designs/filters-and-states.md)
    - **C, by 10-17:** Home, sign in, create account and privacy restyled
 3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 
 After the submission: the AI assistant (stage 8, repurposed to fill series order, status and
 tropes), importing the Notion table, live Google annotations.
+
+### Notes from the author's own use, 2026-10-13 (not scheduled)
+
+Written down so they are not lost; each needs a short design before it is built.
+
+1. **Series picker as a list of known series.** Choosing a series from a dropdown of every
+   series on the account should fill the rest of the form (genres, tropes, links, series
+   state and size) from what is already known for another book of that series.
+2. **"Add a book to this series" on a book of a series.** It opens the search; picking a
+   result goes straight to the series editing step of that book.
+3. **After adding from search, go straight to the details step** — or not; the current flow
+   (a toast with a link) is felt to be awkward. Open question: which of the two is better.
+4. **Shop links only for wishlist books.** A book already in the library needs no link to buy
+   it; hide the field there (and the "Where to buy" block).
+5. **Order of the Library groups.** "Standalone books" first, then series with the most
+   recently added on top, instead of alphabetical.
 
 ## Course submission MVP — done 2026-10-09
 

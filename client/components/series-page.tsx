@@ -4,15 +4,23 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BookCover } from "@/components/book-cover";
-import { GenreChip, OwnershipChip, SeriesStatusChip, TropeChip } from "@/components/chips";
+import { GenreChip, TropeChip } from "@/components/chips";
+import { ErrorState, NotFound } from "@/components/error-state";
 import { OwnProgress } from "@/components/own-progress";
 import { PlusIcon } from "@/components/icons";
 import { SeriesStatePills } from "@/components/form-controls";
 import { Shelf } from "@/components/shelf";
+import { ShelfSkeleton } from "@/components/skeleton";
 import { ApiError } from "@/lib/api";
 import type { Book } from "@/lib/books";
 import { gapNumbersOf, highestNumberOf, isOwned, ownedNumbersOf } from "@/lib/catalogue";
-import { useSeries, useSeriesActions, type Series, type SeriesStatus } from "@/lib/series";
+import {
+  SERIES_STATUS_LABELS,
+  useSeries,
+  useSeriesActions,
+  type Series,
+  type SeriesStatus,
+} from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 function countBy(values: string[]) {
@@ -81,8 +89,8 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   return (
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
-        <p>
-          <SeriesStatusChip status={series.status} />
+        <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+          {SERIES_STATUS_LABELS[series.status]} series
         </p>
         <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{series.title}</h1>
         {(series.author || series.note) && (
@@ -92,6 +100,13 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             {series.note && <em>{series.note}</em>}
           </p>
         )}
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          className="min-h-11 self-start text-navy underline underline-offset-2"
+        >
+          {series.note ? "Edit note" : "Add a note"}
+        </button>
       </header>
 
       <section
@@ -144,9 +159,8 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                     <span className="line-clamp-2 text-[15px] font-semibold leading-snug">
                       {book.title}
                     </span>
-                    <span className="flex flex-wrap items-center gap-2 text-xs">
-                      <OwnershipChip ownership={book.ownership} />
-                      {isGap && <span className="font-semibold text-burgundy">gap</span>}
+                    <span className="text-xs font-semibold text-muted">
+                      {wanted ? (isGap ? "Wishlist · gap" : "Wishlist") : "In my library"}
                     </span>
                   </Link>
                 </li>
@@ -290,7 +304,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
 
 export function SeriesPage({ id }: { id: string }) {
   const { user, status } = useRequireAuth();
-  const { series, books, error, isLoading } = useSeries(id);
+  const { series, books, error, isLoading, reload } = useSeries(id);
 
   if (status !== "authenticated" || !user) {
     return null;
@@ -306,16 +320,16 @@ export function SeriesPage({ id }: { id: string }) {
         </Link>
       </nav>
 
-      {isLoading && (
-        <p role="status" aria-busy="true">
-          Loading...
-        </p>
+      {isLoading && <ShelfSkeleton label="Loading the series…" />}
+      {notFound && (
+        <NotFound title="Series not found" backHref="/library" backLabel="Back to the library" />
       )}
-      {notFound && <p>Series not found.</p>}
       {error && !notFound && (
-        <p role="alert" className="text-burgundy">
-          Could not load this series.
-        </p>
+        <ErrorState
+          title="Could not load this series"
+          text="Check your connection and try again."
+          onRetry={reload}
+        />
       )}
       {series && (
         <SeriesBody key={`${series.id}-${series.updatedAt}`} series={series} books={books} />

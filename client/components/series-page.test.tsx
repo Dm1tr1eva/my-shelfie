@@ -107,7 +107,11 @@ describe("SeriesPage", () => {
     serve();
     renderApp(<SeriesPage id="gone" />);
 
-    expect(await screen.findByText("Series not found.")).toBeInTheDocument();
+    expect(await screen.findByText("Series not found")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to the library" })).toHaveAttribute(
+      "href",
+      "/library",
+    );
   });
 
   it("counts against the stated size of the series and lists the numbers still missing", async () => {
@@ -137,5 +141,32 @@ describe("SeriesPage", () => {
         }),
       ),
     );
+  });
+
+  it("names the kind of series above the title, as the design does", async () => {
+    serve({ ...SAGA, status: "complete" });
+    renderApp(<SeriesPage id="saga" />);
+
+    expect(await screen.findByText("Complete series")).toBeInTheDocument();
+  });
+
+  it("opens the edit form from the note link", async () => {
+    serve({ ...SAGA, note: "book 6 delayed" });
+    renderApp(<SeriesPage id="saga" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Edit note" }));
+
+    expect(screen.getByRole("form", { name: "Edit series" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Note")).toHaveValue("book 6 delayed");
+  });
+
+  it("labels each cover with where the book is and whether it is a gap", async () => {
+    serve();
+    renderApp(<SeriesPage id="saga" />);
+
+    await screen.findByRole("heading", { name: "Saga of Ash" });
+
+    expect(screen.getAllByText("In my library")).toHaveLength(2);
+    expect(screen.getByText("Wishlist · gap")).toBeInTheDocument();
   });
 });

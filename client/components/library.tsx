@@ -5,12 +5,30 @@ import { useState } from "react";
 import { BookRow } from "@/components/book-row";
 import { BookTile } from "@/components/book-tile";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
+import { FilterBar } from "@/components/filter-bar";
+import { ShelfSkeleton } from "@/components/skeleton";
 import { GapTile } from "@/components/gap-tile";
 import { SearchIcon } from "@/components/icons";
 import { SeriesHeader } from "@/components/series-header";
 import { Shelf } from "@/components/shelf";
 import { ViewToggle } from "@/components/view-toggle";
-import { buildLibraryView, shelfStats, type LibraryTab, type SeriesGroup } from "@/lib/catalogue";
+import {
+  buildLibraryView,
+  isInTab,
+  matchesQuery,
+  shelfStats,
+  type LibraryTab,
+  type SeriesGroup,
+} from "@/lib/catalogue";
+import {
+  NO_FILTERS,
+  activeFilterCount,
+  applyFilters,
+  buildFilterGroups,
+  type Filters,
+  type Subject,
+} from "@/lib/filters";
 import { useBooks, type Book } from "@/lib/books";
 import { useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
@@ -108,21 +126,42 @@ function StandaloneShelf({
 
 export function Library({ tab }: { tab: LibraryTab }) {
   const { user, status } = useRequireAuth();
-  const { books, isLoading, error } = useBooks();
+  const { books, isLoading, error, reload } = useBooks();
   const { series } = useSeriesList();
   const { mode, changeMode } = useViewMode();
   const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 
   if (status !== "authenticated" || !user) {
     return null;
   }
 
   const stats = shelfStats(books);
-  const view = buildLibraryView(books, series, tab, query);
+  const view = buildLibraryView(books, series, tab, query, filters);
   const shown =
     view.standalone.length + view.groups.reduce((count, group) => count + group.slots.length, 0);
   const loaded = !isLoading && !error;
-  const searching = query.trim() !== "";
+  const filtering = activeFilterCount(filters) > 0;
+  const searching = query.trim() !== "" || filtering;
+
+  const seriesById = new Map(series.map((item) => [item.id, item]));
+  const scope = books.filter((book) => isInTab(book, tab) && matchesQuery(book, query));
+  const subjectOf = (book: (typeof books)[number]): Subject => ({
+    book,
+    series: book.seriesId ? seriesById.get(book.seriesId) : undefined,
+  });
+  const filterGroups = buildFilterGroups(scope, subjectOf, filters);
+  const countWith = (draft: Filters) => applyFilters(scope, subjectOf, draft).length;
+  const bookCount =
+    view.standalone.length +
+    view.groups.reduce(
+      (count, group) => count + group.slots.filter((slot) => slot.kind === "book").length,
+      0,
+    );
+  const groupCount = view.groups.length + (view.standalone.length > 0 ? 1 : 0);
+  const summary = `${bookCount} ${bookCount === 1 ? "book" : "books"}${
+    groupCount > 0 ? ` in ${groupCount} ${groupCount === 1 ? "group" : "groups"}` : ""
+  }`;
   const tabs = [
     { href: "/library", label: "My library", count: stats.owned, id: "library" as const },
     { href: "/wishlist", label: "Wishlist", count: stats.wishlist, id: "wishlist" as const },
@@ -179,21 +218,35 @@ export function Library({ tab }: { tab: LibraryTab }) {
         </div>
       </div>
 
-      {isLoading && (
-        <p role="status" aria-busy="true">
-          Loading your shelves...
-        </p>
+      {loaded && (scope.length > 0 || filtering) && (
+        <div className="card p-4">
+          <FilterBar
+            groups={filterGroups}
+            filters={filters}
+            onChange={setFilters}
+            countWith={countWith}
+            summary={summary}
+          />
+        </div>
       )}
+
+      {isLoading && <ShelfSkeleton />}
       {error && (
-        <p role="alert" className="text-burgundy">
-          Could not load your books.
-        </p>
+        <ErrorState
+          title="Could not load your books"
+          text="Check your connection and try again."
+          onRetry={reload}
+        />
       )}
 
       {loaded && shown === 0 && searching && (
         <EmptyState
           title="No books match"
-          text={`Nothing in this list matches “${query.trim()}”.`}
+          text={
+            query.trim() !== ""
+              ? `Nothing in this list matches “${query.trim()}”${filtering ? " and the filters" : ""}.`
+              : "Nothing in this list matches the filters."
+          }
         />
       )}
 

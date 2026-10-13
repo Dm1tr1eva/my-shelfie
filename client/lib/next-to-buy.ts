@@ -30,13 +30,13 @@ function queryOf(filters: NextToBuyFilters) {
   return text ? `?${text}` : "";
 }
 
-export function useNextToBuy(filters: NextToBuyFilters) {
+export function useNextToBuy(filters: NextToBuyFilters = {}) {
   const { status: authStatus } = useAuth();
 
-  const { data, error, isLoading } = useSWR<{ items: NextToBuyItem[] }>(
+  const { data, error, isLoading, mutate } = useSWR<{ items: NextToBuyItem[] }>(
     authStatus === "authenticated" ? `/api/next-to-buy${queryOf(filters)}` : null,
     (path: string) => apiFetch<{ items: NextToBuyItem[] }>(path),
   );
 
-  return { items: data?.items ?? [], isLoading, error };
+  return { items: data?.items ?? [], isLoading, error, reload: () => mutate() };
 }

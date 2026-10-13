@@ -70,12 +70,18 @@ export function useSeriesList() {
 export function useSeries(id: string) {
   const { status: authStatus } = useAuth();
 
-  const { data, error, isLoading } = useSWR<{ series: Series; books: Book[] }>(
+  const { data, error, isLoading, mutate } = useSWR<{ series: Series; books: Book[] }>(
     authStatus === "authenticated" ? `/api/series/${id}` : null,
     (path: string) => apiFetch<{ series: Series; books: Book[] }>(path),
   );
 
-  return { series: data?.series, books: data?.books ?? [], isLoading, error };
+  return {
+    series: data?.series,
+    books: data?.books ?? [],
+    isLoading,
+    error,
+    reload: () => mutate(),
+  };
 }
 
 export function useSeriesActions() {

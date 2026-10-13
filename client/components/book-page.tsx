@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { GenreChip, LangBadge, TropeChip } from "@/components/chips";
+import { ErrorState, NotFound } from "@/components/error-state";
+import { RowsSkeleton } from "@/components/skeleton";
 import { OwnershipToggle, ReadingStatusPills, StarRating } from "@/components/form-controls";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { ExternalLinkIcon, PlusIcon, XIcon } from "@/components/icons";
@@ -443,7 +445,7 @@ function BookForm({ book }: { book: Book }) {
 
 export function BookPage({ id }: { id: string }) {
   const { user, status } = useRequireAuth();
-  const { book, error, isLoading } = useBook(id);
+  const { book, error, isLoading, reload } = useBook(id);
 
   if (status !== "authenticated" || !user) {
     return null;
@@ -453,16 +455,16 @@ export function BookPage({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      {isLoading && (
-        <p role="status" aria-busy="true">
-          Loading...
-        </p>
+      {isLoading && <RowsSkeleton label="Loading the book…" />}
+      {notFound && (
+        <NotFound title="Book not found" backHref="/library" backLabel="Back to the library" />
       )}
-      {notFound && <p>Book not found.</p>}
       {error && !notFound && (
-        <p role="alert" className="text-burgundy">
-          Could not load this book.
-        </p>
+        <ErrorState
+          title="Could not load this book"
+          text="Check your connection and try again."
+          onRetry={reload}
+        />
       )}
       {book && <BookForm key={`${book.id}-${book.updatedAt}`} book={book} />}
     </main>

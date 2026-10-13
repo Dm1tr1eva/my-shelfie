@@ -177,7 +177,11 @@ describe("BookPage", () => {
     });
     renderApp(<BookPage id="missing" />);
 
-    expect(await screen.findByText("Book not found.")).toBeInTheDocument();
+    expect(await screen.findByText("Book not found")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to the library" })).toHaveAttribute(
+      "href",
+      "/library",
+    );
   });
 
   it("treats a number left on a book with no series as nothing: no 'Book 1', no unsaved bar", async () => {

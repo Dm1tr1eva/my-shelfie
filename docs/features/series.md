@@ -36,7 +36,7 @@ Everything requires a session (`401` otherwise).
 | `GET /api/series/:id` | `200` with `{ series, books }`; books by number, unnumbered last. `404` for a missing, foreign or malformed id. |
 | `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note` and `totalBooks`. `404` as above. |
 | `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
-| `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. |
+| `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. The page does not send them: it fetches once and filters several values per group in the browser. |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
 | `GET /api/books` | Gains `?ownership=owned\|wanted`, `?seriesId=`, `?genre=`, `?trope=` and `?q=` (a case-insensitive text match on title and author, treated as plain text). `400` on an invalid value. |
 

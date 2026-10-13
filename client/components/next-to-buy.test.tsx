@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { book, booksResponse, choose, mockApi, renderApp, series } from "@/test/helpers";
+import { book, booksResponse, mockApi, renderApp, series } from "@/test/helpers";
 import { NextToBuy } from "./next-to-buy";
 
 vi.mock("next/navigation", () => ({
@@ -14,12 +14,18 @@ const OWNED_THREE = book({ id: "three", title: "Ash Three", seriesId: "saga", se
 const WANTED_TWO = book({
   id: "two",
   title: "Ash Two",
+  genres: ["Fantasy"],
   seriesId: "saga",
   seriesNumber: 2,
   ownership: "wanted",
   links: [{ language: "uk", url: "https://www.yakaboo.ua/ash-two" }],
 });
-const STANDALONE = book({ id: "wish", title: "Wished Alone", ownership: "wanted" });
+const STANDALONE = book({
+  id: "wish",
+  title: "Wished Alone",
+  ownership: "wanted",
+  genres: ["Romance"],
+});
 
 function serve() {
   return mockApi(({ method, path }) => {
@@ -80,18 +86,60 @@ describe("NextToBuy", () => {
     );
   });
 
-  it("asks the server for the chosen filters", async () => {
+  it("narrows the list in the browser when you apply a filter, without asking the server again", async () => {
     const calls = serve();
     renderApp(<NextToBuy />);
     await screen.findByRole("link", { name: "Ash Two" });
+    expect(screen.getByRole("link", { name: "Wished Alone" })).toBeInTheDocument();
 
-    choose(screen.getByRole("combobox", { name: "Shop language" }), "Ukrainian");
-    choose(screen.getByRole("combobox", { name: "Series status" }), "Ongoing");
+    fireEvent.click(screen.getByRole("button", { name: /^Shop language/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Ukrainian/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
 
-    await waitFor(() => {
-      const requested = calls.map((call) => call.path);
-      expect(requested).toContain("/api/next-to-buy?language=uk&seriesStatus=ongoing");
+    expect(screen.getByRole("link", { name: "Ash Two" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Wished Alone" })).not.toBeInTheDocument();
+    expect(screen.getByText("1 book")).toBeInTheDocument();
+    expect(
+      calls.filter((call) => call.path.startsWith("/api/next-to-buy")).map((call) => call.path),
+    ).toEqual(["/api/next-to-buy"]);
+  });
+
+  it("says nothing matches and offers to clear when the filters leave no book", async () => {
+    serve();
+    renderApp(<NextToBuy />);
+    await screen.findByRole("link", { name: "Ash Two" });
+
+    fireEvent.click(screen.getByRole("button", { name: /^Shop language/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Ukrainian/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Genre/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Romance/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+
+    expect(await screen.findByText("No books match these filters")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
+
+    expect(screen.getByRole("link", { name: "Wished Alone" })).toBeInTheDocument();
+  });
+
+  it("shows a loading state, then retries when the list fails to load", async () => {
+    let attempts = 0;
+    mockApi(({ path }) => {
+      if (path.startsWith("/api/next-to-buy")) {
+        attempts += 1;
+        if (attempts === 1) return { status: 500, body: { error: "boom" } };
+        return { body: { items: [{ type: "standalone", book: STANDALONE, gap: false }] } };
+      }
+      if (path.startsWith("/api/books")) return booksResponse([STANDALONE]);
     });
+    renderApp(<NextToBuy />);
+
+    expect(await screen.findByText("Could not load the list")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByRole("link", { name: "Wished Alone" })).toBeInTheDocument();
+    expect(screen.queryByText("Could not load the list")).not.toBeInTheDocument();
   });
 
   it("lists a number of a series with no book yet, with a link to add it", async () => {
