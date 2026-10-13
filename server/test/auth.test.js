@@ -70,6 +70,84 @@ async function signIn(email) {
 }
 
 describe("auth API", () => {
+  it("rejects a registration with a password shorter than eight characters, without creating the user", async () => {
+    const response = await api("/api/auth/register", {
+      method: "POST",
+      body: { email: "short@example.com", password: "1234567", name: "Short" },
+    });
+
+    assert.equal(response.status, 400);
+    assert.match(response.body.error, /password: must be at least 8 characters/);
+    assert.equal(await User.countDocuments({ email: "short@example.com" }), 0);
+  });
+
+  it("rejects a malformed email, an empty name, an unknown field and a password that is too long", async () => {
+    const valid = { email: "ok@example.com", password: PASSWORD, name: "Ok" };
+    const cases = [
+      { ...valid, email: "not-an-email" },
+      { ...valid, name: "   " },
+      { ...valid, role: "admin" },
+      { ...valid, password: "x".repeat(73) },
+      { ...valid, password: undefined },
+    ];
+
+    for (const body of cases) {
+      const response = await api("/api/auth/register", { method: "POST", body });
+      assert.equal(response.status, 400, JSON.stringify(Object.keys(body)));
+    }
+    assert.equal(await User.countDocuments({}), 0);
+  });
+
+  it("accepts a password of exactly eight characters and still answers 409 for a taken email", async () => {
+    const body = { email: "eight@example.com", password: "12345678", name: "Eight" };
+
+    const first = await api("/api/auth/register", { method: "POST", body });
+    const second = await api("/api/auth/register", { method: "POST", body });
+
+    assert.equal(first.status, 201);
+    assert.equal(second.status, 409);
+  });
+
+  it("answers 400, not a session or a 500, to a sign-in that sends an object as the email", async () => {
+    await api("/api/auth/register", {
+      method: "POST",
+      body: { email: "victim@example.com", password: PASSWORD, name: "Victim" },
+    });
+
+    const response = await api("/api/auth/login", {
+      method: "POST",
+      body: { email: { $ne: null }, password: PASSWORD },
+    });
+
+    assert.equal(response.status, 400);
+    assert.deepEqual(response.setCookie, []);
+  });
+
+  it("answers 400 to a sign-in with no password", async () => {
+    const response = await api("/api/auth/login", {
+      method: "POST",
+      body: { email: "someone@example.com" },
+    });
+
+    assert.equal(response.status, 400);
+  });
+
+  it("lets an account saved with a short password keep signing in", async () => {
+    const bcrypt = require("bcrypt");
+    await User.create({
+      email: "old@example.com",
+      passwordHash: await bcrypt.hash("short", 10),
+      name: "Old",
+    });
+
+    const response = await api("/api/auth/login", {
+      method: "POST",
+      body: { email: "old@example.com", password: "short" },
+    });
+
+    assert.equal(response.status, 200);
+  });
+
   it("answers null on /me with no session cookie, without an error status", async () => {
     const response = await api("/api/auth/me");
 

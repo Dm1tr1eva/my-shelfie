@@ -4,10 +4,16 @@ import { useCallback } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
+import {
+  LINK_LANGUAGES,
+  OWNERSHIP_LABELS,
+  type LinkLanguage,
+  type Ownership,
+} from "./catalogue-constants";
 
-export type Ownership = "owned" | "wanted";
+export { LINK_LANGUAGES, OWNERSHIP_LABELS };
+export type { LinkLanguage, Ownership };
 export type BookStatus = "want" | "reading" | "dropped" | "read";
-export type LinkLanguage = "ru" | "uk" | "en" | "other";
 
 export const STATUS_LABELS: Record<BookStatus, string> = {
   want: "To read",
@@ -17,18 +23,6 @@ export const STATUS_LABELS: Record<BookStatus, string> = {
 };
 
 export const STATUSES = Object.keys(STATUS_LABELS) as BookStatus[];
-
-export const OWNERSHIP_LABELS: Record<Ownership, string> = {
-  owned: "In my library",
-  wanted: "Wishlist",
-};
-
-export const LINK_LANGUAGES: { value: LinkLanguage; badge: string; name: string }[] = [
-  { value: "ru", badge: "RU", name: "Russian" },
-  { value: "uk", badge: "UK", name: "Ukrainian" },
-  { value: "en", badge: "EN", name: "English" },
-  { value: "other", badge: "OTH", name: "Other" },
-];
 
 export const LINK_LANGUAGE_OPTIONS = LINK_LANGUAGES.map((language) => ({
   value: language.value,

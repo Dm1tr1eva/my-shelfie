@@ -60,15 +60,16 @@ In order:
    genres, tropes, links, notes, annotation; `/api/series`, `/api/next-to-buy`,
    `/api/tropes`; 82 server tests. Existing books read as owned with no migration.
    [features/series.md](features/series.md)
-2. 🟨 Screens, from the handoff in [design/](design/), in three waves (A pushed 2026-10-11 and
-   13, B written and tested 2026-10-13):
+2. 🟨 Screens, from the handoff in [design/](design/), in three waves (A and B pushed 2026-10-13, C
+   written and tested 2026-10-13):
    - ✅ **A, by 10-14 — the core path:** tokens and light-only, the shell (navy nav bar from
      768, tab bar below), Library (tabs, series groups, gap tiles, grid and list, search,
      stats), Book page, Add a book (both steps), Next to buy
    - ✅ **B, by 10-16:** filter bar and sheet on Library, Wishlist and Next to buy, skeleton and
      retry states, the series page as in the mockup —
      [designs/filters-and-states.md](designs/filters-and-states.md)
-   - **C, by 10-17:** Home, sign in, create account and privacy restyled
+   - ✅ **C, by 10-17:** Home, sign in, create account and privacy restyled, with a password
+     rule enforced on the server — [designs/public-pages.md](designs/public-pages.md)
 3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 

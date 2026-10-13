@@ -1,6 +1,11 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const { registerSchema, loginSchema } = require("../validation/authSchemas");
+
+function formatZodError(error) {
+  return error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
+}
 
 function sessionCookieOptions() {
   return {
@@ -11,8 +16,13 @@ function sessionCookieOptions() {
 }
 
 async function register(req, res) {
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: formatZodError(parsed.error) });
+  }
+
   try {
-    const { email, password, name } = req.body;
+    const { email, password, name } = parsed.data;
 
     const existingUser = await User.findOne({ email });
 
@@ -30,8 +40,13 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: formatZodError(parsed.error) });
+  }
+
   try {
-    const { email, password } = req.body;
+    const { email, password } = parsed.data;
 
     const user = await User.findOne({ email });
     if (!user) {

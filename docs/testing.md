@@ -37,3 +37,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 - **Mocked `fetch` cannot prove a real cross-origin cookie round trip.** After touching auth
   or CORS, check once by hand in a browser: register, reload the page and stay signed in,
   log out, visit `/dashboard` signed out and get redirected.
+
+- **The server/client module boundary is checked by a test, not by jsdom.** Testing Library
+  renders everything in one environment, so a server component that reads a constant from a
+  `"use client"` module passes there and fails in Next (`LINK_LANGUAGES.find is not a
+  function` on the home page, 2026-10-13). `client/app/server-boundary.test.ts` walks the
+  imports of every `page.tsx` and `layout.tsx` and fails when code a server component runs
+  reads a value from a client module in `lib/`; such shared constants live in
+  `lib/catalogue-constants.ts`, which has no directive.

@@ -1,5 +1,11 @@
-import { LINK_LANGUAGES, OWNERSHIP_LABELS, type LinkLanguage, type Ownership } from "@/lib/books";
-import { SERIES_STATUS_LABELS, type SeriesStatus } from "@/lib/series";
+import {
+  LINK_LANGUAGES,
+  OWNERSHIP_LABELS,
+  SERIES_STATUS_LABELS,
+  type LinkLanguage,
+  type Ownership,
+  type SeriesStatus,
+} from "@/lib/catalogue-constants";
 import { CheckIcon } from "@/components/icons";
 
 const SERIES_STATUS_CLASSES: Record<SeriesStatus, string> = {

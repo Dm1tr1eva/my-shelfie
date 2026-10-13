@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { PasswordField, TextField } from "@/components/auth-fields";
 import { useAuth, ApiError } from "@/lib/auth-context";
 
 export function LoginForm() {
@@ -16,55 +17,73 @@ export function LoginForm() {
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    setPending(true);
 
+    if (email.trim() === "" || password === "") {
+      setError("Enter your email and password.");
+      return;
+    }
+
+    setPending(true);
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      await login(email.trim(), password);
+      router.push("/library");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError && err.status === 401
+          ? "That email and password do not match an account."
+          : "Something went wrong. Try again.",
+      );
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="card flex w-full max-w-sm flex-col gap-4 p-6">
-        <h1 className="text-3xl">Log in</h1>
+    <main className="flex flex-1 items-start justify-center px-4 py-10 sm:py-16">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        aria-labelledby="login-heading"
+        className="card flex w-full max-w-md flex-col gap-5 p-6 sm:p-8"
+      >
+        <div className="flex flex-col gap-1">
+          <h1 id="login-heading" className="text-[32px] font-semibold leading-tight">
+            Welcome back
+          </h1>
+          <p className="text-muted">Sign in to open your shelves.</p>
+        </div>
 
-        <label className="flex flex-col gap-1">
-          <span>Email</span>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="field"
-          />
-        </label>
+        {error && (
+          <p
+            role="alert"
+            className="rounded-control border-2 border-burgundy bg-burgundy/[0.06] px-3 py-2 font-semibold text-burgundy"
+          >
+            {error}
+          </p>
+        )}
 
-        <label className="flex flex-col gap-1">
-          <span>Password</span>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="field"
-          />
-        </label>
+        <TextField
+          label="Email"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          autoComplete="email"
+        />
+        <PasswordField
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          autoComplete="current-password"
+        />
 
-        {error && <p className="text-danger">{error}</p>}
-
-        <button type="submit" disabled={pending} className="btn-primary">
-          {pending ? "Logging in..." : "Log in"}
+        <button type="submit" disabled={pending} className="btn-primary min-h-12">
+          {pending ? "Signing in..." : "Sign in"}
         </button>
 
-        <p>
-          No account?{" "}
+        <p className="text-center">
+          New here?{" "}
           <Link href="/register" className="link">
-            Register
+            Create an account
           </Link>
         </p>
       </form>

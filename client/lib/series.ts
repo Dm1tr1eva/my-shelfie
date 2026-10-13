@@ -5,14 +5,10 @@ import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
 import { isLibraryKey, type Book } from "./books";
+import { SERIES_STATUS_LABELS, type SeriesStatus } from "./catalogue-constants";
 
-export type SeriesStatus = "ongoing" | "complete" | "unknown";
-
-export const SERIES_STATUS_LABELS: Record<SeriesStatus, string> = {
-  ongoing: "Ongoing",
-  complete: "Complete",
-  unknown: "Unknown",
-};
+export { SERIES_STATUS_LABELS };
+export type { SeriesStatus };
 
 export const SERIES_STATUSES = Object.keys(SERIES_STATUS_LABELS) as SeriesStatus[];
 

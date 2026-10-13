@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-10-07
+**Last verified against code:** 2026-10-13
 
 ## What it does
 
@@ -12,9 +12,12 @@ lets a browser actually use it.
 
 - A session is a JWT in an `httpOnly` cookie, never readable from JavaScript, never stored in
   `localStorage`.
-- Login and registration answer the same generic error either way — "no such email" and
-  "wrong password" both read `Invalid email or password` — so a failed attempt cannot be used
-  to discover whether an email is registered.
+- Login answers the same generic error either way — "no such email" and "wrong password"
+  both read `Invalid email or password`, and the page shows one banner without naming a field.
+  Registration, by design, does say that an email is taken (`409`): the create-account page
+  shows it under the email field with a link to sign in. See the trade-offs.
+- Both bodies are validated with a strict schema (`server/validation/authSchemas.js`) before
+  anything touches the database: an email that is not a string is a `400`, never a query.
 - The frontend never talks to MongoDB, and never sees a password hash; it only ever sees
   `{ id, email, name }`.
 
@@ -24,8 +27,8 @@ All mounted at `/api/auth`.
 
 | Method and path | Auth required | Answers |
 |---|---|---|
-| `POST /register` | no | `201` with `{ id, email, name }`. `409` if the email is taken. Does **not** set the session cookie — a client must call `/login` after. |
-| `POST /login` | no | `200` with `{ id, email, name }`, sets the `token` cookie (`httpOnly`, `SameSite=Lax`, `Secure` when `NODE_ENV` is `production`, 7-day `maxAge`). `401` on any credential mismatch. |
+| `POST /register` | no | `201` with `{ id, email, name }`. `400` with `field: message` unless `email` is a valid address (at most 254 characters), `name` is 1–100 characters and `password` is 8 characters to 72 bytes; unknown fields are rejected. `409` if the email is taken. Does **not** set the session cookie — a client must call `/login` after. |
+| `POST /login` | no | `200` with `{ id, email, name }`, sets the `token` cookie (`httpOnly`, `SameSite=Lax`, `Secure` when `NODE_ENV` is `production`, 7-day `maxAge`). `401` on any credential mismatch; `400` when `email` or `password` is missing or not a string. Accounts saved with a shorter password keep signing in: the length rule is on registration only. |
 | `POST /logout` | no | `204`, clears the `token` cookie with the same attributes. Must be a server round trip: `httpOnly` means client JS cannot delete the cookie itself. |
 | `GET /me` | no | `200` with `{ id, email, name }` for the signed-in user. `200` with `null` when there is no session: no cookie, an invalid or expired token, or a token whose user no longer exists. |
 
@@ -45,7 +48,11 @@ not three) — unlike `books`, not yet migrated; see `CLAUDE.md`'s applicability
 (`client/`): `lib/api.ts` (a `fetch` wrapper — always `credentials: "include"`, throws
 `ApiError` with the backend's message) and `lib/auth-context.tsx` (`AuthProvider`/`useAuth`,
 the single source of session state, checks `/me` once on mount). `app/login`,
-`app/register`, `app/dashboard` are plain Client Components — no Server Actions.
+`app/register` are thin pages around Client Components (`login-form.tsx`,
+`register-form.tsx`, with show/hide password in `auth-fields.tsx`) — no Server Actions. Both
+send you to `/library` afterwards; `/dashboard` only redirects there. The create-account page
+validates per field with the same rule as the server and falls back to a banner for an error it
+cannot place. Design: [public-pages.md](../designs/public-pages.md).
 
 **Why not Next.js's own auth pattern** (Server Actions + `next/headers` `cookies()` + Proxy):
 that model assumes Next.js itself issues and reads the session cookie. Here the session is
@@ -87,6 +94,10 @@ use. Development takes the same route, so a cookie bug shows locally. Whether th
   still sent on top-level GET navigations, which is acceptable because no GET endpoint changes
   state.
 - **Client-side-only route gating** — see Shape.
+- **A taken email is revealed at registration.** The handoff asks for it, and without email
+  verification the alternative is a confusing silent failure. No rate limit on registration:
+  one deployment, a handful of users (principle 2); revisit if it is ever opened wider.
+- **A length rule only.** No strength meter and no breached-password check.
 - **A failed login still answers `401`, and still shows up in the console.** That one is a
   real failure the user caused and is told about on the page; bending the status code to
   hide it would make the API lie. Only `/me`, where "nobody signed in" is the normal state,
