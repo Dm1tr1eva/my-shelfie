@@ -31,7 +31,7 @@ function DetailsForm({ book }: { book: Book }) {
     seriesNumber: initialNumber ? Number(initialNumber) : book.seriesNumber,
   });
   const [pickedGenres, setPickedGenres] = useState<Genre[] | null>(null);
-  const [tropes, setTropes] = useState<string[]>(book.tropes);
+  const [pickedTropes, setPickedTropes] = useState<string[] | null>(null);
   const [rows, setRows] = useState<LinkRow[]>(
     book.links.length > 0 ? book.links : [{ language: "uk", url: "" }],
   );
@@ -57,7 +57,18 @@ function DetailsForm({ book }: { book: Book }) {
         ]
       : []
   ) as Genre[];
+  const seriesTropes = choice.seriesId
+    ? [
+        ...new Set(
+          books
+            .filter((item) => item.seriesId === choice.seriesId && item.id !== book.id)
+            .flatMap((item) => item.tropes),
+        ),
+      ]
+    : [];
   const genres = pickedGenres ?? (book.genres.length > 0 ? book.genres : seriesGenres);
+  const tropes = pickedTropes ?? (book.tropes.length > 0 ? book.tropes : seriesTropes);
+  const wanted = book.ownership === "wanted";
 
   async function save() {
     setPending(true);
@@ -70,7 +81,7 @@ function DetailsForm({ book }: { book: Book }) {
       await updateBook(book.id, {
         genres,
         tropes,
-        links: validLinks(rows),
+        ...(wanted && { links: validLinks(rows) }),
         ...(seriesId !== book.seriesId && { seriesId: seriesId ?? null }),
         ...(seriesNumber !== book.seriesNumber && { seriesNumber: seriesNumber ?? null }),
       });
@@ -109,8 +120,13 @@ function DetailsForm({ book }: { book: Book }) {
       )}
 
       <GenreMultiSelect value={genres} onChange={setPickedGenres} />
-      <TagInput label="Tropes" value={tropes} onChange={setTropes} suggestions={suggestions} />
-      <ShopLinkEditor rows={rows} onChange={setRows} />
+      <TagInput
+        label="Tropes"
+        value={tropes}
+        onChange={setPickedTropes}
+        suggestions={suggestions}
+      />
+      {wanted && <ShopLinkEditor rows={rows} onChange={setRows} />}
 
       {error && (
         <p role="alert" className="font-semibold text-burgundy">

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useImperativeHandle, useState } from "react";
 import { SeriesStatusChip } from "@/components/chips";
-import { CheckIcon } from "@/components/icons";
+import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 import { SeriesStatePills } from "@/components/form-controls";
 import { gapNumbersOf, highestNumberOf, isOwned } from "@/lib/catalogue";
 import type { Book } from "@/lib/books";
@@ -40,6 +40,7 @@ export function SeriesPicker({
   const selected = series.find((item) => item.id === value.seriesId);
   const [query, setQuery] = useState(selected?.title ?? suggestion?.title ?? "");
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newAuthor, setNewAuthor] = useState(suggestion?.author ?? "");
   const [dismissed, setDismissed] = useState(false);
@@ -50,7 +51,7 @@ export function SeriesPicker({
 
   const typed = query.trim();
   const matches = series.filter(
-    (item) => typed === "" || item.title.toLowerCase().includes(typed.toLowerCase()),
+    (item) => showAll || typed === "" || item.title.toLowerCase().includes(typed.toLowerCase()),
   );
   const exact = series.some((item) => item.title.toLowerCase() === typed.toLowerCase());
   const canCreate = typed !== "" && !exact;
@@ -158,13 +159,30 @@ export function SeriesPicker({
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
+              setShowAll(false);
               setMarkedStandalone(false);
               if (value.seriesId) onChange({ seriesNumber: value.seriesNumber });
             }}
             onFocus={() => setOpen(true)}
-            onBlur={() => setOpen(false)}
-            className="field"
+            onBlur={() => {
+              setOpen(false);
+              setShowAll(false);
+            }}
+            className="field pr-12"
           />
+          <button
+            type="button"
+            aria-label="Show all series"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => {
+              setShowAll(true);
+              setOpen(true);
+              document.getElementById(inputId)?.focus();
+            }}
+            className="absolute bottom-0 right-1 inline-flex h-11 w-11 items-center justify-center rounded-control text-muted hover:text-ink"
+          >
+            <ChevronDownIcon size={18} />
+          </button>
 
           {open && (matches.length > 0 || canCreate) && (
             <ul

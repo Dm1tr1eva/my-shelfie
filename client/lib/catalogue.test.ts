@@ -99,7 +99,7 @@ describe("series numbers", () => {
 });
 
 describe("library view", () => {
-  it("groups owned books by series, in title order, with standalone books last", () => {
+  it("groups owned books by series and keeps standalone books apart", () => {
     const zed = series({ title: "Zed" });
     const apple = series({ title: "Apple" });
     const books = [
@@ -196,6 +196,24 @@ describe("series size", () => {
     const [group] = buildLibraryView(books, [saga], "library").groups;
 
     expect(group.total).toBe(6);
+  });
+});
+
+describe("group order", () => {
+  it("puts the series with the most recently added book first, then by title", () => {
+    const old = series({ title: "Old", createdAt: "2026-01-01T00:00:00Z" });
+    const fresh = series({ title: "Fresh", createdAt: "2026-01-02T00:00:00Z" });
+    const grown = series({ title: "Grown", createdAt: "2026-01-03T00:00:00Z" });
+    const books = [
+      book({ seriesId: old.id, seriesNumber: 1, createdAt: "2026-01-01T00:00:00Z" }),
+      book({ seriesId: fresh.id, seriesNumber: 1, createdAt: "2026-02-01T00:00:00Z" }),
+      book({ seriesId: grown.id, seriesNumber: 1, createdAt: "2026-01-03T00:00:00Z" }),
+      book({ seriesId: old.id, seriesNumber: 2, createdAt: "2026-03-01T00:00:00Z" }),
+    ];
+
+    const view = buildLibraryView(books, [old, fresh, grown], "library");
+
+    expect(view.groups.map((group) => group.series.title)).toEqual(["Old", "Fresh", "Grown"]);
   });
 });
 

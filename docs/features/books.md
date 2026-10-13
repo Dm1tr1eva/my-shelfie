@@ -111,12 +111,17 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   "You have unsaved changes" bar that sends only the fields that changed; deleting asks
   `window.confirm`
 - `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
-  step 1 finds a book and adds it in one click (opened from a series, the book arrives with
-  that series and number), step 2 adds series, genres, tropes and links and is optional; the
-  genres default to those of the series' other books until you pick your own, and a book with
+  step 1 finds a book and adds it in one click and goes straight to step 2 (opened from a
+  series, the book arrives with that series and number); step 2 adds series, genres, tropes and
+  links and can be skipped. Genres and tropes default to those of the series' other books until
+  you pick your own; shop links are asked for a wishlist book only, and a book that is on the
+  shelf keeps whatever links it has. A book with
   no series starts the series field from its own title, with its author ready in the "new
   series" form, so a series named after its first book is one click (an existing series of
   that name is offered instead of a duplicate)
+- Library and Wishlist show standalone books first, then series by the time their latest book
+  was added, newest on top. A book of a series has "Add a book to this series" (search opened for
+  the next number); "Where to buy" shows for a wishlist book only.
 - `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
 - Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
   and shop language. Values within a group are OR, groups are AND, and each option's count is

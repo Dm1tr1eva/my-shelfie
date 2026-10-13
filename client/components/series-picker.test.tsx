@@ -212,4 +212,24 @@ describe("SeriesPicker", () => {
 
     expect(onCreate).not.toHaveBeenCalled();
   });
+
+  it("lists every series from the chevron even when the field holds other text", () => {
+    const other = series({ id: "other", title: "Another Saga" });
+    const onChange = vi.fn();
+    render(
+      <SeriesPicker
+        series={[saga, other]}
+        books={[]}
+        value={{}}
+        onChange={onChange}
+        onCreate={vi.fn()}
+        suggestion={{ title: "Something Unrelated" }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Show all series" }));
+
+    expect(screen.getByRole("option", { name: /Saga of Ash/ })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Another Saga/ })).toBeInTheDocument();
+  });
 });

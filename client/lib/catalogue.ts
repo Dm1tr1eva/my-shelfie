@@ -143,7 +143,12 @@ export function buildLibraryView(
     });
   }
 
-  groups.sort((a, b) => a.series.title.localeCompare(b.series.title));
+  const latest = (group: SeriesGroup) =>
+    Math.max(
+      ...(booksBySeries.get(group.series.id) ?? []).map((book) => Date.parse(book.createdAt) || 0),
+      Date.parse(group.series.createdAt) || 0,
+    );
+  groups.sort((a, b) => latest(b) - latest(a) || a.series.title.localeCompare(b.series.title));
   standalone.sort((a, b) => a.title.localeCompare(b.title));
 
   return { groups, standalone };

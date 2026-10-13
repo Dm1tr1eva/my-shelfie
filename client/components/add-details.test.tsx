@@ -190,4 +190,86 @@ describe("AddDetails", () => {
       expect(router.push).not.toHaveBeenCalled();
     });
   });
+
+  describe("links and tropes", () => {
+    const sibling = book({
+      seriesId: "saga",
+      seriesNumber: 1,
+      genres: ["Fantasy"],
+      tropes: ["slow burn", "found family"],
+    });
+
+    function serveBook(target: ReturnType<typeof book>) {
+      return mockApi(({ method, path }) => {
+        if (method === "PATCH" && path === `/api/books/${target.id}`) return { body: target };
+        if (path === `/api/books/${target.id}`) return { body: target };
+        if (path.startsWith("/api/books")) return booksResponse([sibling, target]);
+        if (path === "/api/series") return { body: { series: [saga] } };
+      });
+    }
+
+    it("starts the tropes from the other books of the series, and keeps your own once you edit", async () => {
+      const target = book({ id: "t1", title: "New one", seriesId: "saga", seriesNumber: 2 });
+      const calls = serveBook(target);
+      route.params = new URLSearchParams();
+      renderApp(<AddDetails id="t1" />);
+
+      expect(await screen.findByText("slow burn")).toBeInTheDocument();
+      expect(screen.getByText("found family")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Remove found family" }));
+      fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+      await waitFor(() =>
+        expect(calls).toContainEqual(
+          expect.objectContaining({
+            method: "PATCH",
+            body: expect.objectContaining({ tropes: ["slow burn"], genres: ["Fantasy"] }),
+          }),
+        ),
+      );
+    });
+
+    it("shows the shop-link editor for a wishlist book and sends its links", async () => {
+      const target = book({ id: "w1", title: "Wanted", ownership: "wanted" });
+      const calls = serveBook(target);
+      renderApp(<AddDetails id="w1" />);
+
+      expect(await screen.findByText("Shop links")).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText("URL of link 1"), {
+        target: { value: "https://shop.example/w" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+      await waitFor(() =>
+        expect(calls).toContainEqual(
+          expect.objectContaining({
+            method: "PATCH",
+            body: expect.objectContaining({
+              links: [{ language: "uk", url: "https://shop.example/w" }],
+            }),
+          }),
+        ),
+      );
+    });
+
+    it("leaves out the shop-link editor for a book that is on the shelf, and does not touch its links", async () => {
+      const target = book({
+        id: "o1",
+        title: "Owned",
+        links: [{ language: "uk", url: "https://shop.example/o" }],
+      });
+      const calls = serveBook(target);
+      renderApp(<AddDetails id="o1" />);
+
+      await screen.findByText("Genres");
+      expect(screen.queryByText("Shop links")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+      await waitFor(() => expect(calls.some((call) => call.method === "PATCH")).toBe(true));
+      const patch = calls.find((call) => call.method === "PATCH");
+      expect(patch?.body).not.toHaveProperty("links");
+    });
+  });
 });

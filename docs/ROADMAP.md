@@ -76,9 +76,10 @@ In order:
 After the submission: the AI assistant (stage 8, repurposed to fill series order, status and
 tropes), importing the Notion table, live Google annotations.
 
-### Notes from the author's own use, 2026-10-13 (not scheduled)
+### Notes from the author's own use, 2026-10-13 — done 2026-10-13
 
-Written down so they are not lost; each needs a short design before it is built.
+All five are built; the design and what was chosen where a note was open are in
+[designs/author-notes-batch.md](designs/author-notes-batch.md).
 
 1. **Series picker as a list of known series.** Choosing a series from a dropdown of every
    series on the account should fill the rest of the form (genres, tropes, links, series

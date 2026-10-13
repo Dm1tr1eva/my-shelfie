@@ -116,18 +116,20 @@ describe("BookPage", () => {
     serve();
     renderApp(<BookPage id="b1" />);
     await screen.findByRole("heading", { name: "Ash One" });
+    fireEvent.click(screen.getByRole("radio", { name: "Wishlist" }));
 
     fireEvent.change(screen.getByLabelText("Shop URL"), { target: { value: "yakaboo.ua/ash" } });
     fireEvent.click(screen.getByRole("button", { name: "Add link" }));
 
     expect(screen.getByRole("alert")).toHaveTextContent("Start the link with https://");
-    expect(screen.queryByRole("region", { name: "Unsaved changes" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Shop URL")).toHaveValue("yakaboo.ua/ash");
   });
 
   it("adds a shop link to the draft and saves it with its language", async () => {
     const calls = serve();
     renderApp(<BookPage id="b1" />);
     await screen.findByRole("heading", { name: "Ash One" });
+    fireEvent.click(screen.getByRole("radio", { name: "Wishlist" }));
 
     choose(screen.getByRole("combobox", { name: "Link language" }), /RU/);
     fireEvent.change(screen.getByLabelText("Shop URL"), {
@@ -140,7 +142,10 @@ describe("BookPage", () => {
       expect(calls).toContainEqual({
         method: "PATCH",
         path: "/api/books/b1",
-        body: { links: [{ language: "ru", url: "https://www.labirint.ru/books/1" }] },
+        body: {
+          ownership: "wanted",
+          links: [{ language: "ru", url: "https://www.labirint.ru/books/1" }],
+        },
       }),
     );
   });
@@ -198,5 +203,77 @@ describe("BookPage", () => {
     expect(screen.getByText("Standalone")).toBeInTheDocument();
     expect(screen.queryByText("Book 1")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Unsaved changes" })).not.toBeInTheDocument();
+  });
+
+  it("shows where to buy only for a wishlist book", async () => {
+    serve();
+    renderApp(<BookPage id="b1" />);
+    await screen.findByRole("heading", { name: "Ash One" });
+
+    expect(screen.queryByRole("heading", { name: "Where to buy" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "Wishlist" }));
+    expect(screen.getByRole("heading", { name: "Where to buy" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "In my library" }));
+    expect(screen.queryByRole("heading", { name: "Where to buy" })).not.toBeInTheDocument();
+  });
+
+  it("offers to add the next book of the series it belongs to", async () => {
+    serve();
+    renderApp(<BookPage id="b1" />);
+
+    const link = await screen.findByRole("link", { name: "Add a book to this series" });
+
+    expect(link).toHaveAttribute("href", "/add?series=saga&number=2");
+  });
+
+  it("does not offer it for a standalone book", async () => {
+    const solo = book({ id: "solo", title: "Alone" });
+    mockApi(({ path }) => {
+      if (path === "/api/books/solo") return { body: solo };
+      if (path.startsWith("/api/books")) return booksResponse([solo]);
+      if (path === "/api/series") return { body: { series: [saga] } };
+    });
+    renderApp(<BookPage id="solo" />);
+    await screen.findByRole("heading", { name: "Alone" });
+
+    expect(
+      screen.queryByRole("link", { name: "Add a book to this series" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("fills genres and tropes from the other books of a series you choose", async () => {
+    const sibling = book({
+      id: "sib",
+      title: "Sibling",
+      seriesId: "other",
+      seriesNumber: 1,
+      genres: ["Romantasy"],
+      tropes: ["slow burn"],
+    });
+    const solo = book({ id: "solo", title: "Alone" });
+    const other = series({ id: "other", title: "Other Saga" });
+    const calls = mockApi(({ method, path }) => {
+      if (method === "PATCH" && path === "/api/books/solo") return { body: solo };
+      if (path === "/api/books/solo") return { body: solo };
+      if (path.startsWith("/api/books")) return booksResponse([solo, sibling]);
+      if (path === "/api/series") return { body: { series: [other] } };
+    });
+    renderApp(<BookPage id="solo" />);
+    await screen.findByRole("heading", { name: "Alone" });
+
+    fireEvent.click(await screen.findByRole("button", { name: "Add to a series" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show all series" }));
+    fireEvent.mouseDown(screen.getByRole("option", { name: /Other Saga/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "PATCH",
+        path: "/api/books/solo",
+        body: { seriesId: "other", genres: ["Romantasy"], tropes: ["slow burn"] },
+      }),
+    );
   });
 });

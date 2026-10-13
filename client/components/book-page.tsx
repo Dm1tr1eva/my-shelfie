@@ -117,6 +117,24 @@ function BookForm({ book }: { book: Book }) {
     setDraft((current) => ({ ...current, ...values }));
   }
 
+  function chooseSeries(value: SeriesChoice) {
+    const changed = value.seriesId !== draft.series.seriesId;
+    const siblings =
+      changed && value.seriesId
+        ? books.filter((item) => item.seriesId === value.seriesId && item.id !== book.id)
+        : [];
+
+    patch({
+      series: value,
+      ...(draft.genres.length === 0 && siblings.length > 0
+        ? { genres: [...new Set(siblings.flatMap((item) => item.genres))] as Genre[] }
+        : {}),
+      ...(draft.tropes.length === 0 && siblings.length > 0
+        ? { tropes: [...new Set(siblings.flatMap((item) => item.tropes))] }
+        : {}),
+    });
+  }
+
   async function save() {
     setPending(true);
     setError(null);
@@ -197,6 +215,16 @@ function BookForm({ book }: { book: Book }) {
                 </p>
               )}
 
+              {series && (
+                <Link
+                  href={`/add?series=${series.id}&number=${Math.floor(highestNumberOf(seriesBooks)) + 1}`}
+                  className="btn-outline self-start"
+                >
+                  <PlusIcon size={18} />
+                  Add a book to this series
+                </Link>
+              )}
+
               <div>
                 <h1 className="text-[28px] font-semibold leading-tight md:text-[42px] lg:text-[52px]">
                   {book.title}
@@ -258,7 +286,7 @@ function BookForm({ book }: { book: Book }) {
                         books={books}
                         currentBookId={book.id}
                         value={draft.series}
-                        onChange={(value) => patch({ series: value })}
+                        onChange={chooseSeries}
                         onCreate={createSeries}
                         suggestion={
                           draft.series.seriesId
@@ -273,86 +301,92 @@ function BookForm({ book }: { book: Book }) {
             </div>
           </section>
 
-          <section aria-labelledby="buy-heading" className="card flex flex-col gap-4 p-5">
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 id="buy-heading" className="text-2xl font-semibold">
-                Where to buy
-              </h2>
-              <span className="text-sm text-muted">
-                {draft.links.length} {draft.links.length === 1 ? "link" : "links"}
-              </span>
-            </div>
-
-            {linkGroups.length === 0 && <p className="text-muted">No links yet.</p>}
-
-            {linkGroups.map((group) => (
-              <div key={group.language.value} className="flex flex-col gap-2">
-                <p className="flex items-center gap-2 font-semibold">
-                  <LangBadge language={group.language.value} />
-                  {group.language.name}
-                </p>
-                <ul className="flex flex-col gap-2">
-                  {group.links.map((link) => (
-                    <li key={link.url} className="flex items-center gap-2">
-                      <a
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-control bg-page px-3 font-medium text-navy"
-                      >
-                        {hostOf(link.url)}
-                        <ExternalLinkIcon size={16} />
-                      </a>
-                      <button
-                        type="button"
-                        aria-label={`Remove link ${hostOf(link.url)}`}
-                        onClick={() =>
-                          patch({ links: draft.links.filter((item) => item.url !== link.url) })
-                        }
-                        className="btn-outline w-11 px-0"
-                      >
-                        <XIcon size={18} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+          {draft.ownership === "wanted" && (
+            <section aria-labelledby="buy-heading" className="card flex flex-col gap-4 p-5">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 id="buy-heading" className="text-2xl font-semibold">
+                  Where to buy
+                </h2>
+                <span className="text-sm text-muted">
+                  {draft.links.length} {draft.links.length === 1 ? "link" : "links"}
+                </span>
               </div>
-            ))}
 
-            <div className="flex flex-col gap-2 border-t border-mist pt-4">
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Select
-                  label="Link language"
-                  hideLabel
-                  className="sm:w-28"
-                  value={newLanguage}
-                  onChange={(value) => setNewLanguage(value as LinkLanguage)}
-                  options={LINK_LANGUAGE_OPTIONS}
-                />
-                <input
-                  type="url"
-                  aria-label="Shop URL"
-                  aria-invalid={linkError}
-                  placeholder="https://"
-                  value={newUrl}
-                  onChange={(event) => {
-                    setNewUrl(event.target.value);
-                    setLinkError(false);
-                  }}
-                  className={`field ${linkError ? "border-2 border-burgundy" : ""}`}
-                />
-                <button type="button" onClick={addLink} className="btn-outline">
-                  <PlusIcon size={18} />
-                  Add link
-                </button>
+              {linkGroups.length === 0 && <p className="text-muted">No links yet.</p>}
+
+              {linkGroups.map((group) => (
+                <div key={group.language.value} className="flex flex-col gap-2">
+                  <p className="flex items-center gap-2 font-semibold">
+                    <LangBadge language={group.language.value} />
+                    {group.language.name}
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {group.links.map((link) => (
+                      <li key={link.url} className="flex items-center gap-2">
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-control bg-page px-3 font-medium text-navy"
+                        >
+                          {hostOf(link.url)}
+                          <ExternalLinkIcon size={16} />
+                        </a>
+                        <button
+                          type="button"
+                          aria-label={`Remove link ${hostOf(link.url)}`}
+                          onClick={() =>
+                            patch({ links: draft.links.filter((item) => item.url !== link.url) })
+                          }
+                          className="btn-outline w-11 px-0"
+                        >
+                          <XIcon size={18} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+
+              <div className="flex flex-col gap-2 border-t border-mist pt-4">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Select
+                    label="Link language"
+                    hideLabel
+                    className="sm:w-28"
+                    value={newLanguage}
+                    onChange={(value) => setNewLanguage(value as LinkLanguage)}
+                    options={LINK_LANGUAGE_OPTIONS}
+                  />
+                  <input
+                    type="url"
+                    aria-label="Shop URL"
+                    aria-invalid={linkError}
+                    placeholder="https://"
+                    value={newUrl}
+                    onChange={(event) => {
+                      setNewUrl(event.target.value);
+                      setLinkError(false);
+                    }}
+                    className={`field ${linkError ? "border-2 border-burgundy" : ""}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={addLink}
+                    className="btn-outline shrink-0 whitespace-nowrap"
+                  >
+                    <PlusIcon size={18} />
+                    Add link
+                  </button>
+                </div>
+                {linkError && (
+                  <p role="alert" className="text-sm font-semibold text-burgundy">
+                    Start the link with https://
+                  </p>
+                )}
               </div>
-              {linkError && (
-                <p role="alert" className="text-sm font-semibold text-burgundy">
-                  Start the link with https://
-                </p>
-              )}
-            </div>
-          </section>
+            </section>
+          )}
 
           <section className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">

@@ -4,9 +4,10 @@ import { book, booksResponse, mockApi, renderApp, series } from "@/test/helpers"
 import { AddBook } from "./add-book";
 
 const route = vi.hoisted(() => ({ params: new URLSearchParams() }));
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => router,
   useSearchParams: () => route.params,
 }));
 
@@ -46,6 +47,7 @@ async function searchFor(text: string) {
 describe("AddBook", () => {
   beforeEach(() => {
     route.params = new URLSearchParams();
+    router.push.mockReset();
   });
 
   afterEach(() => {
@@ -61,7 +63,7 @@ describe("AddBook", () => {
     expect(calls.some((call) => call.path.startsWith("/api/books/search"))).toBe(false);
   });
 
-  it("adds a search result to the library and offers the details step", async () => {
+  it("adds a search result to the library and opens the details step at once", async () => {
     const calls = serve();
     renderApp(<AddBook />);
 
@@ -69,12 +71,7 @@ describe("AddBook", () => {
     const row = (await screen.findByText(RESULT.title)).closest("li") as HTMLElement;
     fireEvent.click(within(row).getByRole("button", { name: "Add to library" }));
 
-    const toast = await screen.findByRole("status");
-    expect(toast).toHaveTextContent("added to your library");
-    expect(within(toast).getByRole("link", { name: "Add series & tags" })).toHaveAttribute(
-      "href",
-      "/add/created/details",
-    );
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/add/created/details"));
     expect(calls).toContainEqual({
       method: "POST",
       path: "/api/books",
@@ -109,9 +106,8 @@ describe("AddBook", () => {
         }),
       ),
     );
-    expect(await screen.findByRole("link", { name: "Add series & tags" })).toHaveAttribute(
-      "href",
-      "/add/created/details?series=acotar&number=2",
+    await waitFor(() =>
+      expect(router.push).toHaveBeenCalledWith("/add/created/details?series=acotar&number=2"),
     );
   });
 
@@ -432,5 +428,33 @@ describe("AddBook", () => {
 
       expect(searches(calls)).toEqual(["/api/books/search?q=thorns"]);
     });
+  });
+
+  it("opens the details step after a book is added by hand", async () => {
+    serve({ searchFails: true });
+    renderApp(<AddBook />);
+
+    await searchFor("thorns");
+    await screen.findByText("Google Books isn't answering");
+    fireEvent.click(
+      within(screen.getByRole("alert")).getByRole("button", { name: "Add it without search" }),
+    );
+    const form = screen.getByRole("form", { name: "Add a book by hand" });
+    fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "My Own Book" } });
+    fireEvent.change(within(form).getByLabelText("Author"), { target: { value: "Me" } });
+    fireEvent.click(within(form).getByRole("button", { name: "Add book" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/add/created/details"));
+  });
+
+  it("stays on the results and says so when a wishlist book is moved to the library", async () => {
+    serve({ existing: [book({ id: "wish", googleVolumeId: "vol1", ownership: "wanted" })] });
+    renderApp(<AddBook />);
+
+    await searchFor("thorns");
+    fireEvent.click(await screen.findByRole("button", { name: "Move to library" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("moved to your library");
+    expect(router.push).not.toHaveBeenCalled();
   });
 });

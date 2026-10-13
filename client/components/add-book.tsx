@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { CheckIcon, SearchIcon, XIcon } from "@/components/icons";
@@ -126,6 +126,7 @@ function ResultRow({
 
 export function AddBook() {
   const { user, status } = useRequireAuth();
+  const router = useRouter();
   const params = useSearchParams();
   const seriesId = params.get("series") ?? undefined;
   const numberParam = params.get("number");
@@ -252,6 +253,13 @@ export function AddBook() {
     }
   }
 
+  function detailsHrefFor(id: string) {
+    const query = seriesId
+      ? `?series=${seriesId}${seriesNumber !== undefined ? `&number=${seriesNumber}` : ""}`
+      : "";
+    return `/add/${id}/details${query}`;
+  }
+
   async function create(input: {
     title: string;
     author: string;
@@ -267,11 +275,11 @@ export function AddBook() {
         ...(seriesId && { seriesId }),
         ...(seriesId && seriesNumber !== undefined && { seriesNumber }),
       });
-      setAdded({ id: created.id, title: created.title, ownership: created.ownership });
       setSheetFor(null);
       setManual(false);
       setManualTitle("");
       setManualAuthor("");
+      router.push(detailsHrefFor(created.id));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
     } finally {
@@ -300,10 +308,6 @@ export function AddBook() {
       setBusy(false);
     }
   }
-
-  const detailsHref = added
-    ? `/add/${added.id}/details${seriesId ? `?series=${seriesId}${seriesNumber !== undefined ? `&number=${seriesNumber}` : ""}` : ""}`
-    : "";
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
@@ -343,10 +347,8 @@ export function AddBook() {
           className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card bg-navy px-5 py-3 text-page"
         >
           <CheckIcon size={20} />
-          <span className="flex-1 font-semibold">
-            {added.title} added to your {added.ownership === "owned" ? "library" : "wishlist"}.
-          </span>
-          <Link href={detailsHref} className="btn-beige">
+          <span className="flex-1 font-semibold">{added.title} moved to your library.</span>
+          <Link href={detailsHrefFor(added.id)} className="btn-beige">
             Add series &amp; tags
           </Link>
           <button

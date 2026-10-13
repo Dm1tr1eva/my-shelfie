@@ -268,6 +268,10 @@ export function Library({ tab }: { tab: LibraryTab }) {
         />
       )}
 
+      {loaded && view.standalone.length > 0 && (
+        <StandaloneShelf books={view.standalone} mode={mode} tab={tab} />
+      )}
+
       {loaded &&
         view.groups.map((group) => (
           <section
@@ -279,10 +283,6 @@ export function Library({ tab }: { tab: LibraryTab }) {
             <GroupShelf group={group} mode={mode} tab={tab} />
           </section>
         ))}
-
-      {loaded && view.standalone.length > 0 && (
-        <StandaloneShelf books={view.standalone} mode={mode} tab={tab} />
-      )}
     </main>
   );
 }
