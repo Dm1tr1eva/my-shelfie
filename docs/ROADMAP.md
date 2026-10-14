@@ -70,6 +70,9 @@ In order:
      [designs/filters-and-states.md](designs/filters-and-states.md)
    - ✅ **C, by 10-17:** Home, sign in, create account and privacy restyled, with a password
      rule enforced on the server — [designs/public-pages.md](designs/public-pages.md)
+   - ✅ **After the waves, 2026-10-14:** genres, tropes and the description belong to the
+     series, as in the Notion table; a book of a series shows them read-only —
+     [designs/series-tags.md](designs/series-tags.md)
 3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 
