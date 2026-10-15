@@ -47,6 +47,20 @@ describe("AppFrame", () => {
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
   });
 
+  it("sends a signed-in user to the home page from the logo", async () => {
+    route.pathname = "/library";
+    mockApi(() => undefined);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+
+    await screen.findAllByRole("link", { name: "Wishlist" });
+
+    expect(screen.getByRole("link", { name: "my-shelfie" })).toHaveAttribute("href", "/");
+  });
+
   it("marks the section you are in as the current page", async () => {
     route.pathname = "/wishlist";
     mockApi(() => undefined);

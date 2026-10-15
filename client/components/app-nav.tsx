@@ -20,7 +20,7 @@ export function AppNav() {
         aria-label="Main"
         className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-8"
       >
-        <Link href="/library" className="font-serif text-2xl font-bold">
+        <Link href="/" className="font-serif text-2xl font-bold">
           my-shelfie
         </Link>
 
