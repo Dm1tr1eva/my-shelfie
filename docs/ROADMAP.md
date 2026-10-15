@@ -96,6 +96,14 @@ All five are built; the design and what was chosen where a note was open are in
 5. **Order of the Library groups.** "Standalone books" first, then series with the most
    recently added on top, instead of alphabetical.
 
+### The home page reachable from the app, 2026-10-15 — done
+
+Once signed in there was no way to reach the public home page by clicking: the logo in the app
+nav linked to `/library`, the phone layout has no top bar, and the only link to `/` lived in
+the public header. The logo now links to `/`, and the footer, shared by every page, gains a
+`Home` link — the only way back to the home page on a phone. Checked in a browser at 375 and
+1280 px; [design/components.md](design/components.md) notes the deviation from the handoff.
+
 ## Course submission MVP — done 2026-10-09
 
 The project is being submitted as a replacement pet project for a course homework. The
@@ -140,12 +148,18 @@ In order:
    that the first request can take up to a minute
 7. ⬜ README: ✅ what it is, stack, why not Firebase, link to this roadmap, live URL;
    ⬜ screenshots (add them under `docs/screenshots/` and reference them from the README)
-8. ✅ Final check on the deployed site, 2026-10-08. The W3C Nu validator reports 0 errors and
+8. ✅ Final check on the deployed site, 2026-10-08 — before the library redesign, so it is
+   repeated under Current focus, item 3. The W3C Nu validator reports 0 errors and
    0 warnings for the served HTML of `/`, `/login`, `/register` and `/dashboard`. No page
    scrolls horizontally at 320, 375, 768 and 1440 px (home, login, register, dashboard, book
    page). The console is empty signed in and signed out. Logout clears the session, and
    `/dashboard` then redirects to `/login`. Not covered: a visual review by eye, a real
-   phone, and Safari
+   phone, and Safari. Red errors seen in a signed-in desktop browser on 2026-10-14
+   (`Cannot read properties of undefined (reading 'startTime')` and `Permissions-Policy:
+   Unrecognized feature`) are most likely not ours: neither Vercel nor Render sends a
+   `Permissions-Policy` header, and the stack is an anonymous injected script calling
+   web-vitals' `reportAllChanges` (DevTools Live Metrics or an extension). A private window
+   shows whether the console is really clean
 
 ## Stage 0 — Planning ✅ (decisions made)
 
@@ -317,6 +331,35 @@ Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must 
 - `POST /api/chat` on Express, proxying requests to Gemini (the key stays on the backend
   only)
 - A chat widget in the dashboard, to help find books and information about them
+
+Researched 2026-10-07, not started — deferred until after the submission. The author's later
+idea is to repurpose it to fill a series' order, status and tropes; the findings still apply.
+
+- **Architecture, whatever the model:** facts come from Google Books, never from the model's
+  memory. The model calls our own search endpoint as a tool (function calling) and answers; the
+  UI shows only books the search confirmed, as cards with cover, a link to Google Books and the
+  "Powered by Google" mark. The user adds one with a click, through the existing add endpoint.
+  The model never writes to the database itself.
+- **Gemini terms, read 2026-10-07** (Gemini API Additional Terms): "You may use only Paid
+  Services when making API Clients available to users in the European Economic Area,
+  Switzerland, or the United Kingdom." No exception for personal or non-commercial projects.
+  Access counts as paid only through a Cloud project with an active billing account. Free-tier
+  content is used to improve Google's products and human reviewers may read it (for developers
+  in the EEA the paid data terms apply to the free quota); users must be 18 or older. The
+  author is in Germany and the deployed site is open to the EU, so the free tier is formally
+  out. Options: Gemini on a billing-enabled project with a budget alert (cents at this volume;
+  whether the trial credit covers the Gemini API is unverified), or Groq on its free plan.
+- **Groq:** free plan, e.g. `openai/gpt-oss-120b` at 30 requests a minute and 1,000 a day; all
+  its models support tool use. For Ukrainian the one that officially lists it is Qwen3.8-27B
+  (Qwen3 names Ukrainian and Russian among 119 languages) but it is a preview model that can be
+  withdrawn; Llama 3.3 70B and GPT-OSS are production models with weaker Ukrainian. No EEA
+  restriction found in the pages read; the full services agreement could not be read.
+- **Decision pending.** Run the same Ukrainian and Russian scenarios on both ("tell me about
+  the Witcher series", "find Інтернат by Zhadan") and choose by the result. Keep a thin provider
+  layer in the backend so switching is one file — the Shape rule allows a seam when a second
+  implementation is really considered. Only the chat text goes to the provider, never the
+  email or name; keys live in the server environment only; the privacy page must name the
+  provider.
 
 ## Stage 9 — Polish
 

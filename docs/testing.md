@@ -45,3 +45,9 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   imports of every `page.tsx` and `layout.tsx` and fails when code a server component runs
   reads a value from a client module in `lib/`; such shared constants live in
   `lib/catalogue-constants.ts`, which has no directive.
+
+- **`findByRole` can match the wrong state.** While the session check runs, `AppFrame` shows
+  the public header, and its logo already links to `/`. A test for the signed-in logo that
+  only awaited `findByRole("link", { name: "my-shelfie" })` passed on the old code (2026-10-15).
+  Before asserting on an element both shells share, wait for something only the state under
+  test has — here the Wishlist link of the signed-in nav — and only then look at the shared one.

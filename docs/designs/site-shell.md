@@ -1,5 +1,11 @@
 # Design: site shell — home page, header, titles, responsive layout
 
+**Superseded in part, 2026-10-15:** the header, the footer, the home page and the
+theme described here were replaced by the design handoff in [../design/](../design/) and by
+[public-pages.md](public-pages.md). What still holds: each route is a thin server `page.tsx`
+with a title and its interactive body in `client/components/`, and the root title template
+`%s · my-shelfie`.
+
 ## Problem
 
 What a visitor sees first is the `create-next-app` leftover: the home page

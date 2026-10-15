@@ -4,13 +4,13 @@ Props are suggestions. "See" points to the mockup that shows the component best.
 
 ## Layout
 
-**`AppNav`** (≥ md). Navy bar, 64–68px. Logo (Playfair 700) · Library / Wishlist / Next to buy links (active: `bg-mist/20 text-page`) · `Add a book` button (`bg-beige text-ink`) · account avatar button. See `library-1440`.
+**`AppNav`** (≥ md). Navy bar, 64–68px. Logo (Playfair 700) · Library / Wishlist / Next to buy links (active: `bg-mist/20 text-page`) · `Add a book` button (`bg-beige text-ink`) · account avatar button. See `library-1440`. The logo links to `/`, the public home page — not to Library. Changed 2026-10-15 after the handoff: a signed-in user otherwise had no way back to the home page.
 
 **`TabBar`** (< md). Fixed bottom, navy, 78px, 5 columns: Library · Wishlist · **Add** (56px burgundy circle raised 28px above the bar, ringed with the page colour) · Next to buy · Account. Active item: pill highlight behind the icon, bold label, `aria-current="page"`. Pages need `pb-[100px]` so content clears it. See `components-1440`, `library-375`.
 
 **`PublicHeader`**. Navy bar with logo and an outline `Sign in` link. No app nav. See `home-1440`.
 
-**`Footer`**. One row: "my-shelfie · a book-catalogue pet project" + Source on GitHub + Privacy (links 40–44px tall).
+**`Footer`**. One row: "my-shelfie · a book-catalogue pet project" + Home + Source on GitHub + Privacy (links 40–44px tall). Home (added 2026-10-15) is the only way back to the home page on a phone while signed in, where there is no top bar.
 
 ## Books and shelves
 
