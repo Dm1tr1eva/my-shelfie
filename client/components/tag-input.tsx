@@ -1,7 +1,6 @@
 "use client";
 
 import { useId, useLayoutEffect, useRef, useState } from "react";
-import { TropeChip } from "@/components/chips";
 import { XIcon } from "@/components/icons";
 
 export type TagSuggestion = { name: string; count: number };
@@ -100,18 +99,18 @@ export function TagInput({
           {value.map((tag) => (
             <span
               key={tag}
-              className={`inline-flex items-center gap-1 rounded-full ${
+              className={`chip gap-2 border border-slate bg-card py-0.5 pr-1 text-ink ${
                 tag === duplicate ? "ring-2 ring-burgundy ring-offset-2 ring-offset-card" : ""
               }`}
             >
-              <TropeChip trope={tag} />
+              {tag}
               <button
                 type="button"
                 aria-label={`Remove ${tag}`}
                 onClick={() => onChange(value.filter((item) => item !== tag))}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-beige"
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-beige hover:bg-mist"
               >
-                <XIcon size={14} />
+                <XIcon size={12} />
               </button>
             </span>
           ))}

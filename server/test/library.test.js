@@ -291,6 +291,81 @@ describe("library fields on books", () => {
     assert.deepEqual(book.links, []);
   });
 
+  it("makes a new book a paper one unless told otherwise", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const book = await addBook(alice);
+
+    assert.equal(book.format, "paper");
+  });
+
+  it("stores an e-book and lets the format change both ways", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice, { format: "ebook" });
+
+    const toPaper = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { format: "paper" },
+    });
+    const toEbook = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { format: "ebook" },
+    });
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.equal(book.format, "ebook");
+    assert.equal(toPaper.body.format, "paper");
+    assert.equal(toEbook.body.format, "ebook");
+    assert.equal(fetched.body.format, "ebook");
+  });
+
+  it("keeps the format of each book of a series separate", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice);
+
+    await addBook(alice, { seriesId: series.id, seriesNumber: 1, format: "ebook" });
+    await addBook(alice, { seriesId: series.id, seriesNumber: 2 });
+    const listed = await api(`/api/books?seriesId=${series.id}`, { cookie: alice });
+
+    assert.deepEqual(listed.body.books.map((book) => book.format).sort(), ["ebook", "paper"]);
+  });
+
+  it("rejects a format that is neither paper nor e-book", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice);
+
+    const create = await api("/api/books", {
+      method: "POST",
+      cookie: alice,
+      body: { title: "Audio", author: "Someone", format: "audio" },
+    });
+    const update = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { format: "audio" },
+    });
+
+    assert.equal(create.status, 400);
+    assert.equal(update.status, 400);
+  });
+
+  it("reads a book saved before formats existed as a paper one", async () => {
+    const alice = await signIn("alice@example.com");
+    const me = await api("/api/auth/me", { cookie: alice });
+    const { insertedId } = await Book.collection.insertOne({
+      userId: new Book.base.Types.ObjectId(me.body.id),
+      title: "Old book",
+      author: "Old author",
+      status: "read",
+    });
+
+    const fetched = await api(`/api/books/${insertedId}`, { cookie: alice });
+
+    assert.equal(fetched.body.format, "paper");
+  });
+
   it("rejects a book that points at another user's series", async () => {
     const alice = await signIn("alice@example.com");
     const bob = await signIn("bob@example.com");

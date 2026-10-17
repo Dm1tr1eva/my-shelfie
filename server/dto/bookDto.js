@@ -21,6 +21,7 @@ function toBookDto(book, series) {
     author: book.author,
     status: book.status,
     ownership: book.ownership ?? "owned",
+    format: book.format,
     genres: shared ? (shared.genres ?? []) : (book.genres ?? []),
     tropes: shared ? (shared.tropes ?? []) : (book.tropes ?? []),
     links: (book.links ?? []).map((link) => ({ language: link.language, url: link.url })),

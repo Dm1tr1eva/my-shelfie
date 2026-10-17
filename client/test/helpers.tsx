@@ -70,6 +70,7 @@ export function book(overrides: Partial<Book> = {}): Book {
     author: "An author",
     status: "want",
     ownership: "owned" as Ownership,
+    format: "paper",
     genres: [],
     tropes: [],
     links: [],

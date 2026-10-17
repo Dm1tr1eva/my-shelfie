@@ -4,29 +4,38 @@ import { useId } from "react";
 import { CheckIcon, StarIcon } from "@/components/icons";
 import { SERIES_STATE_CHOICES, type SeriesStatus } from "@/lib/series";
 import {
+  FORMAT_LABELS,
+  FORMATS,
   OWNERSHIP_LABELS,
   STATUS_LABELS,
   STATUSES,
   type BookStatus,
+  type Format,
   type Ownership,
 } from "@/lib/books";
 
 const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
 
-export function OwnershipToggle({
+function SegmentedToggle<T extends string>({
+  label,
+  options,
+  labels,
   value,
   onChange,
 }: {
-  value: Ownership;
-  onChange: (value: Ownership) => void;
+  label: string;
+  options: T[];
+  labels: Record<T, string>;
+  value: T;
+  onChange: (value: T) => void;
 }) {
   return (
     <div
       role="radiogroup"
-      aria-label="Where this book is"
+      aria-label={label}
       className="flex rounded-control border border-field p-0.5"
     >
-      {OWNERSHIPS.map((option) => {
+      {options.map((option) => {
         const selected = value === option;
         return (
           <button
@@ -40,11 +49,47 @@ export function OwnershipToggle({
             }`}
           >
             {selected && <CheckIcon size={16} />}
-            {OWNERSHIP_LABELS[option]}
+            {labels[option]}
           </button>
         );
       })}
     </div>
+  );
+}
+
+export function OwnershipToggle({
+  value,
+  onChange,
+}: {
+  value: Ownership;
+  onChange: (value: Ownership) => void;
+}) {
+  return (
+    <SegmentedToggle
+      label="Where this book is"
+      options={OWNERSHIPS}
+      labels={OWNERSHIP_LABELS}
+      value={value}
+      onChange={onChange}
+    />
+  );
+}
+
+export function FormatToggle({
+  value,
+  onChange,
+}: {
+  value: Format;
+  onChange: (value: Format) => void;
+}) {
+  return (
+    <SegmentedToggle
+      label="Format"
+      options={FORMATS}
+      labels={FORMAT_LABELS}
+      value={value}
+      onChange={onChange}
+    />
   );
 }
 

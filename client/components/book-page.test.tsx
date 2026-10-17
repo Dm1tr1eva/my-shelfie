@@ -96,6 +96,32 @@ describe("BookPage", () => {
     );
   });
 
+  it("saves a changed format and shows it on the cover before you save", async () => {
+    const calls = serve();
+    renderApp(<BookPage id="b1" />);
+    await screen.findByRole("heading", { name: "Ash One" });
+
+    expect(screen.getByRole("radio", { name: "Paper" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("img", { name: "Paper book" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("radio", { name: "E-book" }));
+
+    expect(screen.getByRole("img", { name: "E-book" })).toBeInTheDocument();
+    fireEvent.click(
+      within(screen.getByRole("region", { name: "Unsaved changes" })).getByRole("button", {
+        name: "Save changes",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "PATCH",
+        path: "/api/books/b1",
+        body: { format: "ebook" },
+      }),
+    );
+  });
+
   it("puts everything back when you discard", async () => {
     const calls = serve();
     renderApp(<BookPage id="b1" />);

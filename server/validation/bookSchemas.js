@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { OWNERSHIP, LINK_LANGUAGES, GENRES } = require("../constants/library");
+const { OWNERSHIP, FORMATS, LINK_LANGUAGES, GENRES } = require("../constants/library");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
@@ -19,6 +19,7 @@ const baseBookSchema = z
     googleVolumeId: z.string().min(1).optional(),
     description: z.string().optional(),
     ownership: z.enum(OWNERSHIP).optional(),
+    format: z.enum(FORMATS).optional(),
     seriesId: objectId.optional(),
     seriesNumber: z.number().positive().optional(),
     genres: z

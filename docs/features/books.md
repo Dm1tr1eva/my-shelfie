@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-10-11
+**Last verified against code:** 2026-10-17
 
 ## What it does
 
@@ -13,6 +13,9 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
 - A book always belongs to exactly one user (`Book.userId`), set once at creation from the
   authenticated session and never from the request body.
 - `status` is one of `want | reading | dropped | read`; `rating`, when present, is `1`–`5`.
+- `format` is `paper` or `ebook`, default `paper`, chosen per book and not shared with the
+  series. A book saved before the field existed reads as `paper`: Mongoose applies the schema
+  default when it loads the document, so there is no migration and the DTO adds no fallback.
 - A caller can only see, change or delete their own books. A book that exists but belongs to
   someone else is indistinguishable, from the outside, from a book that does not exist.
 
@@ -55,7 +58,7 @@ cleared field is absent from the response exactly like one that was never set. A
 stays cleared — `null` is not coerced into 1970; a test pins that.
 
 **Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
-is their own book), `title`, `author`, `status`, `createdAt`, `updatedAt`, plus whichever of
+is their own book), `title`, `author`, `status`, `format`, `createdAt`, `updatedAt`, plus whichever of
 `coverUrl`/`googleVolumeId`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
 field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
 
@@ -122,6 +125,17 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - Library and Wishlist show standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to buy" shows for a wishlist book only.
+- Every cover of a saved book carries a round mark in its bottom-right corner, an open book for
+  paper and an e-reader for an e-book (the `format` prop of `BookCover`). The mark is a
+  `role="img"` labelled "Paper book" or "E-book", so the format is also in words. It shows in
+  the library tiles and rows, the series page, Next to buy, the book page and the details step;
+  not on search results. The format is a two-option radio group, "Format", on the book page
+  (saved through the unsaved-changes bar) and on the details step (sent only when changed) —
+  [../designs/book-format.md](../designs/book-format.md). The details step also asks for the
+  reading status and the rating of a book that is in the library (not of a wishlist book), and
+  sends each only when it changed.
+- On the series page "Add a note" and "Edit note" open the edit form, scroll it into view and put
+  the cursor in the note; "Edit series" puts it in the title.
 - `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
 - Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
   and shop language. Values within a group are OR, groups are AND, and each option's count is
@@ -137,7 +151,8 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - Tropes use `components/tag-input.tsx`: a field that grows and wraps with its text, 60
   characters a trope and 30 a book (the server's limits), a counter for the last ten characters,
   and "Already added" with the existing chip highlighted when the typed text is a trope the book
-  has (case-insensitive); the text is kept.
+  has (case-insensitive); the text is kept. Each tag is one frame holding its text and a round
+  remove button, so the button plainly belongs to that tag.
 - The series state is chosen with pills (`SeriesStatePills`): "Still coming out", "Finished",
   "Don't know". Chips and the Next to buy filter show Ongoing, Complete, Unknown.
 
@@ -163,7 +178,7 @@ use `components/select.tsx`, a listbox styled with the tokens, never the browser
 ## Data
 
 One collection, `Book` (`server/models/book.js`): `userId`, `title`, `author`, `coverUrl`,
-`googleVolumeId`, `description`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
+`googleVolumeId`, `description`, `format`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
 `updatedAt` from `timestamps: true`. Compound index `{ userId: 1, createdAt: -1 }` — covers
 both the filter every query uses and the sort `GET /` applies.
 

@@ -85,6 +85,70 @@ describe("AddDetails", () => {
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
   });
 
+  it("saves the format you pick", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("radio", { name: "E-book" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          path: "/api/books/new",
+          body: expect.objectContaining({ format: "ebook" }),
+        }),
+      ),
+    );
+  });
+
+  it("sends no format when you leave it as it was", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    const update = calls.find((call) => call.method === "PATCH" && call.path === "/api/books/new");
+    expect(update?.body).not.toHaveProperty("format");
+    expect(update?.body).not.toHaveProperty("status");
+    expect(update?.body).not.toHaveProperty("rating");
+  });
+
+  it("saves whether you have read the book and your rating", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Read" }));
+    fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          path: "/api/books/new",
+          body: expect.objectContaining({ status: "read", rating: 4 }),
+        }),
+      ),
+    );
+  });
+
+  it("does not ask for a reading status or a rating on a wishlist book", async () => {
+    const WISH = book({ id: "wish", title: "Wished", ownership: "wanted" });
+    mockApi(({ path }) => {
+      if (path === "/api/books/wish") return { body: WISH };
+      if (path.startsWith("/api/books")) return booksResponse([WISH]);
+      if (path === "/api/series") return { body: { series: [] } };
+    });
+    renderApp(<AddDetails id="wish" />);
+    await screen.findByRole("radio", { name: "E-book" });
+
+    expect(screen.queryByRole("group", { name: "Reading status" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Rating" })).not.toBeInTheDocument();
+  });
+
   it("leaves the series alone when you change nothing", async () => {
     const calls = serve();
     renderApp(<AddDetails id="new" />);

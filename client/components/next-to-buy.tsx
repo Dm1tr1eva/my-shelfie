@@ -51,7 +51,7 @@ function Row({
   return (
     <li className="card flex flex-col gap-4 p-4 md:flex-row md:items-center">
       <div className="flex min-w-0 flex-1 gap-4">
-        <BookCover url={book.coverUrl} title={book.title} size="md" />
+        <BookCover url={book.coverUrl} title={book.title} size="md" format={book.format} />
         <div className="flex min-w-0 flex-col gap-2">
           <Link href={`/books/${book.id}`} className="font-serif text-xl font-semibold">
             {book.title}

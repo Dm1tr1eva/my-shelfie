@@ -1,4 +1,5 @@
 const OWNERSHIP = ["owned", "wanted"];
+const FORMATS = ["paper", "ebook"];
 const SERIES_STATUSES = ["ongoing", "complete", "unknown"];
 const LINK_LANGUAGES = ["ru", "uk", "en", "other"];
 const GENRES = [
@@ -16,4 +17,4 @@ const GENRES = [
   "Poetry",
 ];
 
-module.exports = { OWNERSHIP, SERIES_STATUSES, LINK_LANGUAGES, GENRES };
+module.exports = { OWNERSHIP, FORMATS, SERIES_STATUSES, LINK_LANGUAGES, GENRES };

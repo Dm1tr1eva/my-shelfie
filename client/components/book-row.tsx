@@ -16,7 +16,7 @@ export function BookRow({ book, series }: { book: Book; series?: Series }) {
         href={`/books/${book.id}`}
         className="flex items-center gap-4 border-b border-mist py-3 hover:bg-card/60"
       >
-        <BookCover url={book.coverUrl} title={book.title} size="sm" />
+        <BookCover url={book.coverUrl} title={book.title} size="sm" format={book.format} />
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="font-semibold">{book.title}</span>
           <span className="text-sm text-muted">

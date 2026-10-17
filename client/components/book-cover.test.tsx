@@ -50,6 +50,24 @@ describe("BookCover", () => {
     expect(colours.size).toBeGreaterThan(3);
   });
 
+  it("marks the cover as a paper book or an e-book in words as well as in the icon", () => {
+    const { getByRole, queryByRole, rerender } = render(<BookCover title="Dune" format="paper" />);
+
+    expect(getByRole("img", { name: "Paper book" })).toBeInTheDocument();
+    expect(queryByRole("img", { name: "E-book" })).toBeNull();
+
+    rerender(<BookCover title="Dune" format="ebook" />);
+
+    expect(getByRole("img", { name: "E-book" })).toBeInTheDocument();
+    expect(queryByRole("img", { name: "Paper book" })).toBeNull();
+  });
+
+  it("draws no format mark when the format is not given", () => {
+    const { queryByRole } = render(<BookCover title="Dune" />);
+
+    expect(queryByRole("img")).toBeNull();
+  });
+
   it("labels the cover with its number in the series when one is given", () => {
     const { getByText, queryByText, rerender } = render(<BookCover title="Dune" number={3} />);
 

@@ -124,6 +124,15 @@ export function BookIcon({ size }: IconProps) {
   );
 }
 
+export function TabletIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <rect x="6" y="2.5" width="12" height="19" rx="2" />
+      <path d="M10.5 18.5h3" />
+    </Svg>
+  );
+}
+
 export function StarIcon({ size, filled = false }: IconProps & { filled?: boolean }) {
   return (
     <svg

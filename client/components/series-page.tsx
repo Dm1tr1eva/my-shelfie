@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { GenreChip, TropeChip } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
@@ -29,6 +29,10 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const router = useRouter();
   const { updateSeries, deleteSeries } = useSeriesActions();
   const [editing, setEditing] = useState(false);
+  const [firstField, setFirstField] = useState<"title" | "note">("title");
+  const formRef = useRef<HTMLFormElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
   const [title, setTitle] = useState(series.title);
   const [author, setAuthor] = useState(series.author ?? "");
   const [note, setNote] = useState(series.note ?? "");
@@ -57,6 +61,17 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const nextNumber = Math.floor(highestNumberOf(books)) + 1;
   const numbered = books.filter((book) => book.seriesNumber !== undefined);
   const unnumbered = books.filter((book) => book.seriesNumber === undefined);
+
+  useEffect(() => {
+    if (!editing) return;
+    formRef.current?.scrollIntoView({ block: "start" });
+    (firstField === "note" ? noteRef : titleRef).current?.focus({ preventScroll: true });
+  }, [editing, firstField]);
+
+  function openEditing(field: "title" | "note") {
+    setFirstField(field);
+    setEditing(true);
+  }
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
@@ -110,7 +125,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         )}
         <button
           type="button"
-          onClick={() => setEditing(true)}
+          onClick={() => openEditing("note")}
           className="min-h-11 self-start text-navy underline underline-offset-2"
         >
           {series.note ? "Edit note" : "Add a note"}
@@ -162,6 +177,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                         url={book.coverUrl}
                         title={book.title}
                         number={book.seriesNumber}
+                        format={book.format}
                       />
                     </span>
                     <span className="line-clamp-2 text-[15px] font-semibold leading-snug">
@@ -237,14 +253,24 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
 
       <section className="flex flex-col gap-3">
         {!editing ? (
-          <button type="button" onClick={() => setEditing(true)} className="btn-outline self-start">
+          <button
+            type="button"
+            onClick={() => openEditing("title")}
+            className="btn-outline self-start"
+          >
             Edit series
           </button>
         ) : (
-          <form onSubmit={save} aria-label="Edit series" className="card flex flex-col gap-3 p-5">
+          <form
+            ref={formRef}
+            onSubmit={save}
+            aria-label="Edit series"
+            className="card flex scroll-mt-20 flex-col gap-3 p-5"
+          >
             <label className="flex flex-col gap-1">
               <span className="font-semibold">Title</span>
               <input
+                ref={titleRef}
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -289,6 +315,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             <label className="flex flex-col gap-1">
               <span className="font-semibold">Note</span>
               <textarea
+                ref={noteRef}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}

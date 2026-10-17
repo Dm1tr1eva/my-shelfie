@@ -1,3 +1,6 @@
+import { BookIcon, TabletIcon } from "@/components/icons";
+import type { Format } from "@/lib/catalogue-constants";
+
 const SIZES = {
   sm: "w-10",
   md: "w-16",
@@ -13,6 +16,11 @@ const PAIRS = [
   "bg-mist text-navy",
   "bg-beige text-burgundy",
 ];
+
+const FORMAT_BADGES: Record<Format, { label: string; Icon: typeof BookIcon }> = {
+  paper: { label: "Paper book", Icon: BookIcon },
+  ebook: { label: "E-book", Icon: TabletIcon },
+};
 
 function withoutPageCurl(url: string) {
   return url.replace("&edge=curl", "");
@@ -31,13 +39,16 @@ export function BookCover({
   title,
   size = "fill",
   number,
+  format,
 }: {
   url?: string;
   title: string;
   size?: keyof typeof SIZES;
   number?: number;
+  format?: Format;
 }) {
   const box = `${SIZES[size]} aspect-[2/3] shrink-0`;
+  const badge = format ? FORMAT_BADGES[format] : undefined;
 
   return (
     <div className={`relative @container ${box}`}>
@@ -66,6 +77,17 @@ export function BookCover({
       {number !== undefined && (
         <span className="absolute left-1 top-1 rounded-full bg-card px-2 py-0.5 text-xs font-bold text-ink shadow">
           #{number}
+        </span>
+      )}
+
+      {badge && (
+        <span
+          role="img"
+          aria-label={badge.label}
+          title={badge.label}
+          className={`absolute bottom-1 right-1 flex items-center justify-center rounded-full bg-card text-ink shadow ${size === "sm" ? "h-5 w-5" : "h-7 w-7"}`}
+        >
+          <badge.Icon size={size === "sm" ? 12 : 16} />
         </span>
       )}
     </div>

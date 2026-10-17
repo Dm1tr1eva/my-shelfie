@@ -5,14 +5,17 @@ import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
 import {
+  FORMAT_LABELS,
+  FORMATS,
   LINK_LANGUAGES,
   OWNERSHIP_LABELS,
+  type Format,
   type LinkLanguage,
   type Ownership,
 } from "./catalogue-constants";
 
-export { LINK_LANGUAGES, OWNERSHIP_LABELS };
-export type { LinkLanguage, Ownership };
+export { FORMAT_LABELS, FORMATS, LINK_LANGUAGES, OWNERSHIP_LABELS };
+export type { Format, LinkLanguage, Ownership };
 export type BookStatus = "want" | "reading" | "dropped" | "read";
 
 export const STATUS_LABELS: Record<BookStatus, string> = {
@@ -56,6 +59,7 @@ export type Book = {
   author: string;
   status: BookStatus;
   ownership: Ownership;
+  format: Format;
   genres: Genre[];
   tropes: string[];
   links: ShopLink[];
@@ -78,6 +82,7 @@ export type NewBook = {
   title: string;
   author: string;
   ownership?: Ownership;
+  format?: Format;
   status?: BookStatus;
   coverUrl?: string;
   googleVolumeId?: string;
@@ -95,6 +100,7 @@ export type BookChanges = Partial<{
   author: string;
   status: BookStatus;
   ownership: Ownership;
+  format: Format;
   rating: number | null;
   review: string | null;
   seriesId: string | null;

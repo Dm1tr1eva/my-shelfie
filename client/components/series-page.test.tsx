@@ -15,6 +15,7 @@ const BOOKS = [
     title: "Ash Three",
     seriesId: "saga",
     seriesNumber: 3,
+    format: "ebook",
     genres: ["Fantasy", "Romance"],
     tropes: ["slow burn"],
   }),
@@ -50,6 +51,16 @@ describe("SeriesPage", () => {
     expect(await screen.findByRole("heading", { name: "Saga of Ash" })).toBeInTheDocument();
     expect(screen.getByText("Own 2 of 3")).toBeInTheDocument();
     expect(screen.getByText("Missing: #2 (a gap)")).toBeInTheDocument();
+  });
+
+  it("marks which books of the series are e-books", async () => {
+    serve();
+    renderApp(<SeriesPage id="saga" />);
+
+    const books = await screen.findByRole("region", { name: "Books in this series" });
+
+    expect(within(books).getAllByRole("img", { name: "E-book" })).toHaveLength(1);
+    expect(within(books).getAllByRole("img", { name: "Paper book" })).toHaveLength(2);
   });
 
   it("links the next book to the add page with the next number", async () => {
@@ -196,6 +207,27 @@ describe("SeriesPage", () => {
 
     expect(screen.getByRole("form", { name: "Edit series" })).toBeInTheDocument();
     expect(screen.getByLabelText("Note")).toHaveValue("book 6 delayed");
+  });
+
+  it("brings the form into view and puts the cursor in the note when you use the note link", async () => {
+    serve();
+    renderApp(<SeriesPage id="saga" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Add a note" }));
+
+    const form = screen.getByRole("form", { name: "Edit series" });
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1)).toBe(form);
+    expect(screen.getByLabelText("Note")).toHaveFocus();
+  });
+
+  it("puts the cursor in the title when you open the form with Edit series", async () => {
+    serve();
+    renderApp(<SeriesPage id="saga" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Edit series" }));
+
+    expect(screen.getByLabelText("Title")).toHaveFocus();
   });
 
   it("labels each cover with where the book is and whether it is a gap", async () => {

@@ -20,6 +20,7 @@ function book(overrides: Partial<Book> & { title?: string } = {}): Book {
     author: "An author",
     status: "want",
     ownership: "owned" as Ownership,
+    format: "paper",
     genres: [],
     tropes: [],
     links: [],

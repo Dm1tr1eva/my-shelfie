@@ -73,6 +73,9 @@ In order:
    - ✅ **After the waves, 2026-10-14:** genres, tropes and the description belong to the
      series, as in the Notion table; a book of a series shows them read-only —
      [designs/series-tags.md](designs/series-tags.md)
+   - ✅ **Paper or e-book mark and a favicon, 2026-10-17:** `Book.format`, a badge on every
+     cover, a format choice on the book page and the details step —
+     [designs/book-format.md](designs/book-format.md)
 3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 

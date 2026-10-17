@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
+import { FormatToggle, ReadingStatusPills, StarRating } from "@/components/form-controls";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import {
   SeriesPicker,
@@ -12,7 +13,15 @@ import {
 import { ShopLinkEditor, validLinks, type LinkRow } from "@/components/shop-link-editor";
 import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
-import { useBook, useBookActions, useBooks, type Book, type Genre } from "@/lib/books";
+import {
+  useBook,
+  useBookActions,
+  useBooks,
+  type Book,
+  type BookStatus,
+  type Format,
+  type Genre,
+} from "@/lib/books";
 import { useSeriesActions, useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
@@ -30,6 +39,9 @@ function DetailsForm({ book }: { book: Book }) {
     seriesId: initialSeries ?? undefined,
     seriesNumber: initialNumber ? Number(initialNumber) : book.seriesNumber,
   });
+  const [format, setFormat] = useState<Format>(book.format);
+  const [status, setStatus] = useState<BookStatus>(book.status);
+  const [rating, setRating] = useState<number | undefined>(book.rating);
   const [pickedGenres, setPickedGenres] = useState<Genre[] | null>(null);
   const [pickedTropes, setPickedTropes] = useState<string[] | null>(null);
   const [rows, setRows] = useState<LinkRow[]>(
@@ -64,6 +76,9 @@ function DetailsForm({ book }: { book: Book }) {
       await updateBook(book.id, {
         genres,
         tropes,
+        ...(format !== book.format && { format }),
+        ...(status !== book.status && { status }),
+        ...(rating !== book.rating && { rating: rating ?? null }),
         ...(wanted && { links: validLinks(rows) }),
         ...(seriesId !== book.seriesId && { seriesId: seriesId ?? null }),
         ...(seriesNumber !== book.seriesNumber && { seriesNumber: seriesNumber ?? null }),
@@ -87,7 +102,7 @@ function DetailsForm({ book }: { book: Book }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="card flex items-center gap-4 p-4">
-        <BookCover url={book.coverUrl} title={book.title} size="md" />
+        <BookCover url={book.coverUrl} title={book.title} size="md" format={format} />
         <div className="min-w-0">
           <p className="font-serif text-xl font-semibold">{book.title}</p>
           <p className="text-muted">{book.author}</p>
@@ -96,6 +111,21 @@ function DetailsForm({ book }: { book: Book }) {
           </p>
         </div>
       </div>
+
+      <FormatToggle value={format} onChange={setFormat} />
+
+      {!wanted && (
+        <>
+          <div className="flex flex-col gap-2">
+            <p className="font-semibold">Status</p>
+            <ReadingStatusPills value={status} onChange={setStatus} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <p className="font-semibold">Rating</p>
+            <StarRating value={rating} onChange={setRating} />
+          </div>
+        </>
+      )}
 
       {!seriesLoading && (
         <SeriesPicker

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { OWNERSHIP, LINK_LANGUAGES, GENRES } = require("../constants/library");
+const { OWNERSHIP, FORMATS, LINK_LANGUAGES, GENRES } = require("../constants/library");
 
 const linkSchema = new mongoose.Schema(
   {
@@ -22,6 +22,7 @@ const bookSchema = new mongoose.Schema(
     googleVolumeId: String,
     description: String,
     ownership: { type: String, enum: OWNERSHIP, default: "owned" },
+    format: { type: String, enum: FORMATS, default: "paper" },
     seriesId: { type: mongoose.Schema.Types.ObjectId, ref: "Series" },
     seriesNumber: { type: Number, min: 0 },
     genres: [{ type: String, enum: GENRES }],

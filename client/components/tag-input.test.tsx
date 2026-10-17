@@ -54,6 +54,15 @@ describe("TagInput", () => {
     expect(tags()).toBe("found family");
   });
 
+  it("draws the remove button inside the frame of the tag it removes", () => {
+    render(<Harness initial={["Slow burn"]} />);
+
+    const frame = screen.getByRole("button", { name: "Remove Slow burn" }).parentElement;
+
+    expect(frame).toHaveClass("border");
+    expect(frame).toHaveTextContent("Slow burn");
+  });
+
   it("says a trope is already added, keeps the text, and does not add it twice", () => {
     render(<Harness initial={["Slow burn"]} />);
 

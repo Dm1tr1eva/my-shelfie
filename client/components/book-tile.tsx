@@ -24,6 +24,7 @@ export function BookTile({
           url={book.coverUrl}
           title={book.title}
           number={showNumber ? book.seriesNumber : undefined}
+          format={book.format}
         />
         <span className="line-clamp-2 text-[15px] font-semibold leading-snug">{book.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">

@@ -24,6 +24,7 @@ const STANDALONE = book({
   id: "wish",
   title: "Wished Alone",
   ownership: "wanted",
+  format: "ebook",
   genres: ["Romance"],
 });
 
@@ -68,6 +69,17 @@ describe("NextToBuy", () => {
     const standalone = screen.getByRole("region", { name: /Standalone wishlist/ });
     expect(within(standalone).getByRole("link", { name: "Wished Alone" })).toBeInTheDocument();
     expect(within(standalone).getByText("No links yet · add one")).toBeInTheDocument();
+  });
+
+  it("marks the e-books you want, so you do not look for them in a shop for paper", async () => {
+    serve();
+    renderApp(<NextToBuy />);
+
+    const fromSeries = await screen.findByRole("region", { name: /From your series/ });
+    const standalone = screen.getByRole("region", { name: /Standalone wishlist/ });
+
+    expect(within(fromSeries).getByRole("img", { name: "Paper book" })).toBeInTheDocument();
+    expect(within(standalone).getByRole("img", { name: "E-book" })).toBeInTheDocument();
   });
 
   it("moves a book to the library when you say you bought it", async () => {

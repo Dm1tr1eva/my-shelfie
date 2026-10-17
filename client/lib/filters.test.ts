@@ -22,6 +22,7 @@ function book(overrides: Partial<Book> = {}): Book {
     author: "An author",
     status: "want",
     ownership: "owned",
+    format: "paper",
     genres: [],
     tropes: [],
     links: [],

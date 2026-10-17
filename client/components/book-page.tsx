@@ -7,7 +7,12 @@ import { BookCover } from "@/components/book-cover";
 import { GenreChip, LangBadge, TropeChip } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
 import { RowsSkeleton } from "@/components/skeleton";
-import { OwnershipToggle, ReadingStatusPills, StarRating } from "@/components/form-controls";
+import {
+  FormatToggle,
+  OwnershipToggle,
+  ReadingStatusPills,
+  StarRating,
+} from "@/components/form-controls";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { ExternalLinkIcon, PlusIcon, XIcon } from "@/components/icons";
 import { Select } from "@/components/select";
@@ -25,6 +30,7 @@ import {
   type BookStatus,
   type Genre,
   type LinkLanguage,
+  type Format,
   type Ownership,
   type ShopLink,
 } from "@/lib/books";
@@ -35,6 +41,7 @@ import { useRequireAuth } from "@/lib/use-require-auth";
 
 type Draft = {
   ownership: Ownership;
+  format: Format;
   status: BookStatus;
   rating: number | undefined;
   genres: Genre[];
@@ -48,6 +55,7 @@ type Draft = {
 function draftOf(book: Book): Draft {
   return {
     ownership: book.ownership,
+    format: book.format,
     status: book.status,
     rating: book.rating,
     genres: book.genres,
@@ -64,6 +72,7 @@ function changesBetween(book: Book, draft: Draft): BookChanges {
   const changes: BookChanges = {};
 
   if (draft.ownership !== before.ownership) changes.ownership = draft.ownership;
+  if (draft.format !== before.format) changes.format = draft.format;
   if (draft.status !== before.status) changes.status = draft.status;
   if (draft.rating !== before.rating) changes.rating = draft.rating ?? null;
   if (JSON.stringify(draft.genres) !== JSON.stringify(before.genres)) changes.genres = draft.genres;
@@ -182,7 +191,7 @@ function BookForm({ book }: { book: Book }) {
         <div className="flex flex-col gap-8">
           <section className="flex flex-col gap-5 sm:flex-row">
             <div className="w-40 shrink-0 self-start sm:w-48">
-              <BookCover url={book.coverUrl} title={book.title} />
+              <BookCover url={book.coverUrl} title={book.title} format={draft.format} />
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -218,6 +227,7 @@ function BookForm({ book }: { book: Book }) {
                 value={draft.ownership}
                 onChange={(ownership) => patch({ ownership })}
               />
+              <FormatToggle value={draft.format} onChange={(format) => patch({ format })} />
 
               <div className="flex flex-wrap items-center gap-2">
                 {draft.genres.map((genre) => (

@@ -81,6 +81,26 @@ describe("Library", () => {
     expect(screen.queryByText("Stand Alone")).not.toBeInTheDocument();
   });
 
+  it("marks each book as a paper book or an e-book, in the list and in the grid", async () => {
+    serve([
+      book({ id: "p", title: "On Paper" }),
+      book({ id: "e", title: "On a Screen", format: "ebook" }),
+    ]);
+    renderApp(<Library tab="library" />);
+    await screen.findByText("On Paper");
+
+    const marked = () => ({
+      paper: screen.getAllByRole("img", { name: "Paper book" }).length,
+      ebook: screen.getAllByRole("img", { name: "E-book" }).length,
+    });
+
+    expect(marked()).toEqual({ paper: 1, ebook: 1 });
+
+    fireEvent.click(screen.getByRole("button", { name: /grid/i }));
+
+    expect(marked()).toEqual({ paper: 1, ebook: 1 });
+  });
+
   it("narrows the list by title or author while you type", async () => {
     serve();
     renderApp(<Library tab="library" />);
