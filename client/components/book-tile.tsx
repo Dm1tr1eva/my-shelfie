@@ -31,6 +31,7 @@ export function BookTile({
           {book.ownership === "owned" && <StatusChip status={book.status} />}
           {book.rating ? (
             <span
+              role="img"
               aria-label={`Rated ${book.rating} out of 5`}
               className="font-semibold text-burgundy"
             >

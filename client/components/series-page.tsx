@@ -172,14 +172,14 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
               return (
                 <li key={book.id}>
                   <Link href={`/books/${book.id}`} className="flex flex-col gap-2">
-                    <span className={wanted ? "opacity-55 saturate-[.7]" : ""}>
+                    <div className={wanted ? "opacity-55 saturate-[.7]" : ""}>
                       <BookCover
                         url={book.coverUrl}
                         title={book.title}
                         number={book.seriesNumber}
                         format={book.format}
                       />
-                    </span>
+                    </div>
                     <span className="line-clamp-2 text-[15px] font-semibold leading-snug">
                       {book.title}
                     </span>
@@ -251,7 +251,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         <p className="text-sm text-muted">These are shared by every book of the series.</p>
       </section>
 
-      <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         {!editing ? (
           <button
             type="button"
@@ -346,7 +346,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             </div>
           </form>
         )}
-      </section>
+      </div>
     </div>
   );
 }

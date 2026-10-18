@@ -23,7 +23,7 @@ export function HeroShelf() {
             style={{ width: bar.width, height: bar.height }}
             className={`flex items-center justify-center rounded-[3px_5px_5px_3px] ${bar.className} ${
               index === 3 ? "mr-[18px]" : ""
-            }`}
+            } ${index >= 5 ? "max-sm:hidden" : ""}`}
           >
             {bar.label && (
               <span className="font-serif text-lg text-beige [writing-mode:vertical-rl]">
@@ -34,7 +34,7 @@ export function HeroShelf() {
         ))}
         <div
           style={{ width: 46, height: 180 }}
-          className="ml-8 origin-bottom-left -rotate-[10deg] rounded-[3px_5px_5px_3px] bg-beige"
+          className="ml-8 origin-bottom-left -rotate-[10deg] rounded-[3px_5px_5px_3px] bg-beige max-sm:hidden"
         />
       </div>
       <div className="h-4 rounded-t-[3px] bg-slate" />

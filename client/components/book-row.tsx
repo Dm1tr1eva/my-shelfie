@@ -40,6 +40,7 @@ export function BookRow({ book, series }: { book: Book; series?: Series }) {
           )}
           {book.rating ? (
             <span
+              role="img"
               aria-label={`Rated ${book.rating} out of 5`}
               className="font-semibold text-burgundy"
             >

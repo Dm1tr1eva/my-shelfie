@@ -63,6 +63,15 @@ describe("SeriesPage", () => {
     expect(within(books).getAllByRole("img", { name: "Paper book" })).toHaveLength(2);
   });
 
+  it("keeps block elements out of inline ones in the row of covers", async () => {
+    serve();
+    renderApp(<SeriesPage id="saga" />);
+
+    const books = await screen.findByRole("region", { name: "Books in this series" });
+
+    expect(books.querySelector("span div")).toBeNull();
+  });
+
   it("links the next book to the add page with the next number", async () => {
     serve();
     renderApp(<SeriesPage id="saga" />);

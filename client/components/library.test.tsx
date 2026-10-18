@@ -101,6 +101,18 @@ describe("Library", () => {
     expect(marked()).toEqual({ paper: 1, ebook: 1 });
   });
 
+  it("announces a rating as an image with its meaning, in the list and in the grid", async () => {
+    serve([book({ id: "r", title: "Rated Book", rating: 4 })]);
+    renderApp(<Library tab="library" />);
+    await screen.findByText("Rated Book");
+
+    expect(screen.getByRole("img", { name: "Rated 4 out of 5" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /grid/i }));
+
+    expect(screen.getByRole("img", { name: "Rated 4 out of 5" })).toBeInTheDocument();
+  });
+
   it("narrows the list by title or author while you type", async () => {
     serve();
     renderApp(<Library tab="library" />);

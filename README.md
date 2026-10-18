@@ -1,8 +1,8 @@
 # my-shelfie
 
-A catalogue of the books you own and a wishlist, organised by series. It replaces a Notion table:
-you see at a glance which volumes of a series are on your shelf, which are missing, and where to
-buy the next one.
+A home library and a wishlist for people who collect books in series. See at a glance which
+volumes of a series are on your shelf and which are missing, and get a ready list of what to buy
+next, with the shop links you saved for each book.
 
 **Live site:** <https://my-shelfie-ecru.vercel.app>
 
@@ -103,14 +103,6 @@ Details: [docs/features/auth.md](docs/features/auth.md),
 [docs/features/books.md](docs/features/books.md) and
 [docs/features/series.md](docs/features/series.md).
 
-## Why not Firebase
-
-The course's reference projects use Firebase for authentication and data. This project is built
-on its own Node.js, Express and MongoDB API instead, on purpose: it exists to practise the whole
-stack, and Firebase would replace exactly the parts being practised — password hashing, token
-sessions, request validation and the data layer. Authentication, books, series and Next to buy
-are covered by tests, and the frontend is React with TypeScript, as the assignment requires.
-
 ## Design and specification
 
 There is no separate mockup in a design tool: the design handoff is kept in
@@ -157,5 +149,5 @@ port 27017 and use a separate `-test` database. The full runbook, including depl
 
 ## What is next
 
-An AI assistant that helps fill in a series' order, status and tropes, importing the Notion
-table, and a dark theme. They are planned in the roadmap.
+An AI assistant that helps fill in a series' order, status and tropes, and a dark theme. They are
+planned in the roadmap.

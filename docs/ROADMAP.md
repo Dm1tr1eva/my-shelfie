@@ -76,8 +76,18 @@ In order:
    - ✅ **Paper or e-book mark and a favicon, 2026-10-17:** `Book.format`, a badge on every
      cover, a format choice on the book page and the details step —
      [designs/book-format.md](designs/book-format.md)
-3. 🟨 README (what it does, the algorithm, screenshots) — ✅ written 2026-10-18, with seven
-   screenshots of demo data in `docs/screenshots/`; ⬜ check the deployed site again
+3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
+   screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
+   production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console
+   errors or warnings on any page, and no page scrolls sideways — except the home page at 320 and
+   375 px, where the shelf picture was wider than the screen (fixed, not yet deployed). The
+   W3C Nu validator found a rating label on a `span`, a block inside a `span` on the series
+   page, three `section`s without a heading and an invalid default 404 page (all fixed; the
+   served HTML of the public pages and app shells had 0 errors and 0 warnings on the live site).
+   ⬜ The rendered pages could not be validated again after the fixes: the validator answered
+   429 after the first run, so repeat it later. Logging out clears the session and every page
+   then redirects to `/login`. The 404 line the browser prints for a mistyped address is the
+   browser's own and cannot be removed. Not covered: a real phone and Safari
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 
 After the submission: the AI assistant (stage 8, repurposed to fill series order, status and

@@ -434,7 +434,7 @@ export function AddBook() {
         </section>
       )}
 
-      <section className="flex flex-col gap-3 border-t border-mist pt-5">
+      <div className="flex flex-col gap-3 border-t border-mist pt-5">
         <p className="font-semibold">Not on Google Books?</p>
         {!manual ? (
           <button type="button" onClick={() => setManual(true)} className="btn-outline self-start">
@@ -496,7 +496,7 @@ export function AddBook() {
             </div>
           </form>
         )}
-      </section>
+      </div>
 
       {sheetFor && (
         <div className="fixed inset-0 z-40 flex items-end bg-ink/50 md:hidden">

@@ -389,7 +389,7 @@ function BookForm({ book }: { book: Book }) {
             </section>
           )}
 
-          <section className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">
               <span className="text-2xl font-semibold font-serif">Notes</span>
               <textarea
@@ -429,7 +429,7 @@ function BookForm({ book }: { book: Book }) {
                 />
               </label>
             )}
-          </section>
+          </div>
         </div>
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">

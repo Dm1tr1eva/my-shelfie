@@ -46,7 +46,7 @@ export function NotFound({
 }) {
   return (
     <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center">
-      <h2 className="font-serif text-2xl font-semibold">{title}</h2>
+      <h1 className="font-serif text-2xl font-semibold">{title}</h1>
       <p className="max-w-md text-muted">
         It may have been deleted, or the link is wrong. Nothing was changed.
       </p>
