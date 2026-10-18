@@ -25,7 +25,7 @@ value; Mongoose applies the schema default when it loads them, so they read as p
 there is no migration. The create and update schemas accept it, strictly, like every other field. It is
 per book, not per series: a series can mix formats.
 
-**Display.** `BookCover` takes an optional `format` and draws a round badge in its bottom-right
+**Display.** `BookCover` takes an optional `format` and draws a round badge in its top-right
 corner (the series number already sits top-left): an open-book icon for paper, an e-reader
 icon for an e-book. The icon is decoration; the badge carries a visually hidden text ("Paper
 book", "E-book") and a `title`, so format is never conveyed by shape alone. The badge shows

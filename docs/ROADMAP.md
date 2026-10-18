@@ -76,7 +76,8 @@ In order:
    - ✅ **Paper or e-book mark and a favicon, 2026-10-17:** `Book.format`, a badge on every
      cover, a format choice on the book page and the details step —
      [designs/book-format.md](designs/book-format.md)
-3. ⬜ README (what it does, the algorithm, screenshots), check the deployed site again
+3. 🟨 README (what it does, the algorithm, screenshots) — ✅ written 2026-10-18, with seven
+   screenshots of demo data in `docs/screenshots/`; ⬜ check the deployed site again
 4. ⬜ Submit by 2026-10-17; decide on a demo account at that point
 
 After the submission: the AI assistant (stage 8, repurposed to fill series order, status and
@@ -149,8 +150,8 @@ In order:
    by default. Checked in a browser on 2026-10-08: sign-in survives a reload, the cookie is
    invisible to JavaScript, the console is clean. Render's free tier sleeps; the README warns
    that the first request can take up to a minute
-7. ⬜ README: ✅ what it is, stack, why not Firebase, link to this roadmap, live URL;
-   ⬜ screenshots (add them under `docs/screenshots/` and reference them from the README)
+7. ✅ README: what it is, stack, why not Firebase, link to this roadmap, live URL; screenshots
+   under `docs/screenshots/`, referenced from the README (2026-10-18)
 8. ✅ Final check on the deployed site, 2026-10-08 — before the library redesign, so it is
    repeated under Current focus, item 3. The W3C Nu validator reports 0 errors and
    0 warnings for the served HTML of `/`, `/login`, `/register` and `/dashboard`. No page

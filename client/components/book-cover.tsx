@@ -85,7 +85,7 @@ export function BookCover({
           role="img"
           aria-label={badge.label}
           title={badge.label}
-          className={`absolute bottom-1 right-1 flex items-center justify-center rounded-full bg-card text-ink shadow ${size === "sm" ? "h-5 w-5" : "h-7 w-7"}`}
+          className={`absolute right-1 top-1 flex items-center justify-center rounded-full bg-card text-ink shadow ${size === "sm" ? "h-5 w-5" : "h-7 w-7"}`}
         >
           <badge.Icon size={size === "sm" ? 12 : 16} />
         </span>

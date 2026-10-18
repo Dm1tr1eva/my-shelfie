@@ -125,7 +125,7 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - Library and Wishlist show standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to buy" shows for a wishlist book only.
-- Every cover of a saved book carries a round mark in its bottom-right corner, an open book for
+- Every cover of a saved book carries a round mark in its top-right corner, an open book for
   paper and an e-reader for an e-book (the `format` prop of `BookCover`). The mark is a
   `role="img"` labelled "Paper book" or "E-book", so the format is also in words. It shows in
   the library tiles and rows, the series page, Next to buy, the book page and the details step;
