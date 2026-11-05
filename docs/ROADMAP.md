@@ -80,6 +80,9 @@ In order:
      areas for the iPhone home indicator and an Install app action in the account menu —
      [designs/install-as-app.md](designs/install-as-app.md). Checked in a browser: no manifest or
      installability errors; still to try on a real iPhone and an Android tablet
+   - ✅ **A loading screen while the session is checked, 2026-11-05:** after a pause the first
+     request can take up to a minute and the page showed only the logo —
+     [designs/auth-loading-state.md](designs/auth-loading-state.md)
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console

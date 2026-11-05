@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { SWRConfig } from "swr";
+import { AuthProvider } from "@/lib/auth-context";
 import { mockApi, renderApp } from "@/test/helpers";
 import { AppFrame } from "./app-frame";
 
@@ -12,7 +14,93 @@ vi.mock("next/navigation", () => ({
 
 describe("AppFrame", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
+  });
+
+  describe("while the session is being checked", () => {
+    function sessionPending() {
+      let answer: (body: unknown) => void = () => {};
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(
+          () =>
+            new Promise<Response>((resolve) => {
+              answer = (body) => resolve(new Response(JSON.stringify(body)));
+            }),
+        ),
+      );
+      return (body: unknown) => answer(body);
+    }
+
+    function renderFrame() {
+      renderApp(
+        <AppFrame>
+          <p>page</p>
+        </AppFrame>,
+      );
+    }
+
+    it("shows a loading message instead of a blank page on a private page", () => {
+      route.pathname = "/library";
+      sessionPending();
+      renderFrame();
+
+      expect(screen.getByRole("status")).toHaveTextContent("Loading your library…");
+      expect(screen.queryByText("page")).not.toBeInTheDocument();
+      expect(screen.queryByText(/waking up/)).not.toBeInTheDocument();
+    });
+
+    it("says the server may be waking up once the wait has gone on for a few seconds", () => {
+      vi.useFakeTimers();
+      route.pathname = "/library";
+      sessionPending();
+      renderFrame();
+
+      act(() => {
+        vi.advanceTimersByTime(4900);
+      });
+      expect(screen.queryByText(/waking up/)).not.toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(screen.getByText(/waking up after a pause/)).toBeInTheDocument();
+    });
+
+    it("draws the public pages at once, without waiting for the session", () => {
+      sessionPending();
+
+      for (const path of ["/", "/login", "/register", "/privacy"]) {
+        route.pathname = path;
+        const { unmount } = render(
+          <SWRConfig value={{ provider: () => new Map() }}>
+            <AuthProvider>
+              <AppFrame>
+                <p>page at {path}</p>
+              </AppFrame>
+            </AuthProvider>
+          </SWRConfig>,
+        );
+
+        expect(screen.getByText(`page at ${path}`)).toBeInTheDocument();
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        unmount();
+      }
+    });
+
+    it("swaps the message for the page when the session answers", async () => {
+      route.pathname = "/library";
+      const answer = sessionPending();
+      renderFrame();
+
+      await act(async () => {
+        answer({ id: "1", email: "alice@example.com", name: "Alice" });
+      });
+
+      expect(await screen.findByText("page")).toBeInTheDocument();
+      expect(screen.queryByText("Loading your library…")).not.toBeInTheDocument();
+    });
   });
 
   it("offers a sign-in link and no library navigation to a visitor", async () => {

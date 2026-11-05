@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-10-13
+**Last verified against code:** 2026-11-05
 
 ## What it does
 
@@ -52,7 +52,11 @@ the single source of session state, checks `/me` once on mount). `app/login`,
 `register-form.tsx`, with show/hide password in `auth-fields.tsx`) — no Server Actions. Both
 send you to `/library` afterwards; `/dashboard` only redirects there. The create-account page
 validates per field with the same rule as the server and falls back to a banner for an error it
-cannot place. Design: [public-pages.md](../designs/public-pages.md).
+cannot place. Design: [public-pages.md](../designs/public-pages.md). While `/me` is
+unanswered, `AppFrame` shows `AuthLoading` (a spinner, then after five seconds a note that the
+server may be waking up) on every path except `/`, `/login`, `/register` and `/privacy`, which
+draw at once — Render's free tier can take up to a minute to answer after a pause. Design:
+[auth-loading-state.md](../designs/auth-loading-state.md).
 
 **Why not Next.js's own auth pattern** (Server Actions + `next/headers` `cookies()` + Proxy):
 that model assumes Next.js itself issues and reads the session cookie. Here the session is
@@ -60,7 +64,7 @@ issued by a separate Express origin. On `localhost` a host-only cookie happens t
 so it would appear to work in dev — but Stage 10 deploys the two to different real domains
 (Vercel, Render), where a Next.js server process could never read it. Route protection is
 client-side only: `AuthProvider` redirects on `status === "anonymous"`. This is a UX trade-off
-(a flash of blank page before the redirect), not a security one — `requireAuth` still gates
+(a short wait, with a loading message, before the redirect), not a security one — `requireAuth` still gates
 every API response regardless of what the page shows. With the Stage 10 rewrites (below) the
 cookie ends up on the Next.js origin, but Express still issues and checks it, so the
 client-side model stays.
