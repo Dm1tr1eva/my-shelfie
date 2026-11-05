@@ -1,5 +1,5 @@
 const { z } = require("zod");
-const { OWNERSHIP, FORMATS, LINK_LANGUAGES } = require("../constants/library");
+const { OWNERSHIP, FORMATS, LINK_KINDS, LINK_LANGUAGES } = require("../constants/library");
 const { genreList, genreName } = require("./genre");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
@@ -7,6 +7,7 @@ const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
 
 const linkSchema = z
   .object({
+    kind: z.enum(LINK_KINDS).optional(),
     language: z.enum(LINK_LANGUAGES),
     url: z.httpUrl(),
   })

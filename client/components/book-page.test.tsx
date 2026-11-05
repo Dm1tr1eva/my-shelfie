@@ -170,7 +170,62 @@ describe("BookPage", () => {
         path: "/api/books/b1",
         body: {
           ownership: "wanted",
-          links: [{ language: "ru", url: "https://www.labirint.ru/books/1" }],
+          links: [{ kind: "paper", language: "ru", url: "https://www.labirint.ru/books/1" }],
+        },
+      }),
+    );
+  });
+
+  it("groups the links of a wishlist book by what they lead to, each with its language", async () => {
+    const wanted = book({
+      id: "w1",
+      title: "Wanted",
+      ownership: "wanted",
+      links: [
+        { kind: "online", language: "en", url: "https://read.example/book" },
+        { kind: "paper", language: "uk", url: "https://shop.example/paper" },
+        { kind: "free", language: "ru", url: "https://library.example/free" },
+      ],
+    });
+    mockApi(({ path }) => {
+      if (path === "/api/books/w1") return { body: wanted };
+      if (path.startsWith("/api/books")) return booksResponse([wanted]);
+      if (path === "/api/series") return { body: { series: [] } };
+    });
+    renderApp(<BookPage id="w1" />);
+
+    const section = (await screen.findByRole("heading", { name: "Where to get it" })).closest(
+      "section",
+    ) as HTMLElement;
+    const text = section.textContent ?? "";
+
+    expect(text.indexOf("Buy paper")).toBeGreaterThan(-1);
+    expect(text.indexOf("Buy paper")).toBeLessThan(text.indexOf("Free e-book download"));
+    expect(text.indexOf("Free e-book download")).toBeLessThan(text.indexOf("Read online"));
+    expect(text).not.toContain("Buy e-book");
+    expect(within(section).getByRole("link", { name: /library\.example/ })).toHaveTextContent("RU");
+  });
+
+  it("saves a link with the kind you chose, as well as its language", async () => {
+    const calls = serve();
+    renderApp(<BookPage id="b1" />);
+    await screen.findByRole("heading", { name: "Ash One" });
+    fireEvent.click(screen.getByRole("radio", { name: "Wishlist" }));
+
+    choose(screen.getByRole("combobox", { name: "Link kind" }), "Read online");
+    fireEvent.change(screen.getByLabelText("Shop URL"), {
+      target: { value: "https://read.example/ash" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Add link" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "PATCH",
+        path: "/api/books/b1",
+        body: {
+          ownership: "wanted",
+          links: [{ kind: "online", language: "uk", url: "https://read.example/ash" }],
         },
       }),
     );
@@ -236,13 +291,13 @@ describe("BookPage", () => {
     renderApp(<BookPage id="b1" />);
     await screen.findByRole("heading", { name: "Ash One" });
 
-    expect(screen.queryByRole("heading", { name: "Where to buy" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Where to get it" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio", { name: "Wishlist" }));
-    expect(screen.getByRole("heading", { name: "Where to buy" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Where to get it" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("radio", { name: "In my library" }));
-    expect(screen.queryByRole("heading", { name: "Where to buy" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Where to get it" })).not.toBeInTheDocument();
   });
 
   it("offers to add the next book of the series it belongs to", async () => {

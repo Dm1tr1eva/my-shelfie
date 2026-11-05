@@ -124,7 +124,10 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   that name is offered instead of a duplicate)
 - Library and Wishlist show standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
-  the next number); "Where to buy" shows for a wishlist book only.
+  the next number); "Where to get it" shows for a wishlist book only: its links grouped by what they lead to
+  (Buy paper, Buy e-book, Free e-book download, Read online), each with a language badge, and
+  the same four kinds as a chip on every link in Next to buy and as a "Link type" filter —
+  [../designs/link-kinds.md](../designs/link-kinds.md).
 - Every cover of a saved book carries a round mark in its top-right corner, an open book for
   paper and an e-reader for an e-book (the `format` prop of `BookCover`). The mark is a
   `role="img"` labelled "Paper book" or "E-book", so the format is also in words. It shows in

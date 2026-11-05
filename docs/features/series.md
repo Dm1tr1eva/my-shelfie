@@ -82,7 +82,7 @@ characters each), `annotation` (up to 5000 characters), `tagsMerged` (internal),
 index `{ userId, createdAt }`.
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (the same
-rule as on a series, in `validation/genre.js`), `tropes`, `links` (`{ language, url }`, http(s)
+rule as on a series, in `validation/genre.js`), `tropes`, `links` (`{ kind, language, url }` with `kind` one of `paper | ebook | free | online`, default `paper`, http(s)
 only), `notes` and `annotation`; index `{ userId, seriesId, seriesNumber }`. The
 client offers a list of defaults (`DEFAULT_GENRES` in `lib/books.ts`) plus every genre
 the user's own books and series use (`lib/genres.ts`), and a field to add another.

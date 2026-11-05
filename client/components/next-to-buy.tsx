@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { BookCover } from "@/components/book-cover";
-import { GapChip, LangBadge, SeriesStatusChip } from "@/components/chips";
+import { GapChip, LangBadge, LinkKindBadge, SeriesStatusChip } from "@/components/chips";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { FilterBar } from "@/components/filter-bar";
@@ -75,6 +75,7 @@ function Row({
                   rel="noopener noreferrer"
                   className="inline-flex min-h-11 items-center gap-2 rounded-control bg-page px-2 text-sm font-medium text-navy"
                 >
+                  <LinkKindBadge kind={link.kind} />
                   <LangBadge language={link.language} />
                   {hostOf(link.url)}
                   <ExternalLinkIcon size={14} />

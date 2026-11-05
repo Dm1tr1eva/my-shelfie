@@ -2,6 +2,7 @@ const OWNERSHIP = ["owned", "wanted"];
 const FORMATS = ["paper", "ebook"];
 const SERIES_STATUSES = ["ongoing", "readable", "complete", "unknown"];
 const LINK_LANGUAGES = ["ru", "uk", "en", "other"];
+const LINK_KINDS = ["paper", "ebook", "free", "online"];
 const GENRE_NAME_MAX = 40;
 const GENRES_MAX = 12;
 
@@ -10,6 +11,7 @@ module.exports = {
   FORMATS,
   SERIES_STATUSES,
   LINK_LANGUAGES,
+  LINK_KINDS,
   GENRE_NAME_MAX,
   GENRES_MAX,
 };

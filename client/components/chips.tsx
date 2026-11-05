@@ -1,7 +1,9 @@
 import {
+  LINK_KINDS,
   LINK_LANGUAGES,
   OWNERSHIP_LABELS,
   SERIES_STATUS_LABELS,
+  type LinkKind,
   type LinkLanguage,
   type Ownership,
   type SeriesStatus,
@@ -48,6 +50,34 @@ export function GenreChip({ genre }: { genre: string }) {
 
 export function TropeChip({ trope }: { trope: string }) {
   return <span className="chip border border-slate bg-card text-ink">{trope}</span>;
+}
+
+const KIND_CLASSES: Record<LinkKind, string> = {
+  paper: "bg-navy text-page",
+  ebook: "bg-mist text-navy",
+  free: "bg-success text-card",
+  online: "bg-slate text-ink",
+};
+
+export function LinkKindBadge({
+  kind,
+  decorative = false,
+}: {
+  kind: LinkKind;
+  decorative?: boolean;
+}) {
+  const info = LINK_KINDS.find((item) => item.value === kind);
+
+  return (
+    <span
+      title={info?.label}
+      aria-hidden={decorative || undefined}
+      className={`inline-flex items-center justify-center rounded-[5px] px-1.5 py-0.5 text-xs font-bold ${KIND_CLASSES[kind]}`}
+    >
+      <span aria-hidden="true">{info?.short ?? kind}</span>
+      {!decorative && <span className="sr-only">{info?.label ?? kind}</span>}
+    </span>
+  );
 }
 
 export function LangBadge({ language }: { language: LinkLanguage }) {

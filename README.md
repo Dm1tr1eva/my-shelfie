@@ -46,7 +46,8 @@ least one book, it offers:
    **Add this book** action;
 3. then the standalone books on your wishlist, newest first.
 
-Each row shows the shop links you saved, marked RU, UK, EN or other, and **I bought it** moves
+Each row shows the links you saved, marked by language (RU, UK, EN or other) and by what they
+lead to (buy the paper book, buy the e-book, download it free, read it online), and **I bought it** moves
 the book into your library. Filters narrow the list in the browser. A series you own nothing of
 is not listed: you have not started it. The code is `server/services/nextToBuy.js`, and its
 behaviour is pinned by tests.

@@ -328,7 +328,7 @@ describe("AddDetails", () => {
       const calls = serveBook(target);
       renderApp(<AddDetails id="w1" />);
 
-      expect(await screen.findByText("Shop links")).toBeInTheDocument();
+      expect(await screen.findByText("Links")).toBeInTheDocument();
       fireEvent.change(screen.getByLabelText("URL of link 1"), {
         target: { value: "https://shop.example/w" },
       });
@@ -339,7 +339,7 @@ describe("AddDetails", () => {
           expect.objectContaining({
             method: "PATCH",
             body: expect.objectContaining({
-              links: [{ language: "uk", url: "https://shop.example/w" }],
+              links: [{ kind: "paper", language: "uk", url: "https://shop.example/w" }],
             }),
           }),
         ),
@@ -350,13 +350,13 @@ describe("AddDetails", () => {
       const target = book({
         id: "o1",
         title: "Owned",
-        links: [{ language: "uk", url: "https://shop.example/o" }],
+        links: [{ kind: "paper", language: "uk", url: "https://shop.example/o" }],
       });
       const calls = serveBook(target);
       renderApp(<AddDetails id="o1" />);
 
       await screen.findByText("Genres");
-      expect(screen.queryByText("Shop links")).not.toBeInTheDocument();
+      expect(screen.queryByText("Links")).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "Save details" }));
 

@@ -1,13 +1,20 @@
-import { LINK_LANGUAGES, type Book } from "./books";
+import { LINK_KINDS, LINK_LANGUAGES, type Book } from "./books";
 import { SERIES_STATUS_LABELS, SERIES_STATUSES, type Series } from "./series";
 
-export type FilterKey = "genre" | "trope" | "status" | "author" | "language";
+export type FilterKey = "genre" | "trope" | "status" | "author" | "language" | "kind";
 
-export const FILTER_KEYS: FilterKey[] = ["genre", "trope", "status", "author", "language"];
+export const FILTER_KEYS: FilterKey[] = ["genre", "trope", "status", "author", "language", "kind"];
 
 export type Filters = Record<FilterKey, string[]>;
 
-export const NO_FILTERS: Filters = { genre: [], trope: [], status: [], author: [], language: [] };
+export const NO_FILTERS: Filters = {
+  genre: [],
+  trope: [],
+  status: [],
+  author: [],
+  language: [],
+  kind: [],
+};
 
 export type Subject = { book?: Book; series?: Series };
 
@@ -26,6 +33,7 @@ const GROUP_LABELS: Record<FilterKey, string> = {
   status: "Series status",
   author: "Author",
   language: "Shop language",
+  kind: "Link type",
 };
 
 export function activeFilterCount(filters: Filters) {
@@ -47,6 +55,8 @@ function valuesOf(subject: Subject, key: FilterKey): string[] {
       return series?.author ? [series.author] : [];
     case "language":
       return book ? [...new Set(book.links.map((link) => link.language))] : [];
+    case "kind":
+      return book ? [...new Set(book.links.map((link) => link.kind))] : [];
   }
 }
 
@@ -74,6 +84,7 @@ function labelOf(key: FilterKey, value: string) {
   if (key === "language") {
     return LINK_LANGUAGES.find((language) => language.value === value)?.name ?? value;
   }
+  if (key === "kind") return LINK_KINDS.find((kind) => kind.value === value)?.label ?? value;
   return value;
 }
 
@@ -88,6 +99,9 @@ function orderOf(key: FilterKey, values: string[]) {
     return LINK_LANGUAGES.map((language) => language.value as string).filter((value) =>
       values.includes(value),
     );
+  }
+  if (key === "kind") {
+    return LINK_KINDS.map((kind) => kind.value as string).filter((value) => values.includes(value));
   }
   return null;
 }
@@ -138,5 +152,6 @@ export function chipLabel(key: FilterKey, value: string) {
   const label = labelOf(key, value);
   if (key === "language") return `Shop language: ${badgeOf(key, value) ?? label}`;
   if (key === "status") return `Series: ${label}`;
+  if (key === "kind") return `Link: ${label}`;
   return label;
 }

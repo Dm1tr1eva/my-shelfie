@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BookCover } from "@/components/book-cover";
-import { GenreChip, LangBadge, TropeChip } from "@/components/chips";
+import { GenreChip, LangBadge, LinkKindBadge, TropeChip } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
 import { RowsSkeleton } from "@/components/skeleton";
 import {
@@ -20,7 +20,8 @@ import { SeriesPicker, type SeriesChoice } from "@/components/series-picker";
 import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
 import {
-  LINK_LANGUAGES,
+  LINK_KINDS,
+  LINK_KIND_OPTIONS,
   LINK_LANGUAGE_OPTIONS,
   useBook,
   useBookActions,
@@ -29,6 +30,7 @@ import {
   type BookChanges,
   type BookStatus,
   type Genre,
+  type LinkKind,
   type LinkLanguage,
   type Format,
   type Ownership,
@@ -104,6 +106,7 @@ function BookForm({ book }: { book: Book }) {
   const [draft, setDraft] = useState<Draft>(() => draftOf(book));
   const [editingTags, setEditingTags] = useState(false);
   const [editingSeries, setEditingSeries] = useState(false);
+  const [newKind, setNewKind] = useState<LinkKind>("paper");
   const [newLanguage, setNewLanguage] = useState<LinkLanguage>("uk");
   const [newUrl, setNewUrl] = useState("");
   const [linkError, setLinkError] = useState(false);
@@ -155,14 +158,16 @@ function BookForm({ book }: { book: Book }) {
       setLinkError(true);
       return;
     }
-    patch({ links: [...draft.links, { language: newLanguage, url: newUrl.trim() }] });
+    patch({
+      links: [...draft.links, { kind: newKind, language: newLanguage, url: newUrl.trim() }],
+    });
     setNewUrl("");
     setLinkError(false);
   }
 
-  const linkGroups = LINK_LANGUAGES.map((language) => ({
-    language,
-    links: draft.links.filter((link) => link.language === language.value),
+  const linkGroups = LINK_KINDS.map((kind) => ({
+    kind,
+    links: draft.links.filter((link) => link.kind === kind.value),
   })).filter((group) => group.links.length > 0);
 
   return (
@@ -306,7 +311,7 @@ function BookForm({ book }: { book: Book }) {
             <section aria-labelledby="buy-heading" className="card flex flex-col gap-4 p-5">
               <div className="flex items-baseline justify-between gap-3">
                 <h2 id="buy-heading" className="text-2xl font-semibold">
-                  Where to buy
+                  Where to get it
                 </h2>
                 <span className="text-sm text-muted">
                   {draft.links.length} {draft.links.length === 1 ? "link" : "links"}
@@ -316,10 +321,10 @@ function BookForm({ book }: { book: Book }) {
               {linkGroups.length === 0 && <p className="text-muted">No links yet.</p>}
 
               {linkGroups.map((group) => (
-                <div key={group.language.value} className="flex flex-col gap-2">
+                <div key={group.kind.value} className="flex flex-col gap-2">
                   <p className="flex items-center gap-2 font-semibold">
-                    <LangBadge language={group.language.value} />
-                    {group.language.name}
+                    <LinkKindBadge kind={group.kind.value} decorative />
+                    {group.kind.label}
                   </p>
                   <ul className="flex flex-col gap-2">
                     {group.links.map((link) => (
@@ -330,6 +335,7 @@ function BookForm({ book }: { book: Book }) {
                           rel="noopener noreferrer"
                           className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-control bg-page px-3 font-medium text-navy"
                         >
+                          <LangBadge language={link.language} />
                           {hostOf(link.url)}
                           <ExternalLinkIcon size={16} />
                         </a>
@@ -351,6 +357,14 @@ function BookForm({ book }: { book: Book }) {
 
               <div className="flex flex-col gap-2 border-t border-mist pt-4">
                 <div className="flex flex-col gap-2 sm:flex-row">
+                  <Select
+                    label="Link kind"
+                    hideLabel
+                    className="sm:w-36"
+                    value={newKind}
+                    onChange={(value) => setNewKind(value as LinkKind)}
+                    options={LINK_KIND_OPTIONS}
+                  />
                   <Select
                     label="Link language"
                     hideLabel

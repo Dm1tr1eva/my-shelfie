@@ -45,7 +45,7 @@ function DetailsForm({ book }: { book: Book }) {
   const [pickedGenres, setPickedGenres] = useState<Genre[] | null>(null);
   const [pickedTropes, setPickedTropes] = useState<string[] | null>(null);
   const [rows, setRows] = useState<LinkRow[]>(
-    book.links.length > 0 ? book.links : [{ language: "uk", url: "" }],
+    book.links.length > 0 ? book.links : [{ kind: "paper", language: "uk", url: "" }],
   );
   const [pending, setPending] = useState(false);
   const [newSeriesPending, setNewSeriesPending] = useState(false);

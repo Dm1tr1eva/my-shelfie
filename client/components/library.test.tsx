@@ -157,7 +157,7 @@ describe("Library", () => {
       seriesId: "saga",
       seriesNumber: 1,
       genres: ["Fantasy"],
-      links: [{ language: "uk", url: "https://a.example/1" }],
+      links: [{ kind: "paper", language: "uk", url: "https://a.example/1" }],
     });
     const FANTASY_THREE = book({
       id: "f3",

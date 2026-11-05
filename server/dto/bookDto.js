@@ -24,7 +24,11 @@ function toBookDto(book, series) {
     format: book.format,
     genres: shared ? (shared.genres ?? []) : (book.genres ?? []),
     tropes: shared ? (shared.tropes ?? []) : (book.tropes ?? []),
-    links: (book.links ?? []).map((link) => ({ language: link.language, url: link.url })),
+    links: (book.links ?? []).map((link) => ({
+      kind: link.kind,
+      language: link.language,
+      url: link.url,
+    })),
     createdAt: book.createdAt,
     updatedAt: book.updatedAt,
   };

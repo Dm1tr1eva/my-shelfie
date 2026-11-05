@@ -51,17 +51,60 @@ function series(overrides: Partial<Series> = {}): Series {
 const subjectOf = (item: Subject) => item;
 const only = (patch: Partial<Filters>): Filters => ({ ...NO_FILTERS, ...patch });
 
+describe("filters by what a link leads to", () => {
+  const paper = book({
+    title: "P",
+    links: [
+      { kind: "ebook", language: "uk", url: "https://e.example" },
+      { kind: "paper", language: "uk", url: "https://p.example" },
+    ],
+  });
+  const mixed = book({
+    title: "M",
+    links: [
+      { kind: "online", language: "en", url: "https://o.example" },
+      { kind: "free", language: "en", url: "https://f.example" },
+    ],
+  });
+  const none = book({ title: "N" });
+  const items: Subject[] = [paper, mixed, none].map((item) => ({ book: item }));
+
+  it("keeps the books that have a link of a chosen kind", () => {
+    const kept = applyFilters(items, subjectOf, only({ kind: ["free"] }));
+
+    expect(kept.map((item) => item.book?.title)).toEqual(["M"]);
+  });
+
+  it("lists the kinds in the fixed order with a count of the books for each", () => {
+    const group = buildFilterGroups(items, subjectOf, NO_FILTERS).find(
+      (item) => item.key === "kind",
+    );
+
+    expect(group?.label).toBe("Link type");
+    expect(group?.options.map((option) => [option.value, option.label, option.count])).toEqual([
+      ["paper", "Buy paper", 1],
+      ["ebook", "Buy e-book", 1],
+      ["free", "Free e-book download", 1],
+      ["online", "Read online", 1],
+    ]);
+  });
+
+  it("writes a chip for it", () => {
+    expect(chipLabel("kind", "online")).toBe("Link: Read online");
+  });
+});
+
 describe("filters", () => {
   const fantasyUk = book({
     title: "A",
     genres: ["Fantasy" as Genre],
-    links: [{ language: "uk", url: "https://a.example" }],
+    links: [{ kind: "paper", language: "uk", url: "https://a.example" }],
     author: "Maas",
   });
   const romanceRu = book({
     title: "B",
     genres: ["Romance" as Genre],
-    links: [{ language: "ru", url: "https://b.example" }],
+    links: [{ kind: "paper", language: "ru", url: "https://b.example" }],
     author: "Collins",
   });
   const both = book({
@@ -69,8 +112,8 @@ describe("filters", () => {
     genres: ["Fantasy" as Genre, "Romance" as Genre],
     tropes: ["slow burn"],
     links: [
-      { language: "uk", url: "https://c.example" },
-      { language: "ru", url: "https://c2.example" },
+      { kind: "paper", language: "uk", url: "https://c.example" },
+      { kind: "paper", language: "ru", url: "https://c2.example" },
     ],
     author: "Maas",
   });

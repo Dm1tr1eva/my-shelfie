@@ -304,7 +304,9 @@ describe("library fields on books", () => {
     assert.equal(fetched.body.seriesNumber, 2);
     assert.deepEqual(fetched.body.genres, ["Fantasy", "Romantasy"]);
     assert.deepEqual(fetched.body.tropes, ["Enemies to lovers"]);
-    assert.deepEqual(fetched.body.links, [{ language: "ru", url: "https://shop.example/ru/book" }]);
+    assert.deepEqual(fetched.body.links, [
+      { kind: "paper", language: "ru", url: "https://shop.example/ru/book" },
+    ]);
     assert.equal(fetched.body.notes, "wait for the sale");
     assert.equal(fetched.body.annotation, "my own words");
   });
@@ -564,6 +566,58 @@ describe("library fields on books", () => {
     assert.equal(response.status, 200);
     assert.equal(response.body.seriesId, undefined);
     assert.equal(response.body.seriesNumber, undefined);
+  });
+
+  it("keeps what each link leads to: paper, e-book, free download or reading online", async () => {
+    const alice = await signIn("alice@example.com");
+    const links = [
+      { kind: "paper", language: "uk", url: "https://shop.example/paper" },
+      { kind: "ebook", language: "uk", url: "https://shop.example/ebook" },
+      { kind: "free", language: "en", url: "https://library.example/free" },
+      { kind: "online", language: "en", url: "https://read.example/online" },
+    ];
+
+    const book = await addBook(alice, { ownership: "wanted", links });
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.deepEqual(fetched.body.links, links);
+  });
+
+  it("makes a link a paper book link when it does not say, and reads old links that way too", async () => {
+    const alice = await signIn("alice@example.com");
+    const me = await api("/api/auth/me", { cookie: alice });
+
+    const book = await addBook(alice, {
+      ownership: "wanted",
+      links: [{ language: "uk", url: "https://shop.example/new" }],
+    });
+    const { insertedId } = await Book.collection.insertOne({
+      userId: new Book.base.Types.ObjectId(me.body.id),
+      title: "Old",
+      author: "Old",
+      ownership: "wanted",
+      links: [{ language: "ru", url: "https://shop.example/old" }],
+    });
+    const old = await api(`/api/books/${insertedId}`, { cookie: alice });
+
+    assert.equal(book.links[0].kind, "paper");
+    assert.equal(old.body.links[0].kind, "paper");
+  });
+
+  it("rejects a link kind that is not one of the four", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const response = await api("/api/books", {
+      method: "POST",
+      cookie: alice,
+      body: {
+        title: "X",
+        author: "Y",
+        links: [{ kind: "audio", language: "uk", url: "https://shop.example" }],
+      },
+    });
+
+    assert.equal(response.status, 400);
   });
 
   it("empties the tags and links with an empty array", async () => {

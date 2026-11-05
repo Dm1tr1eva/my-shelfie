@@ -7,15 +7,17 @@ import { useAuth } from "./auth-context";
 import {
   FORMAT_LABELS,
   FORMATS,
+  LINK_KINDS,
   LINK_LANGUAGES,
   OWNERSHIP_LABELS,
   type Format,
+  type LinkKind,
   type LinkLanguage,
   type Ownership,
 } from "./catalogue-constants";
 
-export { FORMAT_LABELS, FORMATS, LINK_LANGUAGES, OWNERSHIP_LABELS };
-export type { Format, LinkLanguage, Ownership };
+export { FORMAT_LABELS, FORMATS, LINK_KINDS, LINK_LANGUAGES, OWNERSHIP_LABELS };
+export type { Format, LinkKind, LinkLanguage, Ownership };
 export type BookStatus = "want" | "reading" | "dropped" | "read";
 
 export const STATUS_LABELS: Record<BookStatus, string> = {
@@ -26,6 +28,12 @@ export const STATUS_LABELS: Record<BookStatus, string> = {
 };
 
 export const STATUSES = Object.keys(STATUS_LABELS) as BookStatus[];
+
+export const LINK_KIND_OPTIONS = LINK_KINDS.map((kind) => ({
+  value: kind.value,
+  label: kind.label,
+  short: kind.short,
+}));
 
 export const LINK_LANGUAGE_OPTIONS = LINK_LANGUAGES.map((language) => ({
   value: language.value,
@@ -53,7 +61,7 @@ export type Genre = string;
 export const MAX_GENRES = 12;
 export const MAX_GENRE_LENGTH = 40;
 
-export type ShopLink = { language: LinkLanguage; url: string };
+export type ShopLink = { kind: LinkKind; language: LinkLanguage; url: string };
 
 export type Book = {
   id: string;

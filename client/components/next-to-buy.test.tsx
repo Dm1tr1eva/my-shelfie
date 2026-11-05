@@ -18,7 +18,7 @@ const WANTED_TWO = book({
   seriesId: "saga",
   seriesNumber: 2,
   ownership: "wanted",
-  links: [{ language: "uk", url: "https://www.yakaboo.ua/ash-two" }],
+  links: [{ kind: "paper", language: "uk", url: "https://www.yakaboo.ua/ash-two" }],
 });
 const STANDALONE = book({
   id: "wish",
@@ -80,6 +80,44 @@ describe("NextToBuy", () => {
 
     expect(within(fromSeries).getByRole("img", { name: "Paper book" })).toBeInTheDocument();
     expect(within(standalone).getByRole("img", { name: "E-book" })).toBeInTheDocument();
+  });
+
+  it("says on each link whether it is a shop for paper, a shop for e-books, a free download or a page to read", async () => {
+    mockApi(({ path }) => {
+      if (path.startsWith("/api/next-to-buy")) {
+        return {
+          body: {
+            items: [
+              {
+                type: "standalone",
+                gap: false,
+                book: book({
+                  id: "x",
+                  title: "Many ways",
+                  ownership: "wanted",
+                  links: [
+                    { kind: "paper", language: "uk", url: "https://shop.example/p" },
+                    { kind: "ebook", language: "uk", url: "https://shop.example/e" },
+                    { kind: "free", language: "en", url: "https://free.example/f" },
+                    { kind: "online", language: "en", url: "https://read.example/o" },
+                  ],
+                }),
+              },
+            ],
+          },
+        };
+      }
+      if (path.startsWith("/api/books")) return booksResponse([]);
+    });
+    renderApp(<NextToBuy />);
+
+    const row = (await screen.findByRole("link", { name: "Many ways" })).closest(
+      "li",
+    ) as HTMLElement;
+
+    for (const name of ["Buy paper", "Buy e-book", "Free e-book download", "Read online"]) {
+      expect(within(row).getByText(name)).toBeInTheDocument();
+    }
   });
 
   it("moves a book to the library when you say you bought it", async () => {

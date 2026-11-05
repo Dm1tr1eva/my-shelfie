@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
-const { OWNERSHIP, FORMATS, LINK_LANGUAGES } = require("../constants/library");
+const { OWNERSHIP, FORMATS, LINK_KINDS, LINK_LANGUAGES } = require("../constants/library");
 
 const linkSchema = new mongoose.Schema(
   {
+    kind: { type: String, enum: LINK_KINDS, default: "paper" },
     language: { type: String, enum: LINK_LANGUAGES, required: true },
     url: { type: String, required: true },
   },
