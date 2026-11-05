@@ -10,6 +10,7 @@ import { CheckIcon } from "@/components/icons";
 
 const SERIES_STATUS_CLASSES: Record<SeriesStatus, string> = {
   ongoing: "bg-navy text-page",
+  readable: "bg-success text-card",
   complete: "bg-ink text-page",
   unknown: "bg-beige text-ink-soft",
 };

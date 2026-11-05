@@ -87,6 +87,8 @@ In order:
      [designs/auth-loading-state.md](designs/auth-loading-state.md)
    - ✅ **Genres of your own, 2026-11-05:** a free-text genre field next to the default list —
      [designs/custom-genres.md](designs/custom-genres.md)
+   - ✅ **A "readable now" state for series, 2026-11-06:** still coming out, but the books out so
+     far end well enough to read — [designs/readable-series.md](designs/readable-series.md)
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console

@@ -180,5 +180,6 @@ describe("filters", () => {
     expect(chipLabel("genre", "Romantasy")).toBe("Romantasy");
     expect(chipLabel("language", "uk")).toBe("Shop language: UK");
     expect(chipLabel("status", "ongoing")).toBe("Series: Ongoing");
+    expect(chipLabel("status", "readable")).toBe("Series: Readable now");
   });
 });

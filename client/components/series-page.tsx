@@ -113,7 +113,9 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
         <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-          {SERIES_STATUS_LABELS[series.status]} series
+          {series.status === "readable"
+            ? "Ongoing series, readable now"
+            : `${SERIES_STATUS_LABELS[series.status]} series`}
         </p>
         <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{series.title}</h1>
         {(series.author || series.note) && (

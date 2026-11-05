@@ -208,6 +208,13 @@ describe("SeriesPage", () => {
     expect(await screen.findByText("Complete series")).toBeInTheDocument();
   });
 
+  it("names a readable series as still coming out and readable now, with a chip of its own", async () => {
+    serve({ ...SAGA, status: "readable" });
+    renderApp(<SeriesPage id="saga" />);
+
+    expect(await screen.findByText("Ongoing series, readable now")).toBeInTheDocument();
+  });
+
   it("opens the edit form from the note link", async () => {
     serve({ ...SAGA, note: "book 6 delayed" });
     renderApp(<SeriesPage id="saga" />);

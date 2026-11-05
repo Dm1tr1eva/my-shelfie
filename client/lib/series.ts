@@ -19,6 +19,7 @@ export const SERIES_STATUS_OPTIONS = SERIES_STATUSES.map((value) => ({
 
 export const SERIES_STATE_CHOICES: { value: SeriesStatus; label: string }[] = [
   { value: "ongoing", label: "Still coming out" },
+  { value: "readable", label: "Still coming out, but readable now" },
   { value: "complete", label: "Finished" },
   { value: "unknown", label: "Don't know" },
 ];

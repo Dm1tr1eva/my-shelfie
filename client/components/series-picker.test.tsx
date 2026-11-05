@@ -165,6 +165,21 @@ describe("SeriesPicker", () => {
     expect(screen.getByRole("button", { name: "Mark as standalone" })).toBeInTheDocument();
   });
 
+  it("lets you say a series is still coming out but already readable", async () => {
+    const { onCreate } = setup({ suggestion: { title: "Reaper", author: "Someone" } });
+
+    fireEvent.click(screen.getByRole("radio", { name: "Still coming out, but readable now" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create series" }));
+
+    await waitFor(() =>
+      expect(onCreate).toHaveBeenCalledWith({
+        title: "Reaper",
+        author: "Someone",
+        status: "readable",
+      }),
+    );
+  });
+
   it("asks whether the series is finished with pills and sends the pill you pick", async () => {
     const { onCreate } = setup({ suggestion: { title: "Reaper", author: "Someone" } });
 

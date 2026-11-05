@@ -1,6 +1,6 @@
 const OWNERSHIP = ["owned", "wanted"];
 const FORMATS = ["paper", "ebook"];
-const SERIES_STATUSES = ["ongoing", "complete", "unknown"];
+const SERIES_STATUSES = ["ongoing", "readable", "complete", "unknown"];
 const LINK_LANGUAGES = ["ru", "uk", "en", "other"];
 const GENRE_NAME_MAX = 40;
 const GENRES_MAX = 12;

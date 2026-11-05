@@ -207,6 +207,36 @@ describe("series API", () => {
     assert.equal(updated.body.note, undefined);
   });
 
+  it("keeps a series that is still coming out but can be read now, and filters what to buy by it", async () => {
+    const alice = await signIn("alice@example.com");
+    const readable = await addSeries(alice, { title: "Readable", status: "readable" });
+    const ongoing = await addSeries(alice, { title: "Cliffhanger", status: "ongoing" });
+    await addBook(alice, { title: "R1", seriesId: readable.id, seriesNumber: 1 });
+    await addBook(alice, {
+      title: "R2",
+      seriesId: readable.id,
+      seriesNumber: 2,
+      ownership: "wanted",
+    });
+    await addBook(alice, { title: "O1", seriesId: ongoing.id, seriesNumber: 1 });
+    await addBook(alice, {
+      title: "O2",
+      seriesId: ongoing.id,
+      seriesNumber: 2,
+      ownership: "wanted",
+    });
+
+    const fetched = await api(`/api/series/${readable.id}`, { cookie: alice });
+    const filtered = await api("/api/next-to-buy?seriesStatus=readable", { cookie: alice });
+
+    assert.equal(readable.status, "readable");
+    assert.equal(fetched.body.series.status, "readable");
+    assert.deepEqual(
+      filtered.body.items.map((item) => item.book.title),
+      ["R2"],
+    );
+  });
+
   it("stores how many books a series has and clears it with null", async () => {
     const alice = await signIn("alice@example.com");
     const series = await addSeries(alice, { totalBooks: 5 });

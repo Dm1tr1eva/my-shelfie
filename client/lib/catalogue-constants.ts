@@ -1,7 +1,7 @@
 export type Ownership = "owned" | "wanted";
 export type Format = "paper" | "ebook";
 export type LinkLanguage = "ru" | "uk" | "en" | "other";
-export type SeriesStatus = "ongoing" | "complete" | "unknown";
+export type SeriesStatus = "ongoing" | "readable" | "complete" | "unknown";
 
 export const OWNERSHIP_LABELS: Record<Ownership, string> = {
   owned: "In my library",
@@ -24,6 +24,7 @@ export const LINK_LANGUAGES: { value: LinkLanguage; badge: string; name: string 
 
 export const SERIES_STATUS_LABELS: Record<SeriesStatus, string> = {
   ongoing: "Ongoing",
+  readable: "Readable now",
   complete: "Complete",
   unknown: "Unknown",
 };

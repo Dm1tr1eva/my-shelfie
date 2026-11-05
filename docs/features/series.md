@@ -75,7 +75,8 @@ as a dashed tile from the series' numbers.
 ## Data
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
-(`ongoing | complete | unknown`), `note`, `totalBooks` (optional whole number, 1 to 200: how
+(`ongoing | readable | complete | unknown`; `readable` is a series still coming out whose books so
+out far can be read as they are, see [../designs/readable-series.md](../designs/readable-series.md)), `note`, `totalBooks` (optional whole number, 1 to 200: how
 many books the series has or has announced), `genres` (free text: 1 to 40 characters, up to 12, unique ignoring case), `tropes` (up to 30, 60
 characters each), `annotation` (up to 5000 characters), `tagsMerged` (internal), timestamps;
 index `{ userId, createdAt }`.
