@@ -27,6 +27,9 @@ request after a pause can take up to a minute.
   wishlist and Next to buy.
 - **Reading.** A reading status (to read, reading, read, dropped), a rating from 1 to 5 and notes
   for each book.
+- **Install it.** Add the site to the home screen of a phone or tablet and it opens like an
+  app, without the browser bar: on Android use **Install app** in the account menu, on an iPhone
+  tap Share, then Add to Home Screen.
 - **Accounts.** Registration, login and logout; the session is a JWT in an `httpOnly` cookie.
   Every user sees only their own books.
 

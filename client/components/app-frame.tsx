@@ -13,7 +13,9 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
   return (
     <>
       {signedIn ? <AppNav /> : <PublicHeader showSignIn={status === "anonymous"} />}
-      <div className={`flex flex-1 flex-col ${signedIn ? "pb-[100px] md:pb-0" : ""}`}>
+      <div
+        className={`flex flex-1 flex-col ${signedIn ? "pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0" : ""}`}
+      >
         {children}
         <SiteFooter />
       </div>

@@ -76,6 +76,10 @@ In order:
    - ✅ **Paper or e-book mark and a favicon, 2026-10-17:** `Book.format`, a badge on every
      cover, a format choice on the book page and the details step —
      [designs/book-format.md](designs/book-format.md)
+   - ✅ **Installable as an app, 2026-11-02:** a web app manifest, icons, theme colour, safe
+     areas for the iPhone home indicator and an Install app action in the account menu —
+     [designs/install-as-app.md](designs/install-as-app.md). Checked in a browser: no manifest or
+     installability errors; still to try on a real iPhone and an Android tablet
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console

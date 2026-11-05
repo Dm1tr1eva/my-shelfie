@@ -44,7 +44,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-20 grid h-[78px] grid-cols-5 items-center bg-navy px-2 text-page md:hidden"
+      className="fixed inset-x-0 bottom-0 z-20 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-5 items-center bg-navy px-2 pb-[env(safe-area-inset-bottom)] text-page md:hidden"
     >
       {ITEMS.map((item) => (
         <TabLink key={item.href} {...item} active={isActive(item.href)} />

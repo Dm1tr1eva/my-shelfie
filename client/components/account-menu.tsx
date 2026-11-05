@@ -1,5 +1,6 @@
 "use client";
 
+import { InstallAction } from "@/components/install-action";
 import { useAuth } from "@/lib/auth-context";
 import { UserIcon } from "@/components/icons";
 
@@ -36,6 +37,7 @@ export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
         <button type="button" onClick={() => logout()} className="btn-outline mt-3 w-full">
           Log out
         </button>
+        <InstallAction />
       </div>
     </details>
   );

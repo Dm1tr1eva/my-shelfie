@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { mockApi, renderApp } from "@/test/helpers";
 import { AppFrame } from "./app-frame";
 
@@ -45,6 +45,31 @@ describe("AppFrame", () => {
     expect(next).toHaveAttribute("href", "/next");
     expect(add).toHaveAttribute("href", "/add");
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+  });
+
+  it("puts the install button in the account menu once the browser offers it", async () => {
+    mockApi(() => undefined);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+    await screen.findAllByRole("link", { name: "Wishlist" });
+
+    expect(screen.queryByRole("button", { name: "Install app" })).not.toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(
+        Object.assign(new Event("beforeinstallprompt", { cancelable: true }), {
+          prompt: vi.fn(),
+          userChoice: Promise.resolve({ outcome: "dismissed" }),
+        }),
+      );
+    });
+
+    expect((await screen.findAllByRole("button", { name: "Install app" })).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("sends a signed-in user to the home page from the logo", async () => {

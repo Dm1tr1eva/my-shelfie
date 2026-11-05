@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { AppFrame } from "@/components/app-frame";
 import { AuthProvider } from "@/lib/auth-context";
@@ -16,8 +16,14 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: { default: "my-shelfie", template: "%s · my-shelfie" },
-  description:
-    "A personal catalogue of the paper books you own, with a wishlist organised by series.",
+  description: "A home library and a wishlist for people who collect books in series.",
+  appleWebApp: { capable: true, title: "my-shelfie", statusBarStyle: "default" },
+  other: { "apple-mobile-web-app-capable": "yes" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#192b51",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
