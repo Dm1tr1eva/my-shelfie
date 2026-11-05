@@ -1,5 +1,6 @@
 const { z } = require("zod");
-const { SERIES_STATUSES, GENRES } = require("../constants/library");
+const { SERIES_STATUSES } = require("../constants/library");
+const { genreList } = require("./genre");
 
 const baseSeriesSchema = z
   .object({
@@ -8,11 +9,7 @@ const baseSeriesSchema = z
     status: z.enum(SERIES_STATUSES).optional(),
     note: z.string().max(2000).optional(),
     totalBooks: z.number().int().min(1).max(200).optional(),
-    genres: z
-      .array(z.enum(GENRES))
-      .max(GENRES.length)
-      .refine((genres) => new Set(genres).size === genres.length, "Genres must be unique")
-      .optional(),
+    genres: genreList.optional(),
     tropes: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
     annotation: z.string().max(5000).optional(),
   })

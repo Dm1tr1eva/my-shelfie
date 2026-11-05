@@ -423,22 +423,50 @@ describe("library fields on books", () => {
     assert.equal(response.status, 400);
   });
 
-  it("rejects an unknown genre and an unknown link language", async () => {
+  it("rejects an unknown link language", async () => {
     const alice = await signIn("alice@example.com");
 
-    const genre = await api("/api/books", {
-      method: "POST",
-      cookie: alice,
-      body: { title: "X", author: "Y", genres: ["Cooking"] },
-    });
     const language = await api("/api/books", {
       method: "POST",
       cookie: alice,
       body: { title: "X", author: "Y", links: [{ language: "fr", url: "https://shop.example" }] },
     });
 
-    assert.equal(genre.status, 400);
     assert.equal(language.status, 400);
+  });
+
+  it("keeps a genre of the user's own on a book, trimmed, next to the usual ones", async () => {
+    const alice = await signIn("alice@example.com");
+
+    const book = await addBook(alice, { genres: ["  Cosy mystery ", "Fantasy"] });
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.deepEqual(fetched.body.genres, ["Cosy mystery", "Fantasy"]);
+  });
+
+  it("rejects a blank genre, one over forty characters, a repeat in another letter case and more than twelve", async () => {
+    const alice = await signIn("alice@example.com");
+    const many = Array.from({ length: 13 }, (_, index) => `Genre ${index}`);
+
+    for (const genres of [[" "], ["x".repeat(41)], ["Cosy mystery", "cosy MYSTERY"], many]) {
+      const create = await api("/api/books", {
+        method: "POST",
+        cookie: alice,
+        body: { title: "X", author: "Y", genres },
+      });
+      assert.equal(create.status, 400, JSON.stringify(genres));
+    }
+  });
+
+  it("accepts exactly twelve genres and a name of forty characters", async () => {
+    const alice = await signIn("alice@example.com");
+    const twelve = Array.from({ length: 11 }, (_, index) => `Genre ${index}`).concat(
+      "y".repeat(40),
+    );
+
+    const book = await addBook(alice, { genres: twelve });
+
+    assert.equal(book.genres.length, 12);
   });
 
   it("clears the number too when PATCH takes a book out of its series", async () => {
@@ -579,14 +607,29 @@ describe("library fields on books", () => {
     assert.equal(response.body.books.length, 0);
   });
 
-  it("rejects an unknown ownership or genre filter", async () => {
+  it("rejects an unknown ownership and an empty or overlong genre filter", async () => {
     const alice = await signIn("alice@example.com");
 
     const ownership = await api("/api/books?ownership=borrowed", { cookie: alice });
-    const genre = await api("/api/books?genre=Cooking", { cookie: alice });
+    const empty = await api("/api/books?genre=", { cookie: alice });
+    const long = await api(`/api/books?genre=${"x".repeat(41)}`, { cookie: alice });
 
     assert.equal(ownership.status, 400);
-    assert.equal(genre.status, 400);
+    assert.equal(empty.status, 400);
+    assert.equal(long.status, 400);
+  });
+
+  it("lists by a genre the user made up", async () => {
+    const alice = await signIn("alice@example.com");
+    await addBook(alice, { title: "Murder at the Bakery", genres: ["Cosy mystery"] });
+    await addBook(alice, { title: "Dune", genres: ["Science fiction"] });
+
+    const response = await api("/api/books?genre=Cosy%20mystery", { cookie: alice });
+
+    assert.deepEqual(
+      response.body.books.map((book) => book.title),
+      ["Murder at the Bakery"],
+    );
   });
 
   it("lists the user's own tropes once each, sorted", async () => {
@@ -660,6 +703,20 @@ describe("next to buy API", () => {
     );
     assert.equal(response.body.items[0].series.title, "Saga");
     assert.equal(response.body.items[2].type, "standalone");
+  });
+
+  it("filters what to buy by a genre the user made up", async () => {
+    const alice = await signIn("alice@example.com");
+    await addBook(alice, { title: "Cosy", ownership: "wanted", genres: ["Cosy mystery"] });
+    await addBook(alice, { title: "Dune", ownership: "wanted", genres: ["Science fiction"] });
+
+    const response = await api("/api/next-to-buy?genre=Cosy%20mystery", { cookie: alice });
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      response.body.items.map((item) => item.book.title),
+      ["Cosy"],
+    );
   });
 
   it("lists the numbers of a series of known size that have no book yet", async () => {
@@ -780,17 +837,30 @@ describe("tags and description on the series", () => {
     assert.deepEqual(cleared.body.tropes, []);
   });
 
-  it("rejects an unknown genre, a duplicate genre and a trope that is too long", async () => {
+  it("rejects a duplicate genre in any letter case, a blank or overlong one and a trope that is too long", async () => {
     const alice = await signIn("alice@example.com");
 
     for (const body of [
-      { title: "X", genres: ["Cooking"] },
       { title: "X", genres: ["Fantasy", "Fantasy"] },
+      { title: "X", genres: ["Fantasy", "fantasy"] },
+      { title: "X", genres: [""] },
+      { title: "X", genres: ["x".repeat(41)] },
       { title: "X", tropes: ["x".repeat(61)] },
     ]) {
       const response = await api("/api/series", { method: "POST", cookie: alice, body });
       assert.equal(response.status, 400, JSON.stringify(body));
     }
+  });
+
+  it("keeps a genre of the user's own on a series and shows it on its books", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice, { genres: ["Litrpg", "Fantasy"] });
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1 });
+
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.deepEqual(series.genres, ["Litrpg", "Fantasy"]);
+    assert.deepEqual(fetched.body.genres, ["Litrpg", "Fantasy"]);
   });
 
   it("shows a book of a series the tags and description of the series wherever a book is returned", async () => {

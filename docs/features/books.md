@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-10-17
+**Last verified against code:** 2026-11-05
 
 ## What it does
 

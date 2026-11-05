@@ -33,7 +33,7 @@ export const LINK_LANGUAGE_OPTIONS = LINK_LANGUAGES.map((language) => ({
   short: language.badge,
 }));
 
-export const GENRES = [
+export const DEFAULT_GENRES: readonly string[] = [
   "Fantasy",
   "Romantasy",
   "Romance",
@@ -46,9 +46,12 @@ export const GENRES = [
   "Young adult",
   "Non-fiction",
   "Poetry",
-] as const;
+];
 
-export type Genre = (typeof GENRES)[number];
+export type Genre = string;
+
+export const MAX_GENRES = 12;
+export const MAX_GENRE_LENGTH = 40;
 
 export type ShopLink = { language: LinkLanguage; url: string };
 

@@ -76,14 +76,16 @@ as a dashed tile from the series' numbers.
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
 (`ongoing | complete | unknown`), `note`, `totalBooks` (optional whole number, 1 to 200: how
-many books the series has or has announced), `genres` (the fixed list), `tropes` (up to 30, 60
+many books the series has or has announced), `genres` (free text: 1 to 40 characters, up to 12, unique ignoring case), `tropes` (up to 30, 60
 characters each), `annotation` (up to 5000 characters), `tagsMerged` (internal), timestamps;
 index `{ userId, createdAt }`.
 
-`Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (from the
-fixed list in `server/constants/library.js`), `tropes`, `links` (`{ language, url }`, http(s)
+`Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (the same
+rule as on a series, in `validation/genre.js`), `tropes`, `links` (`{ language, url }`, http(s)
 only), `notes` and `annotation`; index `{ userId, seriesId, seriesNumber }`. The
-client keeps its own copy of the genre list.
+client offers a list of defaults (`DEFAULT_GENRES` in `lib/books.ts`) plus every genre
+the user's own books and series use (`lib/genres.ts`), and a field to add another.
+Design: [../designs/custom-genres.md](../designs/custom-genres.md).
 
 ## Trade-offs accepted
 

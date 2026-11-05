@@ -31,7 +31,9 @@ Decisions:
 - **Thinking in series.** A book belongs to a series with a number, or is a standalone book.
   A series is `ongoing`, `complete` or `unknown`, with a free note ("book 7 delayed").
 - **Ownership is separate from reading status:** "My library" (owned) and "Wishlist" (wanted).
-- **Genres from a fixed list, tropes as free text** with suggestions from the user's own.
+- **Genres and tropes as free text** with suggestions from the user's own; the twelve genres
+  below are only the defaults offered first (custom genres since 2026-11-05, see
+  [designs/custom-genres.md](designs/custom-genres.md)).
   Proposed genres, to confirm: Fantasy, Romantasy, Romance, Science fiction, Mystery &
   thriller, Horror, Historical fiction, Contemporary fiction, Classics, Young adult,
   Non-fiction, Poetry.
@@ -83,6 +85,8 @@ In order:
    - ✅ **A loading screen while the session is checked, 2026-11-05:** after a pause the first
      request can take up to a minute and the page showed only the logo —
      [designs/auth-loading-state.md](designs/auth-loading-state.md)
+   - ✅ **Genres of your own, 2026-11-05:** a free-text genre field next to the default list —
+     [designs/custom-genres.md](designs/custom-genres.md)
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console

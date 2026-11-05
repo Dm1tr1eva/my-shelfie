@@ -1,5 +1,6 @@
 const { z } = require("zod");
-const { OWNERSHIP, FORMATS, LINK_LANGUAGES, GENRES } = require("../constants/library");
+const { OWNERSHIP, FORMATS, LINK_LANGUAGES } = require("../constants/library");
+const { genreList, genreName } = require("./genre");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
@@ -22,11 +23,7 @@ const baseBookSchema = z
     format: z.enum(FORMATS).optional(),
     seriesId: objectId.optional(),
     seriesNumber: z.number().positive().optional(),
-    genres: z
-      .array(z.enum(GENRES))
-      .max(GENRES.length)
-      .refine((genres) => new Set(genres).size === genres.length, "Genres must be unique")
-      .optional(),
+    genres: genreList.optional(),
     tropes: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
     links: z.array(linkSchema).max(10).optional(),
     notes: z.string().max(5000).optional(),
@@ -79,7 +76,7 @@ const searchBooksQuerySchema = z
 const listBooksFiltersSchema = z.object({
   ownership: z.enum(OWNERSHIP).optional(),
   seriesId: objectId.optional(),
-  genre: z.enum(GENRES).optional(),
+  genre: genreName.optional(),
   trope: z.string().trim().min(1).max(60).optional(),
   q: z.string().trim().min(1).max(100).optional(),
 });
