@@ -82,7 +82,7 @@ describe("AddDetails", () => {
         }),
       ),
     );
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/series/saga"));
   });
 
   it("saves the format you pick", async () => {
@@ -109,7 +109,7 @@ describe("AddDetails", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
 
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/series/saga"));
     const update = calls.find((call) => call.method === "PATCH" && call.path === "/api/books/new");
     expect(update?.body).not.toHaveProperty("format");
     expect(update?.body).not.toHaveProperty("status");
@@ -149,25 +149,99 @@ describe("AddDetails", () => {
     expect(screen.queryByRole("group", { name: "Rating" })).not.toBeInTheDocument();
   });
 
+  it("goes to the series page after you save when the book is in a series", async () => {
+    serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/series/saga"));
+  });
+
+  it("saves a note of your own with the book, and sends none when you write nothing", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.change(await screen.findByLabelText("Notes"), {
+      target: { value: "A gift from Mum" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save details" }));
+
+    await waitFor(() =>
+      expect(calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          path: "/api/books/new",
+          body: expect.objectContaining({ notes: "A gift from Mum" }),
+        }),
+      ),
+    );
+  });
+
+  it("sends no notes when you leave the field empty", async () => {
+    const calls = serve();
+    renderApp(<AddDetails id="new" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalled());
+    const update = calls.find((call) => call.method === "PATCH" && call.path === "/api/books/new");
+    expect(update?.body).not.toHaveProperty("notes");
+  });
+
+  describe("a book with no series", () => {
+    beforeEach(() => {
+      route.params = new URLSearchParams();
+    });
+
+    function serveSingle(target: ReturnType<typeof book>) {
+      return mockApi(({ method, path }) => {
+        if (method === "PATCH" && path === `/api/books/${target.id}`) return { body: target };
+        if (path === `/api/books/${target.id}`) return { body: target };
+        if (path.startsWith("/api/books")) return booksResponse([target]);
+        if (path === "/api/series") return { body: { series: [] } };
+      });
+    }
+
+    it("goes back to the library after you save a book that is in your library", async () => {
+      serveSingle(book({ id: "own", title: "Mine" }));
+      renderApp(<AddDetails id="own" />);
+
+      fireEvent.click(await screen.findByRole("button", { name: "Mark as standalone" }));
+      fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
+
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    });
+
+    it("goes to the wishlist after you save, or skip, a book that is on the wishlist", async () => {
+      serveSingle(book({ id: "wish", title: "Wanted", ownership: "wanted" }));
+      renderApp(<AddDetails id="wish" />);
+
+      fireEvent.click(await screen.findByRole("button", { name: "Skip for now" }));
+
+      expect(router.push).toHaveBeenCalledWith("/wishlist");
+    });
+  });
+
   it("leaves the series alone when you change nothing", async () => {
     const calls = serve();
     renderApp(<AddDetails id="new" />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Save details" }));
 
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/series/saga"));
     expect(calls.some((call) => call.path === "/api/series/saga" && call.method === "PATCH")).toBe(
       false,
     );
   });
 
-  it("returns to the library without changes when you skip", async () => {
+  it("goes to the series of the book without changes when you skip", async () => {
     const calls = serve();
     renderApp(<AddDetails id="new" />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Skip for now" }));
 
-    expect(router.push).toHaveBeenCalledWith("/library");
+    expect(router.push).toHaveBeenCalledWith("/series/saga");
     expect(calls.some((call) => call.method === "PATCH")).toBe(false);
   });
 
@@ -208,6 +282,7 @@ describe("AddDetails", () => {
         path: "/api/series",
         body: { title: "Жнець без коси", author: "Олександра Черепан", status: "unknown" },
       });
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/series/made"));
     });
 
     it("does not borrow genres from other books that have no series either", async () => {

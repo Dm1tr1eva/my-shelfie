@@ -115,8 +115,10 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   `window.confirm`
 - `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
   step 1 finds a book and adds it in one click and goes straight to step 2 (opened from a
-  series, the book arrives with that series and number); step 2 adds series, genres, tropes and
-  links and can be skipped. Genres and tropes are those of the series when the book has one, and what you
+  series, the book arrives with that series and number); step 2 adds series, genres, tropes,
+  links, reading status, rating and a note of your own, and can be skipped. Saving or skipping
+  goes to the page of the book's series when it has one (the new book is there in its place,
+  gaps included), otherwise to the Library or the Wishlist, whichever the book is in. Genres and tropes are those of the series when the book has one, and what you
   edit there is written to the series; shop links are asked for a wishlist book only, and a book that is on the
   shelf keeps whatever links it has. A book with
   no series starts the series field from its own title, with its author ready in the "new
@@ -139,6 +141,8 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   sends each only when it changed.
 - On the series page "Add a note" and "Edit note" open the edit form, scroll it into view and put
   the cursor in the note; "Edit series" puts it in the title.
+- On the series page the note is edited with a proper outline button ("Add a note" or "Edit
+  note", with a pencil icon).
 - `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
 - Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
   and shop language. Values within a group are OR, groups are AND, and each option's count is

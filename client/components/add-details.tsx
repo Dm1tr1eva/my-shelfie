@@ -42,6 +42,7 @@ function DetailsForm({ book }: { book: Book }) {
   const [format, setFormat] = useState<Format>(book.format);
   const [status, setStatus] = useState<BookStatus>(book.status);
   const [rating, setRating] = useState<number | undefined>(book.rating);
+  const [notes, setNotes] = useState(book.notes ?? "");
   const [pickedGenres, setPickedGenres] = useState<Genre[] | null>(null);
   const [pickedTropes, setPickedTropes] = useState<string[] | null>(null);
   const [rows, setRows] = useState<LinkRow[]>(
@@ -65,6 +66,11 @@ function DetailsForm({ book }: { book: Book }) {
   const tropes = pickedTropes ?? (book.tropes.length > 0 ? book.tropes : seriesTropes);
   const wanted = book.ownership === "wanted";
 
+  function destination(seriesId: string | undefined) {
+    if (seriesId) return `/series/${seriesId}`;
+    return wanted ? "/wishlist" : "/library";
+  }
+
   async function save() {
     setPending(true);
     setError(null);
@@ -79,6 +85,7 @@ function DetailsForm({ book }: { book: Book }) {
         ...(format !== book.format && { format }),
         ...(status !== book.status && { status }),
         ...(rating !== book.rating && { rating: rating ?? null }),
+        ...(notes !== (book.notes ?? "") && { notes: notes.trim() === "" ? null : notes }),
         ...(wanted && { links: validLinks(rows) }),
         ...(seriesId !== book.seriesId && { seriesId: seriesId ?? null }),
         ...(seriesNumber !== book.seriesNumber && { seriesNumber: seriesNumber ?? null }),
@@ -92,7 +99,7 @@ function DetailsForm({ book }: { book: Book }) {
           await updateSeries(seriesId, { genres, tropes });
         }
       }
-      router.push("/library");
+      router.push(destination(seriesId));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
       setPending(false);
@@ -150,6 +157,18 @@ function DetailsForm({ book }: { book: Book }) {
       />
       {wanted && <ShopLinkEditor rows={rows} onChange={setRows} />}
 
+      <label className="flex flex-col gap-1">
+        <span className="font-semibold">Notes</span>
+        <textarea
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          rows={3}
+          maxLength={5000}
+          placeholder="Anything you want to remember about this book"
+          className="field"
+        />
+      </label>
+
       {error && (
         <p role="alert" className="font-semibold text-burgundy">
           {error}
@@ -157,7 +176,11 @@ function DetailsForm({ book }: { book: Book }) {
       )}
 
       <div className="flex flex-wrap gap-3">
-        <button type="button" onClick={() => router.push("/library")} className="btn-outline">
+        <button
+          type="button"
+          onClick={() => router.push(destination(book.seriesId))}
+          className="btn-outline"
+        >
           Skip for now
         </button>
         <button type="button" onClick={save} disabled={pending} className="btn-primary">

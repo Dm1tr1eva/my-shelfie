@@ -215,6 +215,16 @@ describe("SeriesPage", () => {
     expect(await screen.findByText("Ongoing series, readable now")).toBeInTheDocument();
   });
 
+  it("offers to edit the note as a proper button, with an icon", async () => {
+    serve({ ...SAGA, note: "book 6 delayed" });
+    renderApp(<SeriesPage id="saga" />);
+
+    const button = await screen.findByRole("button", { name: "Edit note" });
+
+    expect(button).toHaveClass("btn-outline");
+    expect(button.querySelector("svg")).not.toBeNull();
+  });
+
   it("opens the edit form from the note link", async () => {
     serve({ ...SAGA, note: "book 6 delayed" });
     renderApp(<SeriesPage id="saga" />);

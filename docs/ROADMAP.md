@@ -91,6 +91,8 @@ In order:
      far end well enough to read — [designs/readable-series.md](designs/readable-series.md)
    - ✅ **Four kinds of link, 2026-11-06:** buy paper, buy e-book, free e-book download, read
      online — [designs/link-kinds.md](designs/link-kinds.md)
+   - ✅ **The add flow, 2026-11-06:** after step 2 you land on the series page, or on the Library
+     or Wishlist for a book with no series; step 2 takes a note of your own
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console

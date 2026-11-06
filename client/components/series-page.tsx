@@ -7,7 +7,7 @@ import { BookCover } from "@/components/book-cover";
 import { GenreChip, TropeChip } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
 import { OwnProgress } from "@/components/own-progress";
-import { PlusIcon } from "@/components/icons";
+import { EditIcon, PlusIcon } from "@/components/icons";
 import { SeriesStatePills } from "@/components/form-controls";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { Shelf } from "@/components/shelf";
@@ -128,8 +128,9 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
         <button
           type="button"
           onClick={() => openEditing("note")}
-          className="min-h-11 self-start text-navy underline underline-offset-2"
+          className="btn-outline self-start"
         >
+          <EditIcon size={18} />
           {series.note ? "Edit note" : "Add a note"}
         </button>
       </header>
