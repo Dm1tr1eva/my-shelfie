@@ -97,12 +97,6 @@ In order:
      every screen, the privacy page and the messages of the API —
      [designs/interface-languages.md](designs/interface-languages.md),
      [features/interface-languages.md](features/interface-languages.md)
-   - ✅ **v3 tokens, labels and shell, 2026-11-19** (step 2 of the v3 refactor): the v3 tokens,
-     pill buttons and a round icon button, the logo A1 "My Shelfie" with new favicon and app
-     icons, Library · Wishlist in the nav, a floating three-icon tab bar and a mobile header,
-     reading status as a dot and a word, outline series and language labels, an "In wishlist"
-     pill. Next to buy keeps its page but has no nav item until the Wishlist step —
-     [designs/v3-tokens-shell.md](designs/v3-tokens-shell.md)
 3. ✅ README (what it does, the algorithm, screenshots), written 2026-10-18, with seven
    screenshots of demo data in `docs/screenshots/`. 🟨 Check of the site, 2026-10-18, on a
    production build against the demo data, at 320, 375, 768, 1024 and 1440 px: no console
@@ -158,7 +152,13 @@ in steps, each on its own branch:
    and names audiobooks; no new screens —
    [designs/v3-data-model.md](designs/v3-data-model.md),
    [features/reading-progress.md](features/reading-progress.md)
-2. ⬜ The following steps: shell and tokens, the screens, the wishlist endpoint, `/api/stats`
+2. ✅ **Tokens, labels and shell, 2026-11-19** — the v3 tokens, pill buttons and a round icon
+   button, the logo A1 "My Shelfie" with new favicon and app icons, Library · Wishlist in the
+   nav, a floating three-icon tab bar and a mobile header, reading status as a dot and a word,
+   outline series and language labels, an "In wishlist" pill. Next to buy keeps its page but
+   has no nav item until the Wishlist step —
+   [designs/v3-tokens-shell.md](designs/v3-tokens-shell.md)
+3. ⬜ The following steps: the screens, the wishlist endpoint, `/api/stats`
 
 ## Course submission MVP — done 2026-10-09
 
