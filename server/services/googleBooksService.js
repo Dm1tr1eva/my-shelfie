@@ -3,7 +3,7 @@ const { SEARCH_PAGE_SIZE, SEARCH_MAX_START_INDEX } = require("../constants/searc
 const GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes";
 const TIMEOUT_MS = 8000;
 const FIELDS =
-  "items(id,volumeInfo(title,authors,publishedDate,imageLinks/thumbnail,canonicalVolumeLink,infoLink))";
+  "items(id,volumeInfo(title,authors,publishedDate,pageCount,imageLinks/thumbnail,canonicalVolumeLink,infoLink))";
 
 class UpstreamError extends Error {
   constructor(message) {
@@ -21,12 +21,14 @@ function toSearchResult(item) {
   const year = /^\d{4}/.exec(info.publishedDate ?? "")?.[0];
   const cover = info.imageLinks?.thumbnail;
   const link = info.canonicalVolumeLink ?? info.infoLink;
+  const pageCount = Number.isInteger(info.pageCount) && info.pageCount > 0 ? info.pageCount : 0;
 
   return {
     volumeId: item.id,
     title: info.title,
     authors: info.authors ?? [],
     ...(year && { year: Number(year) }),
+    ...(pageCount && { pageCount }),
     ...(cover && { coverUrl: toHttps(cover) }),
     ...(link && { link: toHttps(link) }),
   };

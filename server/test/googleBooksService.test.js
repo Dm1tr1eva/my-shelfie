@@ -12,6 +12,7 @@ const DRACULA = {
     title: "Dracula",
     authors: ["Bram Stoker"],
     publishedDate: "1897-05-26",
+    pageCount: 418,
     imageLinks: { thumbnail: "http://books.google.com/cover?id=vol1" },
     canonicalVolumeLink: "https://books.google.com/books/about/Dracula.html?id=vol1",
   },
@@ -96,7 +97,31 @@ describe("Google Books search", () => {
     assert.equal("nextStartIndex" in page, false);
   });
 
-  it("maps a volume to a result with its year, an https cover and a link", async () => {
+  it("asks Google for the page count of each volume", async () => {
+    const calls = stubGoogleBooks(() => googleResponse({ items: [] }));
+
+    await searchVolumes("dracula");
+
+    assert.match(calls[0].searchParams.get("fields"), /volumeInfo\([^)]*pageCount/);
+  });
+
+  it("leaves out a page count that is not a positive whole number", async () => {
+    stubGoogleBooks(() =>
+      googleResponse({
+        items: [
+          { id: "vol3", volumeInfo: { title: "Zero", pageCount: 0 } },
+          { id: "vol4", volumeInfo: { title: "Odd", pageCount: "12" } },
+        ],
+      }),
+    );
+
+    const { results } = await searchVolumes("odd");
+
+    assert.equal("pageCount" in results[0], false);
+    assert.equal("pageCount" in results[1], false);
+  });
+
+  it("maps a volume to a result with its year, page count, an https cover and a link", async () => {
     stubGoogleBooks(() => googleResponse({ items: [DRACULA] }));
 
     const { results } = await searchVolumes("dracula");
@@ -107,6 +132,7 @@ describe("Google Books search", () => {
         title: "Dracula",
         authors: ["Bram Stoker"],
         year: 1897,
+        pageCount: 418,
         coverUrl: "https://books.google.com/cover?id=vol1",
         link: "https://books.google.com/books/about/Dracula.html?id=vol1",
       },
