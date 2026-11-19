@@ -310,6 +310,7 @@ describe("library filter groups", () => {
     const low = only({ rating: ["low"] });
 
     expect(matchesFilters({ book: book({ rating: 2 }) }, low)).toBe(true);
+    expect(matchesFilters({ book: book({ rating: 3 }) }, low)).toBe(true);
     expect(matchesFilters({ book: book({ rating: 4 }) }, low)).toBe(false);
     expect(matchesFilters({ book: book() }, only({ rating: ["none"] }))).toBe(true);
   });

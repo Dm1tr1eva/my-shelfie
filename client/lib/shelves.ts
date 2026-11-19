@@ -35,7 +35,7 @@ function bySlotOrder(a: SeriesSlot, b: SeriesSlot) {
   return 0;
 }
 
-export function slotSize(slot: SeriesSlot) {
+function slotSize(slot: SeriesSlot) {
   return slot.kind === "gap" ? slot.to - slot.from + 1 : 1;
 }
 

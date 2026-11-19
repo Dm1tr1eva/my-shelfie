@@ -255,19 +255,26 @@ describe("Library", () => {
       expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
     });
 
-    it("empties the choices on Reset without applying anything until you ask", async () => {
-      const { panel } = await openPanel();
+    it("empties applied and new choices on Reset without applying anything until you ask", async () => {
+      const { button, panel } = await openPanel();
+      fireEvent.click(within(panel).getByRole("button", { name: "In wishlist" }));
+      fireEvent.click(within(panel).getByRole("button", { name: "Show 2 books" }));
 
-      fireEvent.click(within(panel).getByRole("button", { name: "Reading" }));
-      expect(within(panel).getByRole("button", { name: "Show 1 book" })).toBeInTheDocument();
+      fireEvent.click(button);
+      const reopened = screen.getByRole("dialog", { name: "Filters" });
+      fireEvent.click(within(reopened).getByRole("button", { name: "Reading" }));
+      fireEvent.click(within(reopened).getByRole("button", { name: "Reset" }));
 
-      fireEvent.click(within(panel).getByRole("button", { name: "Reset" }));
-
-      expect(within(panel).getByRole("button", { name: "Reading" })).toHaveAttribute(
+      expect(within(reopened).getByRole("button", { name: "In wishlist" })).toHaveAttribute(
         "aria-pressed",
         "false",
       );
-      expect(within(panel).getByRole("button", { name: "Show 4 books" })).toBeInTheDocument();
+      expect(within(reopened).getByRole("button", { name: "Reading" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(within(reopened).getByRole("button", { name: "Show 4 books" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove filter In wishlist" })).toBeInTheDocument();
     });
 
     it("drops unapplied choices when closed with Escape and gives the focus back to the button", async () => {

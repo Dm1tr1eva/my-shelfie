@@ -3,7 +3,7 @@
 import { useT } from "@/lib/i18n";
 import type { SegmentState } from "@/lib/shelves";
 
-export const MAX_SEGMENTS = 10;
+const MAX_SEGMENTS = 10;
 
 const SEGMENT_COLORS: Record<SegmentState, string> = {
   owned: "bg-burgundy",

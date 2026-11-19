@@ -6,7 +6,7 @@ import { SearchIcon } from "@/components/icons";
 import { NO_FILTERS, type FilterKey, type Filters, type PanelGroup } from "@/lib/filters";
 import { useT } from "@/lib/i18n";
 
-export const FOLDED_OPTIONS = 4;
+const FOLDED_OPTIONS = 4;
 
 const PILL = "inline-flex min-h-11 items-center rounded-full border px-3.5 text-sm md:min-h-10";
 

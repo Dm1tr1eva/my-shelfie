@@ -15,7 +15,7 @@ export const SHELF_COLUMNS = "grid-cols-4 lg:grid-cols-7";
 
 const TILE_TEXT = "sr-only md:not-sr-only";
 
-export function rangeText(from: number, to: number) {
+function rangeText(from: number, to: number) {
   return from === to ? `#${from}` : `#${from}–${to}`;
 }
 
