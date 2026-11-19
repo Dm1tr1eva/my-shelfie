@@ -1,4 +1,5 @@
 const bookRepository = require("../repositories/bookRepository");
+const progressRepository = require("../repositories/progressRepository");
 const seriesService = require("./seriesService");
 
 class SeriesNumberWithoutSeriesError extends Error {
@@ -86,7 +87,11 @@ async function updateBook(userId, id, updates) {
 }
 
 async function deleteBook(userId, id) {
-  return bookRepository.deleteOneForUser(userId, id);
+  const book = await bookRepository.deleteOneForUser(userId, id);
+  if (book) {
+    await progressRepository.deleteForBook(userId, book._id);
+  }
+  return book;
 }
 
 module.exports = {

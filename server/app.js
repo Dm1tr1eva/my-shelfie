@@ -7,6 +7,7 @@ const booksRouter = require("./routes/books");
 const seriesRouter = require("./routes/series");
 const libraryRouter = require("./routes/library");
 const yearGoalRouter = require("./routes/yearGoal");
+const progressRouter = require("./routes/progress");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/books", booksRouter);
 app.use("/api/series", seriesRouter);
 app.use("/api/year-goal", yearGoalRouter);
+app.use("/api/progress", progressRouter);
 app.use("/api", libraryRouter);
 
 app.get("/api/health", (req, res) => {

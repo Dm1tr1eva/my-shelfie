@@ -10,9 +10,8 @@ const {
 } = require("../constants/library");
 const { genreList, genreName } = require("./genre");
 const { uniqueTextList } = require("./textList");
+const { objectId } = require("./objectId");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
-
-const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
 
 const wholeCount = z.number().int().min(1).max(10000);
 
