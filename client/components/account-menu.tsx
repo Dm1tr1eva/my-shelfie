@@ -4,37 +4,25 @@ import { InstallAction } from "@/components/install-action";
 import { LanguageSwitch } from "@/components/language-switch";
 import { useAuth } from "@/lib/auth-context";
 import { useT } from "@/lib/i18n";
-import { UserIcon } from "@/components/icons";
 
-export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
+export function AccountMenu() {
   const { user, logout } = useAuth();
   const t = useT();
   if (!user) return null;
 
   const initial = user.name.trim().charAt(0).toUpperCase() || "?";
-  const panel =
-    variant === "avatar" ? "absolute right-0 top-full mt-2" : "absolute bottom-full right-2 mb-3";
 
   return (
     <details className="group relative">
       <summary
         aria-label={t("shell.nav.account")}
-        className={
-          variant === "avatar"
-            ? "flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full bg-beige font-semibold text-ink [&::-webkit-details-marker]:hidden"
-            : "flex min-h-11 cursor-pointer list-none flex-col items-center gap-1 rounded-control px-2 py-1 text-xs text-mist [&::-webkit-details-marker]:hidden"
-        }
+        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full [&::-webkit-details-marker]:hidden"
       >
-        {variant === "avatar" ? (
-          initial
-        ) : (
-          <>
-            <UserIcon />
-            <span>{t("shell.nav.account")}</span>
-          </>
-        )}
+        <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-slate font-bold text-ink md:h-10 md:w-10">
+          {initial}
+        </span>
       </summary>
-      <div className={`${panel} z-30 w-56 card p-3 text-ink shadow-pop`}>
+      <div className="absolute right-0 top-full z-30 mt-2 w-56 card p-3 text-ink shadow-pop">
         <p className="truncate font-semibold">{user.name}</p>
         <p className="truncate text-sm text-muted">{user.email}</p>
         <button type="button" onClick={() => logout()} className="btn-outline mt-3 w-full">

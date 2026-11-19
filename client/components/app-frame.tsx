@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { AppNav } from "@/components/app-nav";
 import { AuthLoading } from "@/components/auth-loading";
+import { MobileHeader } from "@/components/mobile-header";
 import { PublicHeader } from "@/components/public-header";
 import { SiteFooter } from "@/components/site-footer";
 import { TabBar } from "@/components/tab-bar";
@@ -18,7 +19,14 @@ export function AppFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {signedIn ? <AppNav /> : <PublicHeader showSignIn={status === "anonymous"} />}
+      {signedIn ? (
+        <>
+          <AppNav />
+          <MobileHeader />
+        </>
+      ) : (
+        <PublicHeader showSignIn={status === "anonymous"} />
+      )}
       <div
         className={`flex flex-1 flex-col ${signedIn ? "pb-[calc(100px+env(safe-area-inset-bottom))] md:pb-0" : ""}`}
       >

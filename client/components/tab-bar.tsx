@@ -2,76 +2,63 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AccountMenu } from "@/components/account-menu";
-import { BagIcon, HeartIcon, LibraryIcon, PlusIcon } from "@/components/icons";
-import { useT, type MessageKey } from "@/lib/i18n";
+import { BookmarkIcon, PlusIcon, ShelfIcon } from "@/components/icons";
+import { useT } from "@/lib/i18n";
+import { activeSection, type Section } from "@/lib/nav";
 
-type Item = { href: string; label: MessageKey; icon: React.ReactNode };
-
-const ITEMS: Item[] = [
-  { href: "/library", label: "shell.nav.library", icon: <LibraryIcon /> },
-  { href: "/wishlist", label: "shell.nav.wishlist", icon: <HeartIcon /> },
-];
-
-const ITEMS_AFTER_ADD: Item[] = [
-  { href: "/next", label: "shell.nav.nextToBuy", icon: <BagIcon /> },
-];
-
-function TabLink({
+function SectionTab({
   href,
   label,
-  icon,
   active,
+  children,
 }: {
   href: string;
-  label: MessageKey;
-  icon: React.ReactNode;
+  label: string;
   active: boolean;
+  children: React.ReactNode;
 }) {
-  const t = useT();
-
   return (
     <Link
       href={href}
+      aria-label={label}
       aria-current={active ? "page" : undefined}
-      className={`flex min-h-11 flex-col items-center gap-1 rounded-control px-2 py-1 text-xs ${
-        active ? "bg-mist/20 font-bold text-page" : "text-mist"
+      className={`flex h-[52px] items-center justify-center rounded-full ${
+        active ? "text-page [&_svg]:fill-page/[0.22]" : "text-slate hover:text-mist"
       }`}
     >
-      {icon}
-      <span>{t(label)}</span>
+      {children}
     </Link>
   );
 }
 
 export function TabBar() {
   const pathname = usePathname();
+  const active: Section | null = activeSection(pathname);
   const t = useT();
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav
       aria-label={t("shell.nav.main")}
-      className="fixed inset-x-0 bottom-0 z-20 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-5 items-center bg-navy px-2 pb-[env(safe-area-inset-bottom)] text-page md:hidden"
+      className="fixed bottom-[calc(18px+env(safe-area-inset-bottom))] left-1/2 z-20 grid h-16 w-[236px] -translate-x-1/2 grid-cols-3 items-center rounded-pill bg-navy px-2 shadow-tabbar md:hidden"
     >
-      {ITEMS.map((item) => (
-        <TabLink key={item.href} {...item} active={isActive(item.href)} />
-      ))}
+      <SectionTab href="/library" label={t("shell.nav.library")} active={active === "library"}>
+        <ShelfIcon size={28} />
+      </SectionTab>
 
       <Link
         href="/add"
         aria-label={t("shell.nav.addBook")}
         aria-current={pathname === "/add" ? "page" : undefined}
-        className="mx-auto -mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-burgundy text-card ring-4 ring-page"
+        className="flex h-[52px] items-center justify-center"
       >
-        <PlusIcon size={26} />
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-burgundy text-card">
+          <PlusIcon size={26} />
+        </span>
       </Link>
 
-      {ITEMS_AFTER_ADD.map((item) => (
-        <TabLink key={item.href} {...item} active={isActive(item.href)} />
-      ))}
-
-      <AccountMenu variant="tab" />
+      <SectionTab href="/wishlist" label={t("shell.nav.wishlist")} active={active === "wishlist"}>
+        <BookmarkIcon size={28} />
+      </SectionTab>
     </nav>
   );
 }

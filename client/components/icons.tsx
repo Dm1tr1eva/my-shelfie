@@ -21,23 +21,6 @@ function Svg({ children, size = 20 }: { children: ReactNode; size?: number }) {
 
 type IconProps = { size?: number };
 
-export function LibraryIcon({ size }: IconProps) {
-  return (
-    <Svg size={size}>
-      <path d="M4 19.5V5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 1.5Z" />
-      <path d="M6 21h14" />
-    </Svg>
-  );
-}
-
-export function HeartIcon({ size }: IconProps) {
-  return (
-    <Svg size={size}>
-      <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1l8.8 8.8 8.8-8.8a5 5 0 0 0 0-7.1Z" />
-    </Svg>
-  );
-}
-
 export function BookmarkIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
@@ -57,28 +40,18 @@ export function ShelfIcon({ size }: IconProps) {
   );
 }
 
+export function ArrowLeftIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </Svg>
+  );
+}
+
 export function PlusIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
       <path d="M12 5v14M5 12h14" />
-    </Svg>
-  );
-}
-
-export function BagIcon({ size }: IconProps) {
-  return (
-    <Svg size={size}>
-      <path d="M6 7h12l1 13H5L6 7Z" />
-      <path d="M9 7a3 3 0 0 1 6 0" />
-    </Svg>
-  );
-}
-
-export function UserIcon({ size }: IconProps) {
-  return (
-    <Svg size={size}>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 21a8 8 0 0 1 16 0" />
     </Svg>
   );
 }

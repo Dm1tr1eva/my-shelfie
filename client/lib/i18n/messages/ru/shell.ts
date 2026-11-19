@@ -6,7 +6,6 @@ export const shell: Localized<typeof en> = {
     main: "Главное меню",
     library: "Библиотека",
     wishlist: "Вишлист",
-    nextToBuy: "Что купить дальше",
     addBook: "Добавить книгу",
     account: "Аккаунт",
     signIn: "Войти",

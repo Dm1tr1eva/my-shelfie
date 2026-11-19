@@ -3,7 +3,6 @@ export const shell = {
     main: "Main",
     library: "Library",
     wishlist: "Wishlist",
-    nextToBuy: "Next to buy",
     addBook: "Add a book",
     account: "Account",
     signIn: "Sign in",

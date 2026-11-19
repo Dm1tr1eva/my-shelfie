@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
 import { mockApi, renderApp } from "@/test/helpers";
 import { AppFrame } from "./app-frame";
+import { MobileHeader } from "./mobile-header";
+import { TabBar } from "./tab-bar";
 
 const route = vi.hoisted(() => ({ pathname: "/library" }));
 
@@ -116,8 +118,8 @@ describe("AppFrame", () => {
     expect(screen.queryByRole("link", { name: "Next to buy" })).not.toBeInTheDocument();
   });
 
-  it("gives a signed-in user the three sections and an add button, with the current one marked", async () => {
-    route.pathname = "/series/saga";
+  it("gives a signed-in user the library, the wishlist and an add button, and no Next to buy", async () => {
+    route.pathname = "/library";
     mockApi(() => undefined);
     renderApp(
       <AppFrame>
@@ -125,14 +127,45 @@ describe("AppFrame", () => {
       </AppFrame>,
     );
 
-    const [wishlist] = await screen.findAllByRole("link", { name: "Wishlist" });
-    const [next] = screen.getAllByRole("link", { name: "Next to buy" });
-    const [add] = screen.getAllByRole("link", { name: /Add a book/ });
+    const wishlist = await screen.findAllByRole("link", { name: "Wishlist" });
+    const library = screen.getAllByRole("link", { name: "Library" });
+    const add = screen.getAllByRole("link", { name: /Add a book/ });
 
-    expect(wishlist).toHaveAttribute("href", "/wishlist");
-    expect(next).toHaveAttribute("href", "/next");
-    expect(add).toHaveAttribute("href", "/add");
+    for (const link of wishlist) expect(link).toHaveAttribute("href", "/wishlist");
+    for (const link of library) expect(link).toHaveAttribute("href", "/library");
+    for (const link of add) expect(link).toHaveAttribute("href", "/add");
+    expect(screen.queryByRole("link", { name: "Next to buy" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["/library", "Library"],
+    ["/series/saga", "Library"],
+    ["/wishlist", "Wishlist"],
+    ["/", "nothing"],
+    ["/books/one", "nothing"],
+    ["/next", "nothing"],
+  ])("on %s highlights %s", async (path, current) => {
+    route.pathname = path;
+    mockApi(() => undefined);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+
+    await screen.findAllByRole("link", { name: "Add a book" });
+    const sections = screen
+      .getAllByRole("link")
+      .filter((link) =>
+        ["Library", "Wishlist"].includes(link.getAttribute("aria-label") ?? link.textContent ?? ""),
+      );
+    const highlighted = sections.filter((link) => link.getAttribute("aria-current") === "page");
+
+    expect(sections.length).toBeGreaterThanOrEqual(4);
+    expect(new Set(highlighted.map((link) => link.getAttribute("href")))).toEqual(
+      new Set({ Library: ["/library"], Wishlist: ["/wishlist"], nothing: [] }[current]),
+    );
   });
 
   it("puts the install button in the account menu once the browser offers it", async () => {
@@ -171,7 +204,9 @@ describe("AppFrame", () => {
 
     await screen.findAllByRole("link", { name: "Wishlist" });
 
-    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/");
+    const logos = screen.getAllByRole("link", { name: "My Shelfie" });
+    expect(logos.length).toBeGreaterThan(0);
+    for (const logo of logos) expect(logo).toHaveAttribute("href", "/");
   });
 
   it("marks the section you are in as the current page", async () => {
@@ -209,4 +244,59 @@ describe("AppFrame", () => {
     await waitFor(() => expect(calls.some((call) => call.path === "/api/auth/logout")).toBe(true));
     expect(await screen.findByRole("link", { name: "Sign in" })).toBeInTheDocument();
   });
+});
+
+describe("TabBar", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("shows the library, add and wishlist as icons named for screen readers", () => {
+    route.pathname = "/library";
+    renderApp(<TabBar />);
+
+    const bar = screen.getByRole("navigation", { name: "Main" });
+    const links = within(bar).getAllByRole("link");
+
+    expect(links.map((link) => link.getAttribute("aria-label"))).toEqual([
+      "Library",
+      "Add a book",
+      "Wishlist",
+    ]);
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "/library",
+      "/add",
+      "/wishlist",
+    ]);
+    expect(bar).toHaveTextContent(/^$/);
+  });
+});
+
+describe("MobileHeader", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("shows the logo and the account on a top-level page", async () => {
+    route.pathname = "/wishlist";
+    mockApi(() => undefined);
+    renderApp(<MobileHeader />);
+
+    expect(await screen.findByLabelText("Account")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/");
+  });
+
+  it.each(["/series/saga", "/books/one", "/add", "/add/one/details"])(
+    "leads back to the library from the inner page %s",
+    async (path) => {
+      route.pathname = path;
+      mockApi(() => undefined);
+      renderApp(<MobileHeader />);
+
+      const back = await screen.findByRole("link", { name: "Library" });
+      expect(back).toHaveAttribute("href", "/library");
+      expect(screen.queryByRole("link", { name: "My Shelfie" })).not.toBeInTheDocument();
+      expect(screen.queryByLabelText("Account")).not.toBeInTheDocument();
+    },
+  );
 });

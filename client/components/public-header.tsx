@@ -12,7 +12,7 @@ export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
     <header className="bg-navy text-page">
       <nav
         aria-label={t("shell.nav.main")}
-        className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-8"
+        className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 pl-4 pr-2 sm:px-8 md:h-[68px]"
       >
         <Logo />
 
@@ -21,7 +21,7 @@ export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
           {showSignIn && (
             <Link
               href="/login"
-              className="inline-flex min-h-11 items-center rounded-control border border-mist px-4 font-semibold hover:bg-mist/20"
+              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-pill border border-mist px-5 font-semibold hover:bg-mist/20 md:min-h-10"
             >
               {t("shell.nav.signIn")}
             </Link>
