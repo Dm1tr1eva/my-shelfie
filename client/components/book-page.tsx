@@ -506,7 +506,7 @@ function BookForm({ book }: { book: Book }) {
         <div
           role="region"
           aria-label={t("book.unsaved.label")}
-          className="fixed inset-x-0 bottom-[92px] z-30 mx-auto flex w-[calc(100%-2rem)] max-w-3xl flex-wrap items-center justify-between gap-3 rounded-card bg-navy px-5 py-3 text-page shadow-pop md:bottom-6"
+          className="sticky bottom-[calc(100px+env(safe-area-inset-bottom))] z-30 flex flex-wrap items-center justify-between gap-3 rounded-card bg-navy px-5 py-3 text-page shadow-pop md:bottom-6"
         >
           <p className="font-semibold">{t("book.unsaved.message")}</p>
           <div className="flex gap-2">
