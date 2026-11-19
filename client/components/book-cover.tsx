@@ -20,9 +20,31 @@ const PAIRS = [
   "bg-beige text-burgundy",
 ];
 
+function HeadphonesIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 15v-3a8 8 0 0 1 16 0v3" />
+      <rect x="3" y="14" width="4" height="7" rx="1.5" />
+      <rect x="17" y="14" width="4" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
 const FORMAT_ICONS: Record<Format, typeof BookIcon> = {
   paper: BookIcon,
   ebook: TabletIcon,
+  audio: HeadphonesIcon,
 };
 
 function withoutPageCurl(url: string) {

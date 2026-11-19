@@ -61,6 +61,7 @@ export function TropeChip({ trope }: { trope: string }) {
 const KIND_CLASSES: Record<LinkKind, string> = {
   paper: "bg-navy text-page",
   ebook: "bg-mist text-navy",
+  audio: "bg-beige text-burgundy",
   free: "bg-success text-card",
   online: "bg-slate text-ink",
 };

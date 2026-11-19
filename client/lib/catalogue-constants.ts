@@ -1,8 +1,12 @@
 export type Ownership = "owned" | "wanted";
-export type Format = "paper" | "ebook";
+export type Format = "paper" | "ebook" | "audio";
 export type LinkLanguage = "ru" | "uk" | "en" | "other";
-export type LinkKind = "paper" | "ebook" | "free" | "online";
+export type LinkKind = "paper" | "ebook" | "audio" | "free" | "online";
 export type SeriesStatus = "ongoing" | "readable" | "complete" | "unknown";
+export type DesireLevel = "high" | "normal" | "someday";
+export type AgeRating = "none" | "12" | "16" | "18";
+export type Recommend = "yes" | "maybe" | "no";
+export type ExpectedSource = "fantlab" | "ai" | "manual";
 
 export const OWNERSHIP_LABELS: Record<Ownership, string> = {
   owned: "In my library",
@@ -12,6 +16,7 @@ export const OWNERSHIP_LABELS: Record<Ownership, string> = {
 export const FORMAT_LABELS: Record<Format, string> = {
   paper: "Paper",
   ebook: "E-book",
+  audio: "Audiobook",
 };
 
 export const FORMATS = Object.keys(FORMAT_LABELS) as Format[];
@@ -19,6 +24,7 @@ export const FORMATS = Object.keys(FORMAT_LABELS) as Format[];
 export const LINK_KINDS: { value: LinkKind; label: string; short: string }[] = [
   { value: "paper", label: "Buy paper", short: "Paper" },
   { value: "ebook", label: "Buy e-book", short: "E-book" },
+  { value: "audio", label: "Audio", short: "Audio" },
   { value: "free", label: "Free e-book download", short: "Free" },
   { value: "online", label: "Read online", short: "Online" },
 ];
@@ -36,3 +42,8 @@ export const SERIES_STATUS_LABELS: Record<SeriesStatus, string> = {
   complete: "Complete",
   unknown: "Unknown",
 };
+
+export const DESIRE_LEVELS: DesireLevel[] = ["high", "normal", "someday"];
+export const AGE_RATINGS: AgeRating[] = ["none", "12", "16", "18"];
+export const RECOMMEND: Recommend[] = ["yes", "maybe", "no"];
+export const EXPECTED_SOURCES: ExpectedSource[] = ["fantlab", "ai", "manual"];

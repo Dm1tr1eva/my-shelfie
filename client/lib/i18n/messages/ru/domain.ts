@@ -7,8 +7,10 @@ export const domain: Localized<typeof en> = {
   format: {
     paper: "Бумажная",
     ebook: "Электронная",
+    audio: "Аудиокнига",
     paperBook: "Бумажная книга",
     ebookBook: "Электронная книга",
+    audioBook: "Аудиокнига",
   },
   seriesStatus: {
     ongoing: "Выходит",
@@ -31,10 +33,17 @@ export const domain: Localized<typeof en> = {
   linkKind: {
     paper: "Купить бумажную",
     ebook: "Купить электронную",
+    audio: "Аудио",
     free: "Скачать электронную бесплатно",
     online: "Читать онлайн",
   },
-  linkKindShort: { paper: "Бумага", ebook: "Эл. книга", free: "Бесплатно", online: "Онлайн" },
+  linkKindShort: {
+    paper: "Бумага",
+    ebook: "Эл. книга",
+    audio: "Аудио",
+    free: "Бесплатно",
+    online: "Онлайн",
+  },
   language: { ru: "Русский", uk: "Украинский", en: "Английский", misc: "Другой" },
   genre: {
     Fantasy: "Фэнтези",

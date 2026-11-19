@@ -10,15 +10,18 @@ import {
   LINK_KINDS,
   LINK_LANGUAGES,
   OWNERSHIP_LABELS,
+  type AgeRating,
+  type DesireLevel,
   type Format,
   type LinkKind,
   type LinkLanguage,
   type Ownership,
+  type Recommend,
 } from "./catalogue-constants";
 import type { Domain } from "./i18n/domain";
 
 export { FORMAT_LABELS, FORMATS, LINK_KINDS, LINK_LANGUAGES, OWNERSHIP_LABELS };
-export type { Format, LinkKind, LinkLanguage, Ownership };
+export type { AgeRating, DesireLevel, Format, LinkKind, LinkLanguage, Ownership, Recommend };
 export type BookStatus = "want" | "reading" | "dropped" | "read";
 
 export const STATUS_LABELS: Record<BookStatus, string> = {
@@ -80,6 +83,8 @@ export const MAX_GENRE_LENGTH = 40;
 
 export type ShopLink = { kind: LinkKind; languages: LinkLanguage[]; url: string };
 
+export type Quote = { text: string; page?: number };
+
 export type Book = {
   id: string;
   userId: string;
@@ -88,8 +93,12 @@ export type Book = {
   status: BookStatus;
   ownership: Ownership;
   format: Format;
+  desire: DesireLevel;
+  ageRating: AgeRating;
   genres: Genre[];
   tropes: string[];
+  moods: string[];
+  quotes: Quote[];
   links: ShopLink[];
   createdAt: string;
   updatedAt: string;
@@ -101,7 +110,9 @@ export type Book = {
   notes?: string;
   annotation?: string;
   rating?: number;
-  review?: string;
+  pages?: number;
+  durationMinutes?: number;
+  recommend?: Recommend;
   startedAt?: string;
   finishedAt?: string;
 };
@@ -130,7 +141,13 @@ export type BookChanges = Partial<{
   ownership: Ownership;
   format: Format;
   rating: number | null;
-  review: string | null;
+  pages: number | null;
+  durationMinutes: number | null;
+  recommend: Recommend | null;
+  moods: string[];
+  quotes: Quote[];
+  desire: DesireLevel;
+  ageRating: AgeRating;
   seriesId: string | null;
   seriesNumber: number | null;
   genres: Genre[];

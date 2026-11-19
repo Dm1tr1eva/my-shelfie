@@ -6,6 +6,7 @@ export type BookSearchResult = {
   title: string;
   authors: string[];
   year?: number;
+  pageCount?: number;
   coverUrl?: string;
   link?: string;
 };

@@ -206,6 +206,33 @@ describe("BookPage", () => {
     expect(within(section).getByRole("link", { name: /library\.example/ })).toHaveTextContent("RU");
   });
 
+  it("shows an audiobook and its audio links, and keeps the format choice to paper and e-book", async () => {
+    const audiobook = book({
+      id: "a1",
+      title: "Heard",
+      ownership: "wanted",
+      format: "audio",
+      links: [{ kind: "audio", languages: ["uk"], url: "https://audio.example/heard" }],
+    });
+    mockApi(({ path }) => {
+      if (path === "/api/books/a1") return { body: audiobook };
+      if (path.startsWith("/api/books")) return booksResponse([audiobook]);
+      if (path === "/api/series") return { body: { series: [] } };
+    });
+    renderApp(<BookPage id="a1" />);
+
+    expect(await screen.findByRole("img", { name: "Audiobook" })).toBeInTheDocument();
+    const section = screen
+      .getByRole("heading", { name: "Where to get it" })
+      .closest("section") as HTMLElement;
+    expect(within(section).getByText("Audio", { selector: "p" })).toBeInTheDocument();
+    const formats = within(screen.getByRole("radiogroup", { name: "Format" })).getAllByRole(
+      "radio",
+    );
+    expect(formats.map((radio) => radio.textContent)).toEqual(["Paper", "E-book"]);
+    expect(formats.every((radio) => radio.getAttribute("aria-checked") === "false")).toBe(true);
+  });
+
   it("shows every language of a link that has several", async () => {
     const wanted = book({
       id: "w2",

@@ -62,6 +62,12 @@ describe("BookCover", () => {
     expect(queryByRole("img", { name: "Paper book" })).toBeNull();
   });
 
+  it("marks an audiobook as one", () => {
+    const { getByRole } = render(<BookCover title="Dune" format="audio" />);
+
+    expect(getByRole("img", { name: "Audiobook" })).toBeInTheDocument();
+  });
+
   it("draws no format mark when the format is not given", () => {
     const { queryByRole } = render(<BookCover title="Dune" />);
 

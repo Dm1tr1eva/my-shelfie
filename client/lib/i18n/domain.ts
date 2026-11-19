@@ -16,8 +16,7 @@ export function makeDomain(t: Translate) {
     status: (value: BookStatus) => t(`domain.status.${value}`),
     ownership: (value: Ownership) => t(`domain.ownership.${value}`),
     format: (value: Format) => t(`domain.format.${value}`),
-    formatBook: (value: Format) =>
-      t(value === "paper" ? "domain.format.paperBook" : "domain.format.ebookBook"),
+    formatBook: (value: Format) => t(`domain.format.${value}Book`),
     seriesStatus: (value: SeriesStatus) => t(`domain.seriesStatus.${value}`),
     seriesChoice: (value: SeriesStatus) => t(`domain.seriesChoice.${value}`),
     seriesHeader: (value: SeriesStatus) => t(`domain.seriesHeader.${value}`),

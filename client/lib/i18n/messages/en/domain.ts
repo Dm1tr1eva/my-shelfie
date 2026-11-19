@@ -4,8 +4,10 @@ export const domain = {
   format: {
     paper: "Paper",
     ebook: "E-book",
+    audio: "Audiobook",
     paperBook: "Paper book",
     ebookBook: "E-book",
+    audioBook: "Audiobook",
   },
   seriesStatus: {
     ongoing: "Ongoing",
@@ -28,10 +30,17 @@ export const domain = {
   linkKind: {
     paper: "Buy paper",
     ebook: "Buy e-book",
+    audio: "Audio",
     free: "Free e-book download",
     online: "Read online",
   },
-  linkKindShort: { paper: "Paper", ebook: "E-book", free: "Free", online: "Online" },
+  linkKindShort: {
+    paper: "Paper",
+    ebook: "E-book",
+    audio: "Audio",
+    free: "Free",
+    online: "Online",
+  },
   language: { ru: "Russian", uk: "Ukrainian", en: "English", misc: "Other" },
   genre: {
     Fantasy: "Fantasy",

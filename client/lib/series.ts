@@ -5,7 +5,13 @@ import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
 import { isLibraryKey, type Book, type Genre } from "./books";
-import { SERIES_STATUS_LABELS, type SeriesStatus } from "./catalogue-constants";
+import {
+  SERIES_STATUS_LABELS,
+  type AgeRating,
+  type DesireLevel,
+  type ExpectedSource,
+  type SeriesStatus,
+} from "./catalogue-constants";
 
 export { SERIES_STATUS_LABELS };
 export type { SeriesStatus };
@@ -24,6 +30,8 @@ export const SERIES_STATE_CHOICES: { value: SeriesStatus; label: string }[] = [
   { value: "unknown", label: "Don't know" },
 ];
 
+export type ExpectedBook = { number: number; expectedYear?: number; source: ExpectedSource };
+
 export type Series = {
   id: string;
   title: string;
@@ -38,6 +46,9 @@ export type Series = {
   genres: Genre[];
   tropes: string[];
   annotation?: string;
+  ageRating: AgeRating;
+  desire: DesireLevel;
+  expected: ExpectedBook[];
 };
 
 export type NewSeries = {
@@ -60,6 +71,9 @@ export type SeriesChanges = Partial<{
   genres: Genre[];
   tropes: string[];
   annotation: string | null;
+  ageRating: AgeRating;
+  desire: DesireLevel;
+  expected: ExpectedBook[];
 }>;
 
 export function useSeriesList() {

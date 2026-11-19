@@ -3,11 +3,12 @@
 import { useId } from "react";
 import { CheckIcon, StarIcon } from "@/components/icons";
 import { SERIES_STATE_CHOICES, type SeriesStatus } from "@/lib/series";
-import { FORMATS, STATUSES, type BookStatus, type Format, type Ownership } from "@/lib/books";
+import { STATUSES, type BookStatus, type Format, type Ownership } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 
 const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
+const TOGGLE_FORMATS: Format[] = ["paper", "ebook"];
 
 function SegmentedToggle<T extends string>({
   label,
@@ -84,8 +85,12 @@ export function FormatToggle({
   return (
     <SegmentedToggle
       label={t("book.controls.format")}
-      options={FORMATS}
-      labels={{ paper: domain.format("paper"), ebook: domain.format("ebook") }}
+      options={TOGGLE_FORMATS}
+      labels={{
+        paper: domain.format("paper"),
+        ebook: domain.format("ebook"),
+        audio: domain.format("audio"),
+      }}
       value={value}
       onChange={onChange}
     />
