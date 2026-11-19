@@ -84,7 +84,8 @@ the series), `expected` (up to 50 `{ number, expectedYear?, source }`: a number 
 in the list; a whole year from 1900 to 2200; `source` one of `fantlab | ai | manual`; replaced
 as a whole, `[]` empties it), `tagsMerged` (internal), timestamps; index `{ userId, createdAt }`.
 Series saved before the v3 fields read with the defaults and an empty `expected`. A book of the
-series is returned with the series' `ageRating`. Design:
+series is returned with the series' `ageRating` when it is set (not `none`), otherwise with its
+own. Design:
 [../designs/v3-data-model.md](../designs/v3-data-model.md).
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (the same

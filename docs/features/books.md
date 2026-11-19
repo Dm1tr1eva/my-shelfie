@@ -18,8 +18,9 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
   default when it loads the document, so there is no migration and the DTO adds no fallback.
 - `desire` is `high | normal | someday`, default `normal`; `ageRating` is `none | 12 | 16 | 18`,
   default `none`. The default is the "not set" value, so neither can be cleared with `null`. Old
-  books read with the defaults, the same way as `format`. A book in a series is returned with the
-  series' `ageRating`; its own value is kept and comes back if it leaves the series.
+  books read with the defaults, the same way as `format`. A book in a series whose `ageRating` is
+  set (not `none`) is returned with the series' value; otherwise with its own, which is kept
+  either way and comes back if it leaves the series.
 - `review` is no longer written. It meant the same as `notes` in the v3 design: the DTO
   returns an old `review` as `notes` when `notes` is empty and never returns `review`, and any
   `PATCH` of `notes` (`null` included) also clears the stored `review`, so clearing the note
@@ -75,10 +76,17 @@ are set. An unset optional field is omitted from the object, not sent as `null`.
 
 **The v3 fields and their limits.** `pages` and `durationMinutes`: whole numbers from 1 to
 10,000, allowed on any format (the client shows duration for an audiobook and pages otherwise).
-`moods`: up to 12, each 1–40 characters after trimming, unique ignoring letter case — the genre
-rule, through `validation/textList.js`. `recommend`: `yes | maybe | no`. `quotes`: up to 50
+`moods`: up to `MOODS_MAX` (12), each 1–`MOOD_NAME_MAX` (40) characters after trimming, unique
+ignoring letter case, through `validation/textList.js` like genres. The mood constants are their
+own, not the genre ones: today the numbers match, but moods are not genres and may change on
+their own. Pages, duration and quote pages share `BOOK_LENGTH_MAX` (10,000). `recommend`: `yes | maybe | no`. `quotes`: up to 50
 `{ text, page? }`, text 1–2,000 characters after trimming, page 1–10,000, no other field;
 replaced as a whole, an empty array clears them.
+
+**Body size.** `express.json` accepts up to 512 KB (`server/app.js`). The largest valid book —
+50 quotes of 2,000 Cyrillic characters, plus the note, annotation, moods and tropes at their
+limits — is about 230 KB, and a test sends it. A larger body is refused by Express with `413`
+and an HTML page, not `{ error }`; only a body far past the documented limits can get there.
 
 ## Book search
 
@@ -146,8 +154,8 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - Library and Wishlist show standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to get it" shows for a wishlist book only: its links grouped by what they lead to
-  (Buy paper, Buy e-book, Audio, Free e-book download, Read online), each with a badge per
-  language of the link, and the same five kinds as a chip on every link in Next to buy and as a "Link type" filter —
+  (Paper, E-book, Audio, Free e-book download, Read online — no "buy", as in the v3
+  handoff), each with a badge per language of the link, and the same five kinds as a chip on every link in Next to buy and as a "Link type" filter —
   [../designs/link-kinds.md](../designs/link-kinds.md). A link carries `languages`, an array;
   the pickers on the book page and the details step still choose one language and write a
   one-element array, and changing the language of a link with several on the details step
@@ -229,6 +237,13 @@ both the filter every query uses and the sort `GET /` applies.
 - **The current client cannot make a book an audiobook.** The format toggle keeps two options
   (three overflow at 320 px) until the v3 book panel replaces it; an audiobook made through the
   API shows the toggle with nothing selected and a headphones mark on its cover.
+- **A deploy briefly mixes link shapes.** The API now sends `links[].languages` and no longer
+  `links[].language`. Vercel and Render finish deploying at different times, so for a few
+  minutes an open tab running the old client can meet the new server (or the new client the old
+  server) and fail to draw link badges. No compatibility code is kept for that window: reload
+  open tabs after a deploy.
+- **A body over 512 KB answers `413` as HTML.** There is no central error handler to turn it into
+  `{ error }`; nothing the client sends within the documented limits gets near it.
 - **No rate limiting, no idempotency key on `POST /`.** A double-submit creates two books. No
   concrete user action produces this today (one browser tab, no retry logic on the frontend
   yet), so it is not built — see `CLAUDE.md` principle 2.

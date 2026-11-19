@@ -52,8 +52,9 @@ absent until set.
 ## Trade-offs accepted
 
 - **Deleting a book and its entries are two writes, not a transaction.** If the second fails,
-  the entries are orphans: `GET /api/progress` still returns them, but they match no book the
-  client holds. The query under Recovery removes them.
+  the book is already gone but `DELETE /api/books/:id` answers `500`; a retry then answers
+  `404`. The entries are orphans: `GET /api/progress` still returns them, but they match no book
+  the client holds. The query under Recovery removes them.
 - **Changing a book's `pages` does not recompute old entries.** The latest entry is what shows,
   and the next one uses the new count.
 - **A progress entry does not change the reading status.** "Finished" on Home will send the
