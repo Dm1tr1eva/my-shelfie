@@ -14,7 +14,7 @@ export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
         aria-label={t("shell.nav.main")}
         className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 pl-4 pr-2 sm:px-8 md:h-[68px]"
       >
-        <Logo />
+        <Logo narrowMarkOnly />
 
         <div className="flex items-center gap-3">
           <LanguageSwitch />

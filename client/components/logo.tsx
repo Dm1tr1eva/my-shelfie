@@ -21,14 +21,14 @@ function LogoMark({ className }: { className: string }) {
   );
 }
 
-export function Logo() {
+export function Logo({ narrowMarkOnly = false }: { narrowMarkOnly?: boolean }) {
   return (
     <Link
       href="/"
       className="inline-flex min-h-11 shrink-0 items-center gap-1.5 font-serif text-[21px] font-bold tracking-[-0.01em] text-page md:text-2xl"
     >
       <LogoMark className="h-[30px] w-[30px] shrink-0 md:h-[34px] md:w-[34px]" />
-      {APP_NAME}
+      <span className={narrowMarkOnly ? "max-[419px]:sr-only" : undefined}>{APP_NAME}</span>
     </Link>
   );
 }
