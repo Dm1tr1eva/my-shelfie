@@ -2,10 +2,10 @@ const { HttpError } = require("../errors/httpError");
 
 const DEFAULT_FAILURE = "Request failed";
 
-const BODY_ERRORS = {
-  "entity.too.large": { status: 413, message: "Request body is too large" },
-  "entity.parse.failed": { status: 400, message: "Request body is not valid JSON" },
-};
+const BODY_ERRORS = new Map([
+  ["entity.too.large", { status: 413, message: "Request body is too large" }],
+  ["entity.parse.failed", { status: 400, message: "Request body is not valid JSON" }],
+]);
 
 function failsWith(message) {
   return (req, res, next) => {
@@ -19,7 +19,7 @@ function handleErrors(err, req, res, next) {
     return res.status(err.status).json({ error: err.message });
   }
 
-  const bodyError = BODY_ERRORS[err.type];
+  const bodyError = BODY_ERRORS.get(err.type);
   if (bodyError) {
     return res.status(bodyError.status).json({ error: bodyError.message });
   }
