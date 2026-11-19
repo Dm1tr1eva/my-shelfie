@@ -96,7 +96,9 @@ describe("progress API", () => {
     const pastTheEnd = await record(alice, { bookId: short.id, page: 101 });
 
     assert.equal(withoutPages.status, 400);
+    assert.deepEqual(withoutPages.body, { error: "page: the book has no page count" });
     assert.equal(pastTheEnd.status, 400);
+    assert.deepEqual(pastTheEnd.body, { error: "page: the book has 100 pages" });
     assert.deepEqual(await latest(alice), []);
   });
 

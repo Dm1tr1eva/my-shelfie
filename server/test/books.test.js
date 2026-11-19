@@ -450,6 +450,6 @@ describe("book search API", () => {
     const response = await api("/api/books/search?q=dracula", { cookie: alice });
 
     assert.equal(response.status, 502);
-    assert.ok(!JSON.stringify(response.body).includes("API key"));
+    assert.deepEqual(response.body, { error: "Book search is unavailable right now" });
   });
 });

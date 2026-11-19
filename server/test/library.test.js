@@ -419,6 +419,7 @@ describe("library fields on books", () => {
     });
 
     assert.equal(response.status, 400);
+    assert.deepEqual(response.body, { error: "seriesId: unknown series" });
   });
 
   it("rejects moving an existing book into another user's series", async () => {
@@ -434,6 +435,7 @@ describe("library fields on books", () => {
     });
 
     assert.equal(response.status, 400);
+    assert.deepEqual(response.body, { error: "seriesId: unknown series" });
   });
 
   it("rejects a series number without a series", async () => {
