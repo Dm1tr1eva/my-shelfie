@@ -363,7 +363,7 @@ function BookForm({ book }: { book: Book }) {
                           onClick={() =>
                             patch({ links: draft.links.filter((item) => item.url !== link.url) })
                           }
-                          className="btn-outline w-11 px-0"
+                          className="btn-round"
                         >
                           <XIcon size={18} />
                         </button>

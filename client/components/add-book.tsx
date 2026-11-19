@@ -532,7 +532,7 @@ export function AddBook() {
                 type="button"
                 aria-label={t("add.sheet.close")}
                 onClick={() => setSheetFor(null)}
-                className="btn-outline w-11 px-0"
+                className="btn-round"
               >
                 <XIcon size={18} />
               </button>

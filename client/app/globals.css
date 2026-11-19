@@ -13,6 +13,11 @@
   --color-slate: #8090a8;
   --color-field: #6f7c93;
   --color-success: #1f4d3a;
+  --color-note: #f3e9e4;
+  --color-row-hover: #fbf8f7;
+  --color-input-strong: #ffffff;
+  --color-scrim: rgb(46 24 25 / 0.45);
+  --color-cover-placeholder: var(--color-mist);
 
   --font-serif: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
@@ -20,12 +25,18 @@
   --radius-card: 12px;
   --radius-control: 8px;
   --radius-cover: 3px 6px 6px 3px;
+  --radius-pill: 999px;
+  --radius-modal: 16px;
+  --radius-popover: 14px;
 
   --shadow-cover:
     0 1px 2px rgb(46 24 25 / 0.2), 0 12px 18px -12px rgb(46 24 25 / 0.55),
     inset 5px 0 0 rgb(236 228 229 / 0.14);
   --shadow-shelf: 0 10px 14px -10px rgb(46 24 25 / 0.5);
   --shadow-pop: 0 18px 32px -16px rgb(46 24 25 / 0.45);
+  --shadow-modal: 0 30px 60px -20px rgb(46 24 25 / 0.55);
+  --shadow-popover: 0 22px 44px -18px rgb(46 24 25 / 0.55), 0 0 0 1px var(--color-beige);
+  --shadow-tabbar: 0 14px 28px -12px rgb(46 24 25 / 0.6), 0 0 0 4px rgb(236 228 229 / 0.9);
 }
 
 @theme inline {
@@ -87,7 +98,12 @@
   .btn-primary,
   .btn-outline,
   .btn-beige {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-control px-4 py-2 font-semibold transition-colors disabled:opacity-50;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2 font-semibold transition-colors disabled:opacity-50;
+  }
+
+  .btn-primary,
+  .btn-outline {
+    @apply rounded-pill px-5 md:min-h-10;
   }
 
   .btn-primary {
@@ -95,11 +111,19 @@
   }
 
   .btn-outline {
-    @apply border border-field text-ink hover:bg-beige;
+    @apply border border-slate bg-card text-navy hover:bg-beige;
   }
 
   .btn-beige {
-    @apply bg-beige text-ink hover:opacity-90;
+    @apply rounded-control bg-beige text-ink hover:opacity-90;
+  }
+
+  .btn-round {
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-mist bg-card text-navy transition-colors hover:bg-beige disabled:opacity-50;
+  }
+
+  .num {
+    @apply font-sans font-bold tabular-nums lining-nums;
   }
 
   .field {
