@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountMenu } from "@/components/account-menu";
+import { Logo } from "@/components/logo";
 import { PlusIcon } from "@/components/icons";
 import { useT, type MessageKey } from "@/lib/i18n";
 
@@ -22,9 +23,7 @@ export function AppNav() {
         aria-label={t("shell.nav.main")}
         className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-8"
       >
-        <Link href="/" className="font-serif text-2xl font-bold">
-          my-shelfie
-        </Link>
+        <Logo />
 
         <ul className="flex items-center gap-1">
           {NAV_LINKS.map((link) => {

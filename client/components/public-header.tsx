@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LanguageSwitch } from "@/components/language-switch";
+import { Logo } from "@/components/logo";
 import { useT } from "@/lib/i18n";
 
 export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
@@ -13,9 +14,7 @@ export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
         aria-label={t("shell.nav.main")}
         className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-3 px-4 sm:px-8"
       >
-        <Link href="/" className="font-serif text-2xl font-bold">
-          my-shelfie
-        </Link>
+        <Logo />
 
         <div className="flex items-center gap-3">
           <LanguageSwitch />

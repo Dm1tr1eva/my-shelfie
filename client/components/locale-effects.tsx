@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { APP_NAME } from "@/lib/brand";
 import { useLocale, useT, type MessageKey } from "@/lib/i18n";
 
 const TITLES: { match: (path: string) => boolean; key: MessageKey }[] = [
@@ -28,7 +29,7 @@ export function LocaleEffects() {
 
   useEffect(() => {
     const entry = TITLES.find((item) => item.match(pathname));
-    if (entry) document.title = `${t(entry.key)} · my-shelfie`;
+    if (entry) document.title = `${t(entry.key)} · ${APP_NAME}`;
   }, [pathname, t]);
 
   return null;

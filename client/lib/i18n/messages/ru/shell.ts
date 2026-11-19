@@ -19,7 +19,7 @@ export const shell: Localized<typeof en> = {
     iosSteps: "нажмите «Поделиться», затем «На экран „Домой“».",
   },
   footer: {
-    tagline: "my-shelfie · pet-проект каталога книг",
+    tagline: "My Shelfie · pet-проект каталога книг",
     home: "Главная",
     source: "Исходный код на GitHub",
     privacy: "Конфиденциальность",

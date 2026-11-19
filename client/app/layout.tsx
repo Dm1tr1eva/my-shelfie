@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { AppFrame } from "@/components/app-frame";
 import { LocaleEffects } from "@/components/locale-effects";
 import { AuthProvider } from "@/lib/auth-context";
+import { APP_NAME } from "@/lib/brand";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,9 +17,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: { default: "my-shelfie", template: "%s · my-shelfie" },
+  title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: "A home library and a wishlist for people who collect books in series.",
-  appleWebApp: { capable: true, title: "my-shelfie", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
   other: { "apple-mobile-web-app-capable": "yes" },
 };
 

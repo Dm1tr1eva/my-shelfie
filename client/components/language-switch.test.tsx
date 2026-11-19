@@ -57,12 +57,12 @@ describe("LanguageSwitch", () => {
 
   it("sets the language of the page and the title of the tab", () => {
     render(<LocaleEffects />);
-    expect(document.title).toBe("Library · my-shelfie");
+    expect(document.title).toBe("Library · My Shelfie");
 
     act(() => setLocale("uk"));
 
     expect(document.documentElement.lang).toBe("uk");
-    expect(document.title).toBe("Бібліотека · my-shelfie");
+    expect(document.title).toBe("Бібліотека · My Shelfie");
   });
 });
 

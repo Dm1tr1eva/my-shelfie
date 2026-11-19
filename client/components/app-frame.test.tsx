@@ -171,7 +171,7 @@ describe("AppFrame", () => {
 
     await screen.findAllByRole("link", { name: "Wishlist" });
 
-    expect(screen.getByRole("link", { name: "my-shelfie" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/");
   });
 
   it("marks the section you are in as the current page", async () => {

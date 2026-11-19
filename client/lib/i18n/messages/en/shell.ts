@@ -16,7 +16,7 @@ export const shell = {
     iosSteps: "tap Share, then Add to Home Screen.",
   },
   footer: {
-    tagline: "my-shelfie · a book-catalogue pet project",
+    tagline: "My Shelfie · a book-catalogue pet project",
     home: "Home",
     source: "Source on GitHub",
     privacy: "Privacy",
