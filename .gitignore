@@ -18,3 +18,6 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 my-shelfie-design.zip
+
+# Design v3 handoff, input for implementation only
+design-v3/
