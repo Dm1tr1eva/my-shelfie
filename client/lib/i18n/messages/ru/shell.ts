@@ -12,6 +12,7 @@ export const shell: Localized<typeof en> = {
     signIn: "Войти",
   },
   account: { logOut: "Выйти" },
+  close: "Закрыть",
   labels: { inWishlist: "В вишлисте" },
   install: {
     button: "Установить приложение",

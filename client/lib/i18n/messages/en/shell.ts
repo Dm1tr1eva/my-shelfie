@@ -9,6 +9,7 @@ export const shell = {
     signIn: "Sign in",
   },
   account: { logOut: "Log out" },
+  close: "Close",
   labels: { inWishlist: "In wishlist" },
   install: {
     button: "Install app",
