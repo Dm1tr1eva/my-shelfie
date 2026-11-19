@@ -55,7 +55,8 @@ entries.
 **Search.** Results gain `pageCount` when Google has a positive one.
 
 **Errors.** New controllers keep the existing catch-all `500`: `app.js` has no central error
-handler. A principle 7 exception, fixed in its own PR.
+handler. A principle 7 exception, fixed in its own PR. *Resolved 2026-11-19:*
+[central-error-handler.md](central-error-handler.md).
 
 **Client.** Types follow the API; links use `languages` (the single picker writes one);
 `audio` gets names and a cover mark. The format toggle keeps two

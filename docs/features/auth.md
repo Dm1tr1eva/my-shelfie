@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-11-05
+**Last verified against code:** 2026-11-19
 
 ## What it does
 
@@ -44,7 +44,13 @@ route keeps `requireAuth` (`401` on a missing or invalid cookie). Both share one
 ## Shape
 
 Backend: `controllers/authController.js` still calls the `User` model directly (two layers,
-not three) — unlike `books`, not yet migrated; see `CLAUDE.md`'s applicability note. Frontend
+not three) — unlike `books`, not yet migrated; see `CLAUDE.md`'s applicability note. Like every
+controller it catches nothing: a validation failure is a `400` from `validation/validate.js`,
+anything unexpected reaches the central handler, which answers `500` with the route's text
+(`Registration failed`, `Login failed`, `Failed to fetch the current user`) —
+[central-error-handler.md](../designs/central-error-handler.md). One difference kept from before:
+an issue about the whole body (an unknown field) reads `: Unrecognized key: "x"` here, with no
+`body` in front, unlike the other modules. Frontend
 (`client/`): `lib/api.ts` (a `fetch` wrapper — always `credentials: "include"`, throws
 `ApiError` with the backend's message) and `lib/auth-context.tsx` (`AuthProvider`/`useAuth`,
 the single source of session state, checks `/me` once on mount). `app/login`,

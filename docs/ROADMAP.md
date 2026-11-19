@@ -158,7 +158,11 @@ in steps, each on its own branch:
    outline series and language labels, an "In wishlist" pill. Next to buy keeps its page but
    has no nav item until the Wishlist step —
    [designs/v3-tokens-shell.md](designs/v3-tokens-shell.md)
-3. ⬜ The following steps: the screens, the wishlist endpoint, `/api/stats`
+3. ✅ **One central error handler, 2026-11-19** — controllers stop catching, each route names
+   its `500` text, one Zod formatter, JSON for a body that is too large or not JSON; every other
+   message unchanged. New endpoints are written this way. Follow-up: move `auth` to a repository —
+   [designs/central-error-handler.md](designs/central-error-handler.md)
+4. ⬜ The following steps: the screens, the wishlist endpoint, `/api/stats`
 
 ## Course submission MVP — done 2026-10-09
 

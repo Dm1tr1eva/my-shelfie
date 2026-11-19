@@ -5,9 +5,9 @@
 `server/app.js` has no error-handling middleware. Every controller wraps its body in
 `try/catch` and answers `500` itself (`bookController.js:33`, `seriesController.js:23`, …), and
 `formatZodError` is copied into five controllers plus inline in `libraryController.js:7`.
-Principle 7 says single-step failures propagate; the v3 design recorded this as an exception
-to fix in its own PR. `express.json` errors bypass the controllers: a body over 512 KB answers
-an HTML `413`, malformed JSON an HTML `400`, while the client reads `{ error }`.
+The v3 design recorded this as a principle 7 exception to fix in its own PR. `express.json`
+errors bypass the controllers: a body over 512 KB answers an HTML `413`, malformed JSON an
+HTML `400`, while the client reads `{ error }`.
 
 ## Out of scope
 
@@ -28,10 +28,11 @@ the client already translates.
 
 **`server/errors/httpError.js`** (new): `HttpError(status, message)`, a message safe to send.
 Its own file because services, validation and middleware all import it, and placing it in
-`middleware/` would make services import transport code. The four existing domain errors
-extend it with today's response: `SeriesNotFoundError` `400 seriesId: unknown series`,
-`SeriesNumberWithoutSeriesError` `400 seriesNumber: needs a seriesId`, `ProgressPageError`
-`400` with its message, `UpstreamError` `502 Book search is unavailable right now`.
+`middleware/` would make services import transport code. Services throw it with today's
+response (`400 seriesId: unknown series`, `400 seriesNumber: needs a seriesId`, the two
+`400 page: …`); the three classes behind those existed only for the controllers'
+`instanceof`, so they go. `UpstreamError` stays, extending it (`502 Book search is unavailable
+right now`): a test tells it apart from a missing key.
 
 **`server/validation/validate.js`** (new): `validate(schema, input, rootLabel = "body")`
 returns the data or throws a `400` `HttpError`, replacing the six copies. `auth` passes `""`:
@@ -56,9 +57,8 @@ operation recovers today: `deleteBook`, `deleteSeries` and `updateBook` write se
 without compensation, as their feature docs record.
 
 **The 413 is reachable from a screen**: the book notes and series description textareas have
-no `maxLength`. Today the client fails to parse the HTML and shows its generic error; JSON would
-show untranslated English, so the message gets en/ru/uk translations. Malformed JSON cannot
-come from the client, so it gets none.
+no `maxLength`. As JSON it would surface untranslated English there, so it gets en/ru/uk
+translations. Malformed JSON cannot come from the client; no translation.
 
 ## Trade-offs accepted
 
@@ -70,7 +70,7 @@ come from the client, so it gets none.
   closes the socket if that changes.
 - **A stack can carry data.** A duplicate-key error names the email; it needs two simultaneous
   registrations of one address, and only the author reads the logs.
-- **The `auth` root label** keeps an inconsistency; unifying it is a visible message change.
+- **The `auth` root label** stays inconsistent: changing it changes a message.
 
 ## Cost
 

@@ -23,6 +23,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   test fails for no reason in its own file. `npm test` already passes the flag. The files added
   for v3 (`bookDetails`, `seriesDetails`, `progress`, `yearGoal`) share their server, session
   and fixture setup through `test/helpers/app.js`; the older files keep their own copies.
+- **Force a `500` by mocking a service, not the database.** `errors.test.js` replaces
+  `bookService.listBooks` with `t.mock.method`, which works because controllers call
+  `bookService.listBooks(...)` through the module object; a destructured import would keep the
+  real function. Silence `console.error` the same way, and assert on its calls: the log line is
+  the contract there.
 - **A test nobody has seen fail is a guess.** Break the behaviour it covers (remove the
   ownership filter, drop `.strict()`, restore the old `401`) and confirm exactly that test
   goes red.

@@ -41,6 +41,14 @@ The repository also absorbs Mongoose's `CastError`: a malformed id returns `null
 know to catch. Validation schemas live in
 `validation/bookSchemas.js`; the response shape in `dto/bookDto.js`.
 
+Errors are not caught in the controller. Validation goes through `validation/validate.js`,
+which throws a `400` `HttpError` with each issue as `field: message` (`body: …` for the
+whole body), joined by `; `; a service throws `HttpError` for a failure it knows (`400
+seriesId: unknown series`, `400 seriesNumber: needs a seriesId`). Anything else reaches the
+central handler (`middleware/errors.js`), which answers `500` with the text the route names
+through `failsWith` (`Failed to create book`, …) and logs the method, path and stack. Design:
+[../designs/central-error-handler.md](../designs/central-error-handler.md).
+
 ## Endpoints
 
 All routes are mounted at `/api/books` and require `requireAuth` (a valid `token` cookie).
@@ -109,8 +117,8 @@ the terms it honours: [google-books-search.md](../designs/google-books-search.md
   title is dropped. `link` is `canonicalVolumeLink`, falling back to `infoLink`, which for
   e-books is a Google Play Books page.
 - **Failure is a `502`.** A non-2xx answer, a network error or the 8-second timeout throws
-  `UpstreamError`, and the controller answers `502` with a generic message. Google's own text
-  never reaches the client. A missing key is a plain `500`: a misconfiguration is not Google's
+  `UpstreamError`, an `HttpError` the central handler answers as `502` with a generic message.
+  Google's own text never reaches the client. A missing key is a plain `500`: a misconfiguration is not Google's
   fault. Google answered `503` twice in a row on 2026-10-08 and was fine a minute later.
 - **The key stays on the server.** It is read from the environment, sent only to Google, and a
   test pins that it cannot appear in a response.
@@ -250,8 +258,10 @@ both the filter every query uses and the sort `GET /` applies.
   minutes an open tab running the old client can meet the new server (or the new client the old
   server) and fail to draw link badges. No compatibility code is kept for that window: reload
   open tabs after a deploy.
-- **A body over 512 KB answers `413` as HTML.** There is no central error handler to turn it into
-  `{ error }`; nothing the client sends within the documented limits gets near it.
+- **A body over 512 KB answers `413 { error: "Request body is too large" }`**, and malformed
+  JSON `400 { error: "Request body is not valid JSON" }`. Nothing within the documented limits
+  gets near 512 KB, but the notes textarea has no `maxLength`, so the client translates the
+  first; it never sends the second.
 - **No rate limiting, no idempotency key on `POST /`.** A double-submit creates two books. No
   concrete user action produces this today (one browser tab, no retry logic on the frontend
   yet), so it is not built — see `CLAUDE.md` principle 2.
