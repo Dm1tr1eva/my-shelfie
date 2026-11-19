@@ -48,6 +48,16 @@ export function ArrowLeftIcon({ size }: IconProps) {
   );
 }
 
+export function HeadphonesIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M4 15v-3a8 8 0 0 1 16 0v3" />
+      <rect x="3" y="14" width="4" height="7" rx="1.5" />
+      <rect x="17" y="14" width="4" height="7" rx="1.5" />
+    </Svg>
+  );
+}
+
 export function PlusIcon({ size }: IconProps) {
   return (
     <Svg size={size}>
