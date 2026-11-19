@@ -1,10 +1,11 @@
 const { z } = require("zod");
 const { objectId } = require("./objectId");
+const { BOOK_LENGTH_MAX } = require("../constants/library");
 
 const createProgressSchema = z
   .object({
     bookId: objectId,
-    page: z.number().int().min(0).max(10000).optional(),
+    page: z.number().int().min(0).max(BOOK_LENGTH_MAX).optional(),
     percent: z.number().int().min(0).max(100).optional(),
   })
   .strict()

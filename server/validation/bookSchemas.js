@@ -7,15 +7,22 @@ const {
   DESIRE_LEVELS,
   AGE_RATINGS,
   RECOMMEND,
+  MOOD_NAME_MAX,
+  MOODS_MAX,
+  BOOK_LENGTH_MAX,
 } = require("../constants/library");
 const { genreList, genreName } = require("./genre");
 const { uniqueTextList } = require("./textList");
 const { objectId } = require("./objectId");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
-const wholeCount = z.number().int().min(1).max(10000);
+const wholeCount = z.number().int().min(1).max(BOOK_LENGTH_MAX);
 
-const moodList = uniqueTextList(z.string().trim().min(1).max(40), 12, "Moods must be unique");
+const moodList = uniqueTextList(
+  z.string().trim().min(1).max(MOOD_NAME_MAX),
+  MOODS_MAX,
+  "Moods must be unique",
+);
 
 const quoteSchema = z
   .object({

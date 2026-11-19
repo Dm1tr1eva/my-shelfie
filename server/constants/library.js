@@ -9,6 +9,9 @@ const RECOMMEND = ["yes", "maybe", "no"];
 const EXPECTED_SOURCES = ["fantlab", "ai", "manual"];
 const GENRE_NAME_MAX = 40;
 const GENRES_MAX = 12;
+const MOOD_NAME_MAX = 40;
+const MOODS_MAX = 12;
+const BOOK_LENGTH_MAX = 10000;
 
 module.exports = {
   OWNERSHIP,
@@ -22,4 +25,7 @@ module.exports = {
   EXPECTED_SOURCES,
   GENRE_NAME_MAX,
   GENRES_MAX,
+  MOOD_NAME_MAX,
+  MOODS_MAX,
+  BOOK_LENGTH_MAX,
 };
