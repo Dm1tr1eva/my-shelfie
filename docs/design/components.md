@@ -4,6 +4,9 @@ Props are suggestions. "See" points to the mockup that shows the component best.
 
 ## Layout
 
+> **Superseded in part, 2026-11-19.** The v3 shell and labels replace this Layout section (logo A1 "My Shelfie", Library · Wishlist only, a floating three-icon tab bar, a mobile header with the account) and the Chips section (status as a dot and a word, outline series and language labels, "In wishlist" pill) — see [../designs/v3-tokens-shell.md](../designs/v3-tokens-shell.md).
+
+
 **`AppNav`** (≥ md). Navy bar, 64–68px. Logo (Playfair 700) · Library / Wishlist / Next to buy links (active: `bg-mist/20 text-page`) · `Add a book` button (`bg-beige text-ink`) · account avatar button. See `library-1440`. The logo links to `/`, the public home page — not to Library. Changed 2026-10-15 after the handoff: a signed-in user otherwise had no way back to the home page.
 
 **`TabBar`** (< md). Fixed bottom, navy, 78px, 5 columns: Library · Wishlist · **Add** (56px burgundy circle raised 28px above the bar, ringed with the page colour) · Next to buy · Account. Active item: pill highlight behind the icon, bold label, `aria-current="page"`. Pages need `pb-[100px]` so content clears it. See `components-1440`, `library-375`.

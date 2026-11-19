@@ -175,7 +175,15 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   the cursor in the note; "Edit series" puts it in the title.
 - On the series page the note is edited with a proper outline button ("Add a note" or "Edit
   note", with a pencil icon).
-- `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`
+- `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`.
+  Since the v3 shell (2026-11-19) `/next` has no nav item; it works by URL until the Wishlist
+  step replaces it — [../designs/v3-tokens-shell.md](../designs/v3-tokens-shell.md)
+- Labels (`components/chips.tsx`, the v3 rules of one form per meaning): an owned book shows its
+  reading status as a dot and a word (`StatusDot`: To read, Reading, Read, Dropped; «В планах» /
+  «У планах» in Russian and Ukrainian); a wanted book on the series page and in list rows shows
+  the bookmark pill "In wishlist" (`WishlistLabel`); series status is an outline pill, a link
+  language a one-colour outline code, a number `#N` in Inter tabular figures, on covers a white
+  pill top-left
 - Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
   and shop language. Values within a group are OR, groups are AND, and each option's count is
   taken among the books that match the other groups. From 768 px each group is a button with a

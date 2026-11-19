@@ -30,6 +30,9 @@ Text on fills:
 
 ## Chip and badge map
 
+> **Superseded in part, 2026-11-19.** The v3 shell and labels replace this map and the 8px buttons (primary and secondary are pills, plus a round icon button) — see [../designs/v3-tokens-shell.md](../designs/v3-tokens-shell.md).
+
+
 | Meaning | Style |
 |---|---|
 | Ownership: In my library | `bg-burgundy text-card` |
