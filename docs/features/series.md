@@ -1,6 +1,6 @@
 # Feature: series, ownership and "next to buy"
 
-**Last verified against code:** 2026-10-14
+**Last verified against code:** 2026-11-19
 
 ## What it does
 
@@ -34,9 +34,9 @@ Everything requires a session (`401` otherwise).
 | `POST /api/series` | `201` with the series. `400` on an empty title, an unknown status, a `totalBooks` that is not a whole number from 1 to 200, or an unrecognised field. |
 | `GET /api/series` | `200` with `{ series }`, each with `ownedCount` and `wantedCount`, newest first. |
 | `GET /api/series/:id` | `200` with `{ series, books }`; books by number, unnumbered last. `404` for a missing, foreign or malformed id. |
-| `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note` and `totalBooks`. `404` as above. |
+| `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note`, `totalBooks` and `annotation`; `null` for `ageRating`, `desire` or `expected` answers `400`. `404` as above. |
 | `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
-| `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. The page does not send them: it fetches once and filters several values per group in the browser. |
+| `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`; a link matches when any of its languages does), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. The page does not send them: it fetches once and filters several values per group in the browser. |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
 | `GET /api/books` | Gains `?ownership=owned\|wanted`, `?seriesId=`, `?genre=`, `?trope=` and `?q=` (a case-insensitive text match on title and author, treated as plain text). `400` on an invalid value. |
 
@@ -78,12 +78,20 @@ as a dashed tile from the series' numbers.
 (`ongoing | readable | complete | unknown`; `readable` is a series still coming out whose books so
 out far can be read as they are, see [../designs/readable-series.md](../designs/readable-series.md)), `note`, `totalBooks` (optional whole number, 1 to 200: how
 many books the series has or has announced), `genres` (free text: 1 to 40 characters, up to 12, unique ignoring case), `tropes` (up to 30, 60
-characters each), `annotation` (up to 5000 characters), `tagsMerged` (internal), timestamps;
-index `{ userId, createdAt }`.
+characters each), `annotation` (up to 5000 characters), `ageRating` (`none | 12 | 16 | 18`,
+default `none`), `desire` (`high | normal | someday`, default `normal`, for the wishlist row of
+the series), `expected` (up to 50 `{ number, expectedYear?, source }`: a number above 0, unique
+in the list; a whole year from 1900 to 2200; `source` one of `fantlab | ai | manual`; replaced
+as a whole, `[]` empties it), `tagsMerged` (internal), timestamps; index `{ userId, createdAt }`.
+Series saved before the v3 fields read with the defaults and an empty `expected`. A book of the
+series is returned with the series' `ageRating`. Design:
+[../designs/v3-data-model.md](../designs/v3-data-model.md).
 
 `Book` gains `ownership` (`owned | wanted`), `seriesId`, `seriesNumber`, `genres` (the same
-rule as on a series, in `validation/genre.js`), `tropes`, `links` (`{ kind, language, url }` with `kind` one of `paper | ebook | free | online`, default `paper`, http(s)
-only), `notes` and `annotation`; index `{ userId, seriesId, seriesNumber }`. The
+rule as on a series, in `validation/genre.js`), `tropes`, `links` (`{ kind, languages, url }` with `kind` one of `paper | ebook | audio | free | online`,
+default `paper`; `languages` 1 to 4 distinct values of `ru | uk | en | other`; http(s) only — a
+body with the old single `language` answers `400`, and a link stored before reads as
+`languages: [language]`), `notes` and `annotation`; index `{ userId, seriesId, seriesNumber }`. The
 client offers a list of defaults (`DEFAULT_GENRES` in `lib/books.ts`) plus every genre
 the user's own books and series use (`lib/genres.ts`), and a field to add another.
 Design: [../designs/custom-genres.md](../designs/custom-genres.md).
@@ -109,6 +117,8 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
 - **A missing number has no title.** Only the count of the series is stored, not its list of
   titles, so `missing` items say "Book 4" until the book is added. Fetching titles belongs to
   the AI stage.
+- **An expected number stays when its book arrives.** `expected` is not cleaned when a book with
+  that number is added; whoever reads it skips numbers that have a book.
 - **The size is the author's word.** It is not checked against anything; a book numbered above
   it raises the total shown, it does not fail.
 

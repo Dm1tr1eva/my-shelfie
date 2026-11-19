@@ -14,7 +14,7 @@ into `notes` in the database.
 
 ## Scale assumptions
 
-Hundreds of books per user, a few progress entries per book a week, one replica.
+Hundreds of books per user, a few progress entries a week, one replica.
 
 ## Approach
 
@@ -35,7 +35,7 @@ when empty. The Next-to-buy language filter matches any of them.
 `review`. Any `PATCH` of `notes`, `null` included, unsets `review`: the UI showed the review as
 the note, so the edit replaces it and clearing cannot resurrect it.
 
-**Series.** `ageRating`, `desire` as on books. `expected`: up to 50 `{ number (> 0),
+**Series.** `ageRating` (overrides a series book's own), `desire`, as on books. `expected`: up to 50 `{ number (> 0),
 expectedYear? (1900–2200), source }`, numbers unique, replaced as a whole. An entry whose number
 later gets a book stays; readers skip it.
 
@@ -55,23 +55,23 @@ entries (the delete dialog promises "with its progress").
 **Search.** Results gain `pageCount` when Google has a positive one.
 
 **Client.** Types follow the API; links read and write `languages` (the single picker writes one
-element); `audio` gets names in `en`, `ru`, `uk` and a cover mark. The format toggle keeps two
+element); `audio` gets `en`, `ru`, `uk` names and a cover mark. The format toggle keeps two
 options: three overflow 320 px, and the v3 panel replaces it.
 
-**Lost:** `yearGoals` as a year → books map. Nothing draws past goals.
+**Lost:** a year → books map. Nothing draws past goals.
 
 ## Trade-offs accepted
 
 - `review` stays stored until a one-off cleanup; the DTO hides it.
 - Book and entries are deleted in two writes, not a transaction: an orphan matches no book,
   and a recovery query exists.
-- Changing `pages` does not recompute stored percents.
+- New `pages` do not recompute stored percents.
 - Nothing ties `durationMinutes` to audiobooks or `pages` to print.
 - The current client cannot choose audiobook until the v3 panel.
 
 ## Cost
 
-Server: 1 model, 2 repository/service/controller trios, 2 routes, schemas, DTOs, about 50 tests.
+Server: 1 model, 2 repository/service/controller trios, 2 routes, schemas, DTOs, about 45 tests.
 Client: types, links, i18n keys, a cover icon. No migration, no dependency.
 
 ## Open questions

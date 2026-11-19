@@ -139,6 +139,21 @@ the public header. The logo now links to `/`, and the footer, shared by every pa
 `Home` link — the only way back to the home page on a phone. Checked in a browser at 375 and
 1280 px; [design/components.md](design/components.md) notes the deviation from the handoff.
 
+## v3 redesign — in progress
+
+The v3 handoff (kept out of git, in `design-v3/`) turns the book page into a side panel, Next to
+buy into a three-group Wishlist and adds Home with stats, progress and a year goal. It is built
+in steps, each on its own branch:
+
+1. ✅ **Data model, 2026-11-19** — audiobooks and audio links; pages, duration, moods, quotes,
+   would-recommend, desire and age on a book; age, desire and expected numbers on a series; several
+   languages per link; `review` read as `notes`; a progress log (`/api/progress`) and a year goal
+   (`/api/year-goal`); the page count from Google Books. The current client reads the new shape
+   and names audiobooks; no new screens —
+   [designs/v3-data-model.md](designs/v3-data-model.md),
+   [features/reading-progress.md](features/reading-progress.md)
+2. ⬜ The following steps: shell and tokens, the screens, the wishlist endpoint, `/api/stats`
+
 ## Course submission MVP — done 2026-10-09
 
 The project is being submitted as a replacement pet project for a course homework. The

@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-11-05
+**Last verified against code:** 2026-11-19
 
 ## What it does
 
@@ -13,9 +13,17 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
 - A book always belongs to exactly one user (`Book.userId`), set once at creation from the
   authenticated session and never from the request body.
 - `status` is one of `want | reading | dropped | read`; `rating`, when present, is `1`–`5`.
-- `format` is `paper` or `ebook`, default `paper`, chosen per book and not shared with the
-  series. A book saved before the field existed reads as `paper`: Mongoose applies the schema
+- `format` is `paper`, `ebook` or `audio`, default `paper`, chosen per book and not shared with
+  the series. A book saved before the field existed reads as `paper`: Mongoose applies the schema
   default when it loads the document, so there is no migration and the DTO adds no fallback.
+- `desire` is `high | normal | someday`, default `normal`; `ageRating` is `none | 12 | 16 | 18`,
+  default `none`. The default is the "not set" value, so neither can be cleared with `null`. Old
+  books read with the defaults, the same way as `format`. A book in a series is returned with the
+  series' `ageRating`; its own value is kept and comes back if it leaves the series.
+- `review` is no longer written. It meant the same as `notes` in the v3 design: the DTO
+  returns an old `review` as `notes` when `notes` is empty and never returns `review`, and any
+  `PATCH` of `notes` (`null` included) also clears the stored `review`, so clearing the note
+  cannot bring the review back. Design: [../designs/v3-data-model.md](../designs/v3-data-model.md).
 - A caller can only see, change or delete their own books. A book that exists but belongs to
   someone else is indistinguishable, from the outside, from a book that does not exist.
 
@@ -41,31 +49,42 @@ it does not get silently dropped.
 
 | Method and path | Answers |
 |---|---|
-| `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field). |
+| `POST /` | `201` with the created book. `400` on a schema violation (missing `title`/`author`, bad `status`/`rating`, an unrecognized field — `review` included). |
 | `GET /` | `200` with `{ books, total, page, limit }`, scoped to the caller. `?status=` filters; `?page=`/`?limit=` paginate (default `page=1`, `limit=20`). Also `?ownership=`, `?seriesId=`, `?genre=`, `?trope=`, `?q=` — see [series.md](series.md). |
 | `GET /search?q=&startIndex=` | `200` with `{ results, nextStartIndex? }`, up to ten Google Books matches for the text, starting at `startIndex` (0 to 40, default 0); `nextStartIndex` is present only when another page may follow. `400` unless `q` is 3–200 characters and `startIndex` is the only other parameter. `502` when Google fails. See "Book search" below. Registered before `/:id`, or `search` would be read as an id. |
 | `GET /:id` | `200` with the book. `404` if it does not exist, belongs to another user, or `:id` is not a valid ObjectId. |
 | `PATCH /:id` | `200` with the updated book. `400` if the body carries no recognized field, or a value fails schema validation. `404` under the same three conditions as `GET /:id`. |
-| `DELETE /:id` | `204` with no body. `404` under the same three conditions as `GET /:id`. |
+| `DELETE /:id` | `204` with no body; the book's progress entries go with it ([reading-progress.md](reading-progress.md)). `404` under the same three conditions as `GET /:id`. |
 
 **What "field absent" means on `PATCH`:** a field missing from the body is left untouched. A
 body with none of the schema's fields present answers `400` ("No updatable fields provided").
 
 **What `null` means on `PATCH`:** clear the field. Allowed for the optional fields only —
-`coverUrl`, `description`, `rating`, `review`, `startedAt`, `finishedAt`; `null` for
-`title`, `author` or `status` answers `400`. Mongoose stores `null`, and the DTO omits it, so a
+`coverUrl`, `description`, `rating`, `pages`, `durationMinutes`, `recommend`, `startedAt`,
+`finishedAt`; `null` for `title`, `author`, `status`, `desire`, `ageRating`, `moods` or `quotes`
+answers `400`. Mongoose stores `null`, and the DTO omits it, so a
 cleared field is absent from the response exactly like one that was never set. A cleared date
 stays cleared — `null` is not coerced into 1970; a test pins that.
 
 **Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
-is their own book), `title`, `author`, `status`, `format`, `createdAt`, `updatedAt`, plus whichever of
-`coverUrl`/`googleVolumeId`/`description`/`rating`/`review`/`startedAt`/`finishedAt` are set. An unset optional
-field is omitted from the object, not sent as `null`. No `_id`, no `__v`.
+is their own book), `title`, `author`, `status`, `format`, `desire`, `ageRating`, `moods`,
+`quotes`, `createdAt`, `updatedAt`, plus whichever of
+`coverUrl`/`googleVolumeId`/`description`/`rating`/`pages`/`durationMinutes`/`recommend`/`startedAt`/`finishedAt`
+are set. An unset optional field is omitted from the object, not sent as `null`. No `_id`, no
+`__v`, no `review`.
+
+**The v3 fields and their limits.** `pages` and `durationMinutes`: whole numbers from 1 to
+10,000, allowed on any format (the client shows duration for an audiobook and pages otherwise).
+`moods`: up to 12, each 1–40 characters after trimming, unique ignoring letter case — the genre
+rule, through `validation/textList.js`. `recommend`: `yes | maybe | no`. `quotes`: up to 50
+`{ text, page? }`, text 1–2,000 characters after trimming, page 1–10,000, no other field;
+replaced as a whole, an empty array clears them.
 
 ## Book search
 
 `services/googleBooksService.js` calls the Google Books `volumes` endpoint with `GOOGLE_BOOKS_API_KEY`
-and maps each volume to `{ volumeId, title, authors, year?, coverUrl?, link? }`. Design and
+and maps each volume to `{ volumeId, title, authors, year?, pageCount?, coverUrl?, link? }`
+(`pageCount` only when Google has a positive whole number, so the add flow can prefill `pages`). Design and
 the terms it honours: [google-books-search.md](../designs/google-books-search.md).
 
 - **Free text only.** `q` goes to Google as typed: `inauthor:` and `intitle:` find nothing for
@@ -127,14 +146,19 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
 - Library and Wishlist show standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to get it" shows for a wishlist book only: its links grouped by what they lead to
-  (Buy paper, Buy e-book, Free e-book download, Read online), each with a language badge, and
-  the same four kinds as a chip on every link in Next to buy and as a "Link type" filter —
-  [../designs/link-kinds.md](../designs/link-kinds.md).
+  (Buy paper, Buy e-book, Audio, Free e-book download, Read online), each with a badge per
+  language of the link, and the same five kinds as a chip on every link in Next to buy and as a "Link type" filter —
+  [../designs/link-kinds.md](../designs/link-kinds.md). A link carries `languages`, an array;
+  the pickers on the book page and the details step still choose one language and write a
+  one-element array, and changing the language of a link with several on the details step
+  replaces them with the one chosen. Filters and badges read every language of a link.
 - Every cover of a saved book carries a round mark in its top-right corner, an open book for
-  paper and an e-reader for an e-book (the `format` prop of `BookCover`). The mark is a
-  `role="img"` labelled "Paper book" or "E-book", so the format is also in words. It shows in
+  paper, an e-reader for an e-book and headphones for an audiobook (the `format` prop of
+  `BookCover`; the headphones are drawn in `book-cover.tsx` until the icon set is reworked). The
+  mark is a `role="img"` labelled "Paper book", "E-book" or "Audiobook", so the format is also in
+  words. It shows in
   the library tiles and rows, the series page, Next to buy, the book page and the details step;
-  not on search results. The format is a two-option radio group, "Format", on the book page
+  not on search results. The format is a two-option radio group, paper or e-book, "Format", on the book page
   (saved through the unsaved-changes bar) and on the details step (sent only when changed) —
   [../designs/book-format.md](../designs/book-format.md). The details step also asks for the
   reading status and the rating of a book that is in the library (not of a wishlist book), and
@@ -185,8 +209,9 @@ use `components/select.tsx`, a listbox styled with the tokens, never the browser
 ## Data
 
 One collection, `Book` (`server/models/book.js`): `userId`, `title`, `author`, `coverUrl`,
-`googleVolumeId`, `description`, `format`, `status`, `rating`, `review`, `startedAt`, `finishedAt`, plus `createdAt` /
-`updatedAt` from `timestamps: true`. Compound index `{ userId: 1, createdAt: -1 }` — covers
+`googleVolumeId`, `description`, `format`, `pages`, `durationMinutes`, `status`, `rating`, `review`
+(legacy, read only), `moods`, `recommend`, `quotes`, `desire`, `ageRating`, `startedAt`,
+`finishedAt`, plus `createdAt` / `updatedAt` from `timestamps: true`. Compound index `{ userId: 1, createdAt: -1 }` — covers
 both the filter every query uses and the sort `GET /` applies.
 
 ## Trade-offs accepted
@@ -197,6 +222,13 @@ both the filter every query uses and the sort `GET /` applies.
 - **The service layer has no logic of its own yet.** It exists because the three-layer shape
   is required outright, not because a use case needs it today. Revisit once a real invariant
   (e.g. `finishedAt >= startedAt`) shows up — it belongs here, not in the controller.
+- **`review` stays in the database.** The DTO hides it behind `notes`; moving the text is a
+  one-off query under Recovery, not code.
+- **Nothing ties `durationMinutes` to an audiobook or `pages` to print.** A book switched to
+  audio keeps its pages; the client decides which to show.
+- **The current client cannot make a book an audiobook.** The format toggle keeps two options
+  (three overflow at 320 px) until the v3 book panel replaces it; an audiobook made through the
+  API shows the toggle with nothing selected and a headphones mark on its cover.
 - **No rate limiting, no idempotency key on `POST /`.** A double-submit creates two books. No
   concrete user action produces this today (one browser tab, no retry logic on the frontend
   yet), so it is not built — see `CLAUDE.md` principle 2.
@@ -210,6 +242,16 @@ orphaned book is a direct Mongo query:
 
 ```js
 db.books.deleteMany({ userId: { $nin: db.users.distinct("_id") } })
+```
+
+To move old reviews into empty notes for good (the DTO already shows them there), once. A
+book that has both keeps its `review` hidden; merge those by hand if the text matters:
+
+```js
+db.books.updateMany(
+  { review: { $nin: [null, ""] }, notes: { $in: [null, ""] } },
+  [{ $set: { notes: "$review" } }, { $unset: "review" }],
+)
 ```
 
 ## ADRs

@@ -18,6 +18,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 - **Guard `after()` when `before()` can fail.** If the database connection fails in
   `before()`, no HTTP server exists yet; closing `undefined` throws a second, meaningless
   error that buries the real one.
+- **Run several server test files with `--test-concurrency=1`.** `node --test a.test.js
+  b.test.js` runs the files in parallel, and they wipe the same database under each other: a
+  test fails for no reason in its own file. `npm test` already passes the flag. The files added
+  for v3 (`bookDetails`, `seriesDetails`, `progress`, `yearGoal`) share their server, session
+  and fixture setup through `test/helpers/app.js`; the older files keep their own copies.
 - **A test nobody has seen fail is a guess.** Break the behaviour it covers (remove the
   ownership filter, drop `.strict()`, restore the old `401`) and confirm exactly that test
   goes red.
