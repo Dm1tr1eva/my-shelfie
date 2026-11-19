@@ -1,10 +1,10 @@
 export const privacy = {
   title: "Privacy",
-  intro: "What my-shelfie keeps about you, and why. Last updated 13 October 2026.",
+  intro: "What My Shelfie keeps about you, and why. Last updated 13 October 2026.",
   onThisPage: "On this page",
   store: {
     title: "What we store",
-    lead: "To run your catalogue, my-shelfie keeps:",
+    lead: "To run your catalogue, My Shelfie keeps:",
     account:
       "your account: your name, your email address and a hash of your password. The password itself is never stored;",
     books:
@@ -21,7 +21,7 @@ export const privacy = {
   },
   links: {
     title: "Shop links",
-    body: "Links are stored exactly as you paste them. my-shelfie does not read the shops' pages, does not track clicks and does not add affiliate codes. A link opens the shop in a new tab.",
+    body: "Links are stored exactly as you paste them. My Shelfie does not read the shops' pages, does not track clicks and does not add affiliate codes. A link opens the shop in a new tab.",
   },
   hosting: {
     title: "Where your data lives",
