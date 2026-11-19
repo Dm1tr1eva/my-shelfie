@@ -6,7 +6,7 @@ const assert = require("node:assert/strict");
 const ProgressEntry = require("../models/progressEntry");
 const { useTestApp } = require("./helpers/app");
 
-const { api, signIn, addBook } = useTestApp();
+const { api, signIn, userIdOf, addBook } = useTestApp();
 
 function record(cookie, body) {
   return api("/api/progress", { method: "POST", cookie, body });
@@ -40,15 +40,29 @@ describe("progress API", () => {
     assert.ok(!Number.isNaN(Date.parse(response.body.date)));
   });
 
-  it("records a percent and works out the page when the book has pages", async () => {
+  it("records a percent and works out the nearest page when the book has pages", async () => {
     const alice = await signIn("alice@example.com");
-    const book = await addBook(alice, { pages: 412 });
+    const up = await addBook(alice, { pages: 170 });
+    const down = await addBook(alice, { pages: 130 });
 
-    const response = await record(alice, { bookId: book.id, percent: 25 });
+    const roundedUp = await record(alice, { bookId: up.id, percent: 1 });
+    const roundedDown = await record(alice, { bookId: down.id, percent: 1 });
+
+    assert.equal(roundedUp.status, 201);
+    assert.equal(roundedUp.body.percent, 1);
+    assert.equal(roundedUp.body.page, 2);
+    assert.equal(roundedDown.body.page, 1);
+  });
+
+  it("records page 0 as the start of the book", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice, { pages: 300 });
+
+    const response = await record(alice, { bookId: book.id, page: 0 });
 
     assert.equal(response.status, 201);
-    assert.equal(response.body.percent, 25);
-    assert.equal(response.body.page, 103);
+    assert.equal(response.body.page, 0);
+    assert.equal(response.body.percent, 0);
   });
 
   it("records only a percent for a book with no pages", async () => {
@@ -138,11 +152,28 @@ describe("progress API", () => {
     await record(alice, { bookId: second.id, percent: 60 });
     const entries = await latest(alice);
 
-    assert.equal(entries.length, 2);
+    assert.deepEqual(
+      entries.map((entry) => entry.bookId),
+      [second.id, first.id],
+    );
     const byBook = Object.fromEntries(entries.map((entry) => [entry.bookId, entry]));
     assert.equal(byBook[first.id].page, 30);
     assert.equal(byBook[first.id].percent, 30);
     assert.equal(byBook[second.id].percent, 60);
+  });
+
+  it("takes the later of two entries saved at the same moment", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice, { pages: 100 });
+    const userId = await userIdOf(alice);
+    const date = new Date("2026-11-01T10:00:00Z");
+
+    await ProgressEntry.create({ userId, bookId: book.id, date, page: 10, percent: 10 });
+    await ProgressEntry.create({ userId, bookId: book.id, date, page: 20, percent: 20 });
+    const entries = await latest(alice);
+
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].page, 20);
   });
 
   it("lists only the caller's progress", async () => {

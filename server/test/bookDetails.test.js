@@ -216,6 +216,18 @@ describe("the review becomes the note", () => {
     assert.equal(cleared.body.notes, undefined);
   });
 
+  it("clears an old review when the note is cleared before anything was written to it", async () => {
+    const alice = await signIn("alice@example.com");
+    const id = await insertOldBook(alice, { review: "Loved it" });
+
+    const cleared = await patchBook(alice, id, { notes: null });
+    const reread = await api(`/api/books/${id}`, { cookie: alice });
+
+    assert.equal(cleared.status, 200);
+    assert.equal(cleared.body.notes, undefined);
+    assert.equal(reread.body.notes, undefined);
+  });
+
   it("keeps the old review when something other than the note changes", async () => {
     const alice = await signIn("alice@example.com");
     const id = await insertOldBook(alice, { review: "Loved it" });

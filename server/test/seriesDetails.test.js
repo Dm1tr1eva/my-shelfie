@@ -98,6 +98,7 @@ describe("series details", () => {
       [{ number: 0, source: "ai" }],
       [{ number: 4, expectedYear: 2027.5, source: "ai" }],
       [{ number: 4, expectedYear: 1899, source: "ai" }],
+      [{ number: 4, expectedYear: 2201, source: "ai" }],
       [
         { number: 4, source: "ai" },
         { number: 4, source: "manual" },
