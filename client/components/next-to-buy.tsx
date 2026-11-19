@@ -82,7 +82,9 @@ function Row({
                   className="inline-flex min-h-11 max-w-full flex-wrap items-center gap-2 break-all rounded-control bg-page px-2 text-sm font-medium text-navy"
                 >
                   <LinkKindBadge kind={link.kind} />
-                  <LangBadge language={link.language} />
+                  {link.languages.map((language) => (
+                    <LangBadge key={language} language={language} />
+                  ))}
                   {hostOf(link.url)}
                   <ExternalLinkIcon size={14} />
                 </a>

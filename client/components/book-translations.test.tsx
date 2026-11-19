@@ -18,7 +18,7 @@ const WANTED = book({
   title: "Ash One",
   ownership: "wanted",
   genres: ["Fantasy", "Slow magic"],
-  links: [{ kind: "ebook", language: "uk", url: "https://www.example.com/ash" }],
+  links: [{ kind: "ebook", languages: ["uk"], url: "https://www.example.com/ash" }],
 });
 
 function serve() {
@@ -45,7 +45,7 @@ function TagHarness() {
 }
 
 function LinksHarness() {
-  const [rows, setRows] = useState<LinkRow[]>([{ kind: "paper", language: "uk", url: "nope" }]);
+  const [rows, setRows] = useState<LinkRow[]>([{ kind: "paper", languages: ["uk"], url: "nope" }]);
   return <ShopLinkEditor rows={rows} onChange={setRows} />;
 }
 

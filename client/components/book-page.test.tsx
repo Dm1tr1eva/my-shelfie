@@ -170,7 +170,7 @@ describe("BookPage", () => {
         path: "/api/books/b1",
         body: {
           ownership: "wanted",
-          links: [{ kind: "paper", language: "ru", url: "https://www.labirint.ru/books/1" }],
+          links: [{ kind: "paper", languages: ["ru"], url: "https://www.labirint.ru/books/1" }],
         },
       }),
     );
@@ -182,9 +182,9 @@ describe("BookPage", () => {
       title: "Wanted",
       ownership: "wanted",
       links: [
-        { kind: "online", language: "en", url: "https://read.example/book" },
-        { kind: "paper", language: "uk", url: "https://shop.example/paper" },
-        { kind: "free", language: "ru", url: "https://library.example/free" },
+        { kind: "online", languages: ["en"], url: "https://read.example/book" },
+        { kind: "paper", languages: ["uk"], url: "https://shop.example/paper" },
+        { kind: "free", languages: ["ru"], url: "https://library.example/free" },
       ],
     });
     mockApi(({ path }) => {
@@ -206,6 +206,26 @@ describe("BookPage", () => {
     expect(within(section).getByRole("link", { name: /library\.example/ })).toHaveTextContent("RU");
   });
 
+  it("shows every language of a link that has several", async () => {
+    const wanted = book({
+      id: "w2",
+      title: "Wanted twice",
+      ownership: "wanted",
+      links: [{ kind: "ebook", languages: ["ru", "en"], url: "https://shop.example/both" }],
+    });
+    mockApi(({ path }) => {
+      if (path === "/api/books/w2") return { body: wanted };
+      if (path.startsWith("/api/books")) return booksResponse([wanted]);
+      if (path === "/api/series") return { body: { series: [] } };
+    });
+    renderApp(<BookPage id="w2" />);
+
+    const link = await screen.findByRole("link", { name: /shop\.example/ });
+
+    expect(within(link).getByText("RU")).toBeInTheDocument();
+    expect(within(link).getByText("EN")).toBeInTheDocument();
+  });
+
   it("saves a link with the kind you chose, as well as its language", async () => {
     const calls = serve();
     renderApp(<BookPage id="b1" />);
@@ -225,7 +245,7 @@ describe("BookPage", () => {
         path: "/api/books/b1",
         body: {
           ownership: "wanted",
-          links: [{ kind: "online", language: "uk", url: "https://read.example/ash" }],
+          links: [{ kind: "online", languages: ["uk"], url: "https://read.example/ash" }],
         },
       }),
     );

@@ -414,7 +414,7 @@ describe("AddDetails", () => {
           expect.objectContaining({
             method: "PATCH",
             body: expect.objectContaining({
-              links: [{ kind: "paper", language: "uk", url: "https://shop.example/w" }],
+              links: [{ kind: "paper", languages: ["uk"], url: "https://shop.example/w" }],
             }),
           }),
         ),
@@ -425,7 +425,7 @@ describe("AddDetails", () => {
       const target = book({
         id: "o1",
         title: "Owned",
-        links: [{ kind: "paper", language: "uk", url: "https://shop.example/o" }],
+        links: [{ kind: "paper", languages: ["uk"], url: "https://shop.example/o" }],
       });
       const calls = serveBook(target);
       renderApp(<AddDetails id="o1" />);

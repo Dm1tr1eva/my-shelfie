@@ -212,13 +212,13 @@ describe("next to buy", () => {
         title: "Has Russian",
         seriesId: saga.id,
         seriesNumber: 2,
-        links: [{ language: "ru", url: "https://shop.example/ru" }],
+        links: [{ languages: ["ru"], url: "https://shop.example/ru" }],
       }),
       book({
         title: "Ukrainian only",
         seriesId: saga.id,
         seriesNumber: 3,
-        links: [{ language: "uk", url: "https://shop.example/uk" }],
+        links: [{ languages: ["uk"], url: "https://shop.example/uk" }],
       }),
       book({ title: "No link" }),
     ];

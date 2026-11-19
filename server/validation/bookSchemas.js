@@ -28,7 +28,13 @@ const quoteSchema = z
 const linkSchema = z
   .object({
     kind: z.enum(LINK_KINDS).optional(),
-    language: z.enum(LINK_LANGUAGES),
+    languages: z
+      .array(z.enum(LINK_LANGUAGES))
+      .min(1)
+      .max(LINK_LANGUAGES.length)
+      .refine((languages) => new Set(languages).size === languages.length, {
+        message: "Languages must be unique",
+      }),
     url: z.httpUrl(),
   })
   .strict();

@@ -52,7 +52,7 @@ function valuesOf(subject: Subject, key: FilterKey): string[] {
       if (book) return [book.author];
       return series?.author ? [series.author] : [];
     case "language":
-      return book ? [...new Set(book.links.map((link) => link.language))] : [];
+      return book ? [...new Set(book.links.flatMap((link) => link.languages))] : [];
     case "kind":
       return book ? [...new Set(book.links.map((link) => link.kind))] : [];
   }

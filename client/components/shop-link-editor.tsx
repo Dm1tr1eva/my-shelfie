@@ -13,12 +13,12 @@ import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { isHttpUrl } from "@/lib/links";
 
-export type LinkRow = { kind: LinkKind; language: LinkLanguage; url: string };
+export type LinkRow = ShopLink;
 
 export function validLinks(rows: LinkRow[]): ShopLink[] {
   return rows
     .filter((row) => isHttpUrl(row.url))
-    .map((row) => ({ kind: row.kind, language: row.language, url: row.url.trim() }));
+    .map((row) => ({ kind: row.kind, languages: row.languages, url: row.url.trim() }));
 }
 
 export function ShopLinkEditor({
@@ -58,8 +58,8 @@ export function ShopLinkEditor({
                 label={t("book.shopLinks.language", { number: index + 1 })}
                 hideLabel
                 className="w-28 shrink-0"
-                value={row.language}
-                onChange={(value) => update(index, { language: value as LinkLanguage })}
+                value={row.languages[0]}
+                onChange={(value) => update(index, { languages: [value as LinkLanguage] })}
                 options={languageOptions}
               />
               <div className="flex min-w-0 flex-1 basis-56 gap-2">
@@ -93,7 +93,7 @@ export function ShopLinkEditor({
 
       <button
         type="button"
-        onClick={() => onChange([...rows, { kind: "paper", language: "uk", url: "" }])}
+        onClick={() => onChange([...rows, { kind: "paper", languages: ["uk"], url: "" }])}
         className="btn-outline self-start"
       >
         <PlusIcon size={18} />

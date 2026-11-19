@@ -164,7 +164,7 @@ function BookForm({ book }: { book: Book }) {
       return;
     }
     patch({
-      links: [...draft.links, { kind: newKind, language: newLanguage, url: newUrl.trim() }],
+      links: [...draft.links, { kind: newKind, languages: [newLanguage], url: newUrl.trim() }],
     });
     setNewUrl("");
     setLinkError(false);
@@ -351,7 +351,9 @@ function BookForm({ book }: { book: Book }) {
                           rel="noopener noreferrer"
                           className="inline-flex min-h-11 flex-1 items-center gap-2 rounded-control bg-page px-3 font-medium text-navy"
                         >
-                          <LangBadge language={link.language} />
+                          {link.languages.map((language) => (
+                            <LangBadge key={language} language={language} />
+                          ))}
                           {hostOf(link.url)}
                           <ExternalLinkIcon size={16} />
                         </a>

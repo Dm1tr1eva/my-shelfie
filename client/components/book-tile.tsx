@@ -18,7 +18,7 @@ export function BookTile({
 }) {
   const t = useT();
   const languages = LINK_LANGUAGES.map((item) => item.value).filter((language) =>
-    book.links.some((link) => link.language === language),
+    book.links.some((link) => link.languages.includes(language)),
   );
 
   return (

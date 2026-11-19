@@ -12,7 +12,8 @@ const {
 const linkSchema = new mongoose.Schema(
   {
     kind: { type: String, enum: LINK_KINDS, default: "paper" },
-    language: { type: String, enum: LINK_LANGUAGES, required: true },
+    languages: [{ type: String, enum: LINK_LANGUAGES }],
+    language: String,
     url: { type: String, required: true },
   },
   { _id: false },

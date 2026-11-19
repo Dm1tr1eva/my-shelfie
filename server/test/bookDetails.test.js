@@ -225,3 +225,48 @@ describe("the review becomes the note", () => {
     assert.equal(response.body.notes, "Loved it");
   });
 });
+
+describe("links in several languages", () => {
+  it("keeps every language of a link, in the order given", async () => {
+    const alice = await signIn("alice@example.com");
+    const links = [{ kind: "ebook", languages: ["ru", "en"], url: "https://shop.example/e" }];
+
+    const book = await addBook(alice, { ownership: "wanted", links });
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.deepEqual(fetched.body.links, links);
+  });
+
+  it("rejects a link with the old single language, with no language or with one twice", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice);
+    const url = "https://shop.example/x";
+
+    for (const link of [
+      { language: "ru", url },
+      { languages: ["ru"], language: "ru", url },
+      { languages: [], url },
+      { languages: ["ru", "ru"], url },
+      { url },
+    ]) {
+      const response = await patchBook(alice, book.id, { links: [link] });
+      assert.equal(response.status, 400, JSON.stringify(link));
+    }
+  });
+
+  it("finds a wanted book in next to buy by any language of its links", async () => {
+    const alice = await signIn("alice@example.com");
+    await addBook(alice, {
+      title: "Bilingual",
+      ownership: "wanted",
+      links: [{ languages: ["ru", "uk"], url: "https://shop.example/both" }],
+    });
+
+    const response = await api("/api/next-to-buy?language=uk", { cookie: alice });
+
+    assert.deepEqual(
+      response.body.items.map((item) => item.book.title),
+      ["Bilingual"],
+    );
+  });
+});

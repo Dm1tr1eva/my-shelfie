@@ -18,7 +18,7 @@ const WANTED_TWO = book({
   seriesId: "saga",
   seriesNumber: 2,
   ownership: "wanted",
-  links: [{ kind: "paper", language: "uk", url: "https://www.yakaboo.ua/ash-two" }],
+  links: [{ kind: "paper", languages: ["uk"], url: "https://www.yakaboo.ua/ash-two" }],
 });
 const STANDALONE = book({
   id: "wish",
@@ -96,10 +96,10 @@ describe("NextToBuy", () => {
                   title: "Many ways",
                   ownership: "wanted",
                   links: [
-                    { kind: "paper", language: "uk", url: "https://shop.example/p" },
-                    { kind: "ebook", language: "uk", url: "https://shop.example/e" },
-                    { kind: "free", language: "en", url: "https://free.example/f" },
-                    { kind: "online", language: "en", url: "https://read.example/o" },
+                    { kind: "paper", languages: ["uk"], url: "https://shop.example/p" },
+                    { kind: "ebook", languages: ["uk"], url: "https://shop.example/e" },
+                    { kind: "free", languages: ["en"], url: "https://free.example/f" },
+                    { kind: "online", languages: ["en"], url: "https://read.example/o" },
                   ],
                 }),
               },

@@ -78,7 +78,7 @@ export type Genre = string;
 export const MAX_GENRES = 12;
 export const MAX_GENRE_LENGTH = 40;
 
-export type ShopLink = { kind: LinkKind; language: LinkLanguage; url: string };
+export type ShopLink = { kind: LinkKind; languages: LinkLanguage[]; url: string };
 
 export type Book = {
   id: string;

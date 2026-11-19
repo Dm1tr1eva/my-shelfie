@@ -17,6 +17,11 @@ function isSet(value) {
   return value !== undefined && value !== null && value !== "";
 }
 
+function languagesOf(link) {
+  if (link.languages?.length > 0) return [...link.languages];
+  return link.language ? [link.language] : [];
+}
+
 function sourceOf(field, book, shared) {
   if (field === "annotation" && shared) return shared.annotation;
   if (field === "notes" && !isSet(book.notes)) return book.review;
@@ -45,7 +50,7 @@ function toBookDto(book, series) {
     })),
     links: (book.links ?? []).map((link) => ({
       kind: link.kind,
-      language: link.language,
+      languages: languagesOf(link),
       url: link.url,
     })),
     createdAt: book.createdAt,

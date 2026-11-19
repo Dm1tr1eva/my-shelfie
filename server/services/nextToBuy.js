@@ -6,7 +6,7 @@ function byNumberThenAge(a, b) {
 }
 
 function matchesBookFilters(book, { language, genre, trope }) {
-  if (language && !book.links.some((link) => link.language === language)) return false;
+  if (language && !book.links.some((link) => link.languages.includes(language))) return false;
   if (genre && !book.genres.includes(genre)) return false;
   if (trope && !book.tropes.includes(trope)) return false;
   return true;

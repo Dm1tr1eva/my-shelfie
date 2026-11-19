@@ -16,21 +16,21 @@ function Harness({ initial }: { initial: LinkRow[] }) {
 describe("validLinks", () => {
   it("keeps only web addresses and trims them", () => {
     const rows: LinkRow[] = [
-      { kind: "paper", language: "uk", url: "  https://yakaboo.ua/a  " },
-      { kind: "paper", language: "ru", url: "yakaboo.ua/b" },
-      { kind: "paper", language: "en", url: "javascript:alert(1)" },
-      { kind: "paper", language: "other", url: "" },
+      { kind: "paper", languages: ["uk"], url: "  https://yakaboo.ua/a  " },
+      { kind: "paper", languages: ["ru"], url: "yakaboo.ua/b" },
+      { kind: "paper", languages: ["en"], url: "javascript:alert(1)" },
+      { kind: "paper", languages: ["other"], url: "" },
     ];
 
     expect(validLinks(rows)).toEqual([
-      { kind: "paper", language: "uk", url: "https://yakaboo.ua/a" },
+      { kind: "paper", languages: ["uk"], url: "https://yakaboo.ua/a" },
     ]);
   });
 });
 
 describe("ShopLinkEditor", () => {
   it("starts a new link as a paper book link and saves the kind you choose for it", () => {
-    render(<Harness initial={[{ kind: "paper", language: "uk", url: "" }]} />);
+    render(<Harness initial={[{ kind: "paper", languages: ["uk"], url: "" }]} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Add another link" }));
     fireEvent.change(screen.getByLabelText("URL of link 2"), {
@@ -40,12 +40,12 @@ describe("ShopLinkEditor", () => {
     fireEvent.click(screen.getByRole("option", { name: "Free e-book download" }));
 
     expect(JSON.parse(screen.getByTestId("saved").textContent ?? "")).toEqual([
-      { kind: "free", language: "uk", url: "https://library.example/free" },
+      { kind: "free", languages: ["uk"], url: "https://library.example/free" },
     ]);
   });
 
   it("warns about an address that does not start with https and leaves it out of the saved links", () => {
-    render(<Harness initial={[{ kind: "paper", language: "uk", url: "" }]} />);
+    render(<Harness initial={[{ kind: "paper", languages: ["uk"], url: "" }]} />);
 
     fireEvent.change(screen.getByLabelText("URL of link 1"), {
       target: { value: "yakaboo.ua/book" },
@@ -56,7 +56,9 @@ describe("ShopLinkEditor", () => {
   });
 
   it("adds another row and removes a row", () => {
-    render(<Harness initial={[{ kind: "paper", language: "uk", url: "https://a.example/x" }]} />);
+    render(
+      <Harness initial={[{ kind: "paper", languages: ["uk"], url: "https://a.example/x" }]} />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Add another link" }));
     fireEvent.change(screen.getByLabelText("URL of link 2"), {
@@ -65,7 +67,7 @@ describe("ShopLinkEditor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Remove link 1" }));
 
     expect(screen.getByTestId("saved").textContent).toBe(
-      JSON.stringify([{ kind: "paper", language: "uk", url: "https://b.example/y" }]),
+      JSON.stringify([{ kind: "paper", languages: ["uk"], url: "https://b.example/y" }]),
     );
   });
 });

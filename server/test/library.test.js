@@ -293,7 +293,7 @@ describe("library fields on books", () => {
       seriesNumber: 2,
       genres: ["Fantasy", "Romantasy"],
       tropes: ["Enemies to lovers"],
-      links: [{ language: "ru", url: "https://shop.example/ru/book" }],
+      links: [{ languages: ["ru"], url: "https://shop.example/ru/book" }],
       notes: "wait for the sale",
       annotation: "my own words",
     });
@@ -305,7 +305,7 @@ describe("library fields on books", () => {
     assert.deepEqual(fetched.body.genres, ["Fantasy", "Romantasy"]);
     assert.deepEqual(fetched.body.tropes, ["Enemies to lovers"]);
     assert.deepEqual(fetched.body.links, [
-      { kind: "paper", language: "ru", url: "https://shop.example/ru/book" },
+      { kind: "paper", languages: ["ru"], url: "https://shop.example/ru/book" },
     ]);
     assert.equal(fetched.body.notes, "wait for the sale");
     assert.equal(fetched.body.annotation, "my own words");
@@ -457,7 +457,7 @@ describe("library fields on books", () => {
       body: {
         title: "X",
         author: "Y",
-        links: [{ language: "ru", url: "javascript:alert(1)" }],
+        links: [{ languages: ["ru"], url: "javascript:alert(1)" }],
       },
     });
 
@@ -470,7 +470,11 @@ describe("library fields on books", () => {
     const language = await api("/api/books", {
       method: "POST",
       cookie: alice,
-      body: { title: "X", author: "Y", links: [{ language: "fr", url: "https://shop.example" }] },
+      body: {
+        title: "X",
+        author: "Y",
+        links: [{ languages: ["fr"], url: "https://shop.example" }],
+      },
     });
 
     assert.equal(language.status, 400);
@@ -580,11 +584,11 @@ describe("library fields on books", () => {
   it("keeps what each link leads to: paper, e-book, audio, free download or reading online", async () => {
     const alice = await signIn("alice@example.com");
     const links = [
-      { kind: "paper", language: "uk", url: "https://shop.example/paper" },
-      { kind: "ebook", language: "uk", url: "https://shop.example/ebook" },
-      { kind: "audio", language: "uk", url: "https://shop.example/audio" },
-      { kind: "free", language: "en", url: "https://library.example/free" },
-      { kind: "online", language: "en", url: "https://read.example/online" },
+      { kind: "paper", languages: ["uk"], url: "https://shop.example/paper" },
+      { kind: "ebook", languages: ["uk"], url: "https://shop.example/ebook" },
+      { kind: "audio", languages: ["uk"], url: "https://shop.example/audio" },
+      { kind: "free", languages: ["en"], url: "https://library.example/free" },
+      { kind: "online", languages: ["en"], url: "https://read.example/online" },
     ];
 
     const book = await addBook(alice, { ownership: "wanted", links });
@@ -599,7 +603,7 @@ describe("library fields on books", () => {
 
     const book = await addBook(alice, {
       ownership: "wanted",
-      links: [{ language: "uk", url: "https://shop.example/new" }],
+      links: [{ languages: ["uk"], url: "https://shop.example/new" }],
     });
     const { insertedId } = await Book.collection.insertOne({
       userId: new Book.base.Types.ObjectId(me.body.id),
@@ -612,6 +616,7 @@ describe("library fields on books", () => {
 
     assert.equal(book.links[0].kind, "paper");
     assert.equal(old.body.links[0].kind, "paper");
+    assert.deepEqual(old.body.links[0].languages, ["ru"]);
   });
 
   it("rejects a link kind that is not one of the five", async () => {
@@ -623,7 +628,7 @@ describe("library fields on books", () => {
       body: {
         title: "X",
         author: "Y",
-        links: [{ kind: "podcast", language: "uk", url: "https://shop.example" }],
+        links: [{ kind: "podcast", languages: ["uk"], url: "https://shop.example" }],
       },
     });
 
@@ -634,7 +639,7 @@ describe("library fields on books", () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice, {
       tropes: ["Fated mates"],
-      links: [{ language: "uk", url: "https://shop.example/uk" }],
+      links: [{ languages: ["uk"], url: "https://shop.example/uk" }],
     });
 
     const response = await api(`/api/books/${book.id}`, {
@@ -866,12 +871,12 @@ describe("next to buy API", () => {
     await addBook(alice, {
       title: "In Ukrainian",
       ownership: "wanted",
-      links: [{ language: "uk", url: "https://shop.example/uk" }],
+      links: [{ languages: ["uk"], url: "https://shop.example/uk" }],
     });
     await addBook(alice, {
       title: "In Russian",
       ownership: "wanted",
-      links: [{ language: "ru", url: "https://shop.example/ru" }],
+      links: [{ languages: ["ru"], url: "https://shop.example/ru" }],
     });
 
     const response = await api("/api/next-to-buy?language=uk", { cookie: alice });

@@ -55,15 +55,15 @@ describe("filters by what a link leads to", () => {
   const paper = book({
     title: "P",
     links: [
-      { kind: "ebook", language: "uk", url: "https://e.example" },
-      { kind: "paper", language: "uk", url: "https://p.example" },
+      { kind: "ebook", languages: ["uk"], url: "https://e.example" },
+      { kind: "paper", languages: ["uk"], url: "https://p.example" },
     ],
   });
   const mixed = book({
     title: "M",
     links: [
-      { kind: "online", language: "en", url: "https://o.example" },
-      { kind: "free", language: "en", url: "https://f.example" },
+      { kind: "online", languages: ["en"], url: "https://o.example" },
+      { kind: "free", languages: ["en"], url: "https://f.example" },
     ],
   });
   const none = book({ title: "N" });
@@ -98,13 +98,13 @@ describe("filters", () => {
   const fantasyUk = book({
     title: "A",
     genres: ["Fantasy" as Genre],
-    links: [{ kind: "paper", language: "uk", url: "https://a.example" }],
+    links: [{ kind: "paper", languages: ["uk"], url: "https://a.example" }],
     author: "Maas",
   });
   const romanceRu = book({
     title: "B",
     genres: ["Romance" as Genre],
-    links: [{ kind: "paper", language: "ru", url: "https://b.example" }],
+    links: [{ kind: "paper", languages: ["ru"], url: "https://b.example" }],
     author: "Collins",
   });
   const both = book({
@@ -112,13 +112,24 @@ describe("filters", () => {
     genres: ["Fantasy" as Genre, "Romance" as Genre],
     tropes: ["slow burn"],
     links: [
-      { kind: "paper", language: "uk", url: "https://c.example" },
-      { kind: "paper", language: "ru", url: "https://c2.example" },
+      { kind: "paper", languages: ["uk"], url: "https://c.example" },
+      { kind: "paper", languages: ["ru"], url: "https://c2.example" },
     ],
     author: "Maas",
   });
   const items: Subject[] = [{ book: fantasyUk }, { book: romanceRu }, { book: both }];
   const titles = (list: Subject[]) => list.map((item) => item.book?.title);
+
+  it("finds a book by any language of a link that has several", () => {
+    const bilingual = book({
+      title: "D",
+      links: [{ kind: "ebook", languages: ["ru", "en"], url: "https://d.example" }],
+    });
+
+    const result = applyFilters([{ book: bilingual }], subjectOf, only({ language: ["en"] }));
+
+    expect(titles(result)).toEqual(["D"]);
+  });
 
   it("keeps everything when no filter is chosen", () => {
     expect(applyFilters(items, subjectOf, NO_FILTERS)).toHaveLength(3);

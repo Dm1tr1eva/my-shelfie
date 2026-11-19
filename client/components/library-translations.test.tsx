@@ -95,7 +95,7 @@ describe("Library in Russian and Ukrainian", () => {
     const items = [
       book({
         id: "a",
-        links: [{ kind: "online", language: "uk", url: "https://example.com/a" }],
+        links: [{ kind: "online", languages: ["uk"], url: "https://example.com/a" }],
       }),
     ];
     const subjectOf = (item: (typeof items)[number]) => ({ book: item });
