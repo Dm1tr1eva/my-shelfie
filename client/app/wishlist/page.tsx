@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Library } from "@/components/library";
+import { Wishlist } from "@/components/wishlist";
 
 export const metadata: Metadata = {
   title: "Wishlist",
 };
 
 export default function WishlistPage() {
-  return <Library tab="wishlist" />;
+  return <Wishlist />;
 }
