@@ -364,19 +364,28 @@ describe("library fields on books", () => {
     assert.deepEqual(listed.body.books.map((book) => book.format).sort(), ["ebook", "paper"]);
   });
 
-  it("rejects a format that is neither paper nor e-book", async () => {
+  it("stores an audiobook", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice, { format: "audio" });
+
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.equal(fetched.body.format, "audio");
+  });
+
+  it("rejects a format that is not paper, e-book or audiobook", async () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice);
 
     const create = await api("/api/books", {
       method: "POST",
       cookie: alice,
-      body: { title: "Audio", author: "Someone", format: "audio" },
+      body: { title: "Comic", author: "Someone", format: "comic" },
     });
     const update = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
-      body: { format: "audio" },
+      body: { format: "comic" },
     });
 
     assert.equal(create.status, 400);
@@ -568,11 +577,12 @@ describe("library fields on books", () => {
     assert.equal(response.body.seriesNumber, undefined);
   });
 
-  it("keeps what each link leads to: paper, e-book, free download or reading online", async () => {
+  it("keeps what each link leads to: paper, e-book, audio, free download or reading online", async () => {
     const alice = await signIn("alice@example.com");
     const links = [
       { kind: "paper", language: "uk", url: "https://shop.example/paper" },
       { kind: "ebook", language: "uk", url: "https://shop.example/ebook" },
+      { kind: "audio", language: "uk", url: "https://shop.example/audio" },
       { kind: "free", language: "en", url: "https://library.example/free" },
       { kind: "online", language: "en", url: "https://read.example/online" },
     ];
@@ -604,7 +614,7 @@ describe("library fields on books", () => {
     assert.equal(old.body.links[0].kind, "paper");
   });
 
-  it("rejects a link kind that is not one of the four", async () => {
+  it("rejects a link kind that is not one of the five", async () => {
     const alice = await signIn("alice@example.com");
 
     const response = await api("/api/books", {
@@ -613,7 +623,7 @@ describe("library fields on books", () => {
       body: {
         title: "X",
         author: "Y",
-        links: [{ kind: "audio", language: "uk", url: "https://shop.example" }],
+        links: [{ kind: "podcast", language: "uk", url: "https://shop.example" }],
       },
     });
 
