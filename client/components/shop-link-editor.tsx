@@ -76,7 +76,7 @@ export function ShopLinkEditor({
                   type="button"
                   aria-label={t("book.shopLinks.remove", { number: index + 1 })}
                   onClick={() => onChange(rows.filter((_, position) => position !== index))}
-                  className="btn-outline w-11 shrink-0 px-0"
+                  className="btn-round"
                 >
                   <XIcon size={18} />
                 </button>
