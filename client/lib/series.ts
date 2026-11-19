@@ -79,12 +79,12 @@ export type SeriesChanges = Partial<{
 export function useSeriesList() {
   const { status: authStatus } = useAuth();
 
-  const { data, error, isLoading } = useSWR<{ series: Series[] }>(
+  const { data, error, isLoading, mutate } = useSWR<{ series: Series[] }>(
     authStatus === "authenticated" ? "/api/series" : null,
     (path: string) => apiFetch<{ series: Series[] }>(path),
   );
 
-  return { series: data?.series ?? [], isLoading, error };
+  return { series: data?.series ?? [], isLoading, error, reload: () => mutate() };
 }
 
 export function useSeries(id: string) {

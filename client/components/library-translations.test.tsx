@@ -6,12 +6,13 @@ import { makeDomain } from "@/lib/i18n/domain";
 import { NO_FILTERS, buildFilterGroups, chipLabel } from "@/lib/filters";
 import { FilterBar } from "./filter-bar";
 import { Library } from "./library";
+import { Wishlist } from "./wishlist";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
 }));
 
-const saga = series({ id: "saga", title: "Saga of Ash", author: "A. Writer" });
+const saga = series({ id: "saga", title: "Saga of Ash", author: "A. Writer", totalBooks: 4 });
 
 const SHELF = [
   book({ id: "one", title: "Ash One", seriesId: "saga", seriesNumber: 1 }),
@@ -43,31 +44,49 @@ describe("Library in Russian and Ukrainian", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows the library in Ukrainian with a filled progress label and a plural summary", async () => {
+  it("shows the library in Ukrainian with segments, a gap and the standalone shelf", async () => {
     act(() => setLocale("uk"));
     serve();
-    renderApp(<Library tab="library" />);
+    renderApp(<Library />);
 
     const section = await screen.findByRole("region", { name: "Saga of Ash" });
 
     expect(screen.getByRole("heading", { name: "Бібліотека" })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Пошук по моїх книгах")).toBeInTheDocument();
-    expect(within(section).getByText("Є 2 з 3")).toBeInTheDocument();
-    expect(within(section).getByRole("link", { name: /Відкрити серію/ })).toBeInTheDocument();
-    expect(screen.getByText("Окремі книги")).toBeInTheDocument();
-    expect(screen.getByText("3 книги у 2 групах")).toBeInTheDocument();
-    expect(within(section).getByText("Пропуск")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Назва, автор або серія")).toBeInTheDocument();
+    expect(within(section).getByRole("img", { name: "Є 2 з 4" })).toBeInTheDocument();
+    expect(
+      within(section).getByRole("link", { name: "Додати #2 до «Saga of Ash», немає в каталозі" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Окремі книги" })).toBeInTheDocument();
+    expect(screen.getByText("Не входять до серії")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Оцінка: 4 з 5" })).toBeInTheDocument();
+  });
+
+  it("shows the filter panel in Russian with its groups, reset and a counted button", async () => {
+    act(() => setLocale("ru"));
+    serve();
+    renderApp(<Library />);
+    await screen.findByRole("region", { name: "Saga of Ash" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Фильтры" }));
+    const panel = screen.getByRole("dialog", { name: "Фильтры" });
+
+    expect(within(panel).getByRole("region", { name: "У меня" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "В вишлисте" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Без оценки" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Сбросить" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Показать 4 книги" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Закрыть" })).toBeInTheDocument();
   });
 
   it("shows the wishlist in Russian with the count words in the right form", async () => {
     act(() => setLocale("ru"));
     serve();
-    renderApp(<Library tab="wishlist" />);
+    renderApp(<Wishlist />);
 
     expect(await screen.findByText("Wished Alone")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Вишлист" })).toBeInTheDocument();
     expect(screen.getByText("Не входят в серию · 1 книга")).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Разделы библиотеки" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Вид" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Сетка" }));
@@ -78,10 +97,10 @@ describe("Library in Russian and Ukrainian", () => {
   it("says nothing matches and quotes the query in Ukrainian", async () => {
     act(() => setLocale("uk"));
     serve();
-    renderApp(<Library tab="library" />);
-    await screen.findByText("Stand Alone");
+    renderApp(<Library />);
+    await screen.findByRole("region", { name: "Saga of Ash" });
 
-    fireEvent.change(screen.getByPlaceholderText("Пошук по моїх книгах"), {
+    fireEvent.change(screen.getByPlaceholderText("Назва, автор або серія"), {
       target: { value: "zzz" },
     });
 

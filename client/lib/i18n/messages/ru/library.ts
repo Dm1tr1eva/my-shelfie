@@ -4,8 +4,35 @@ import type { library as en } from "../en/library";
 export const library: Localized<typeof en> = {
   title: "Библиотека",
   search: "Поиск по моим книгам",
-  sections: "Разделы библиотеки",
-  tabs: { library: "Моя библиотека", wishlist: "Вишлист" },
+  searchAll: "Название, автор или серия",
+  shelf: {
+    notPartOfSeries: "Не входят в серию",
+    notInCatalogue: "Нет в каталоге",
+    add: "+ добавить",
+    gapLabel: "Добавить {range} в «{series}», нет в каталоге",
+    more: "ещё",
+    moreLabel: "Ещё {count} в серии «{series}»",
+  },
+  panel: {
+    reset: "Сбросить",
+    have: { owned: "Есть" },
+    age: { none: "Не указан" },
+    rating: { low: "★ 3 и ниже", none: "Без оценки" },
+    group: {
+      have: "У меня",
+      reading: "Статус",
+      format: "Формат",
+      genre: "Жанр",
+      age: "Возраст",
+      trope: "Тропы",
+      author: "Автор",
+      status: "Статус серии",
+      language: "Язык ссылки",
+      kind: "Тип ссылки",
+      rating: "Оценка",
+    },
+    chip: { age: "Возраст: {value}", language: "Язык ссылки: {value}" },
+  },
   stats: "{owned} в библиотеке · {wishlist} в вишлисте · {read} прочитано",
   summary: {
     books: {
@@ -34,7 +61,7 @@ export const library: Localized<typeof en> = {
   },
   emptyLibrary: {
     title: "Ваша библиотека пуста",
-    text: "Добавьте бумажные книги, которые у вас есть, и они соберутся здесь, полка за полкой.",
+    text: "Добавьте книги, которые у вас есть или которые хочется прочитать, и они соберутся здесь, полка за полкой.",
   },
   emptyWishlist: {
     title: "Ваш вишлист пуст",
@@ -48,11 +75,6 @@ export const library: Localized<typeof en> = {
       many: "Не входят в серию · {count} книг",
       other: "Не входят в серию · {count} книги",
     },
-  },
-  gap: {
-    badge: "Пропуск",
-    missing: "Нет в серии",
-    notInLibrary: "Нет в библиотеке",
   },
   noLinks: "Ссылок пока нет",
   rating: "Оценка: {rating} из 5",

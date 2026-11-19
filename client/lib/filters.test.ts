@@ -5,11 +5,16 @@ import {
   applyFilters,
   buildFilterGroups,
   chipLabel,
+  libraryFilterGroups,
+  matchesFilters,
+  panelChipLabel,
   type Filters,
   type Subject,
 } from "./filters";
 import type { Book, Genre } from "./books";
 import type { Series } from "./series";
+import { translator } from "./i18n";
+import { englishDomain } from "./i18n/domain";
 
 let counter = 0;
 
@@ -242,5 +247,91 @@ describe("filters", () => {
     expect(chipLabel("language", "uk")).toBe("Shop language: UK");
     expect(chipLabel("status", "ongoing")).toBe("Series: Ongoing");
     expect(chipLabel("status", "readable")).toBe("Series: Readable now");
+  });
+});
+
+describe("library filter groups", () => {
+  const labels = { t: translator("en"), domain: englishDomain };
+  const keysOf = (subjects: Subject[]) =>
+    libraryFilterGroups(subjects, labels).map((group) => group.key);
+
+  it("offers only the groups the library has data for, in the order of the design", () => {
+    expect(keysOf([{ book: book() }])).toEqual([
+      "have",
+      "reading",
+      "format",
+      "author",
+      "status",
+      "rating",
+    ]);
+
+    expect(
+      keysOf([
+        {
+          book: book({
+            genres: ["Fantasy"],
+            tropes: ["Dragons"],
+            ageRating: "16",
+            links: [{ kind: "free", languages: ["en"], url: "https://a.example" }],
+          }),
+        },
+      ]),
+    ).toEqual([
+      "have",
+      "reading",
+      "format",
+      "genre",
+      "age",
+      "trope",
+      "author",
+      "status",
+      "language",
+      "kind",
+      "rating",
+    ]);
+  });
+
+  it("lists every rating bucket and a standalone choice next to the series statuses", () => {
+    const groups = libraryFilterGroups([{ book: book() }], labels);
+    const optionsOf = (key: string) =>
+      groups.find((group) => group.key === key)?.options.map((option) => option.label);
+
+    expect(optionsOf("rating")).toEqual(["★ 5", "★ 4", "★ 3 and lower", "No rating"]);
+    expect(optionsOf("status")).toEqual([
+      "Ongoing",
+      "Readable now",
+      "Complete",
+      "Unknown",
+      "Standalone books",
+    ]);
+  });
+
+  it("matches ratings by bucket, three and lower together", () => {
+    const low = only({ rating: ["low"] });
+
+    expect(matchesFilters({ book: book({ rating: 2 }) }, low)).toBe(true);
+    expect(matchesFilters({ book: book({ rating: 4 }) }, low)).toBe(false);
+    expect(matchesFilters({ book: book() }, only({ rating: ["none"] }))).toBe(true);
+  });
+
+  it("matches the standalone choice only for a book outside any series", () => {
+    const standalone = only({ status: ["standalone"] });
+
+    expect(matchesFilters({ book: book() }, standalone)).toBe(true);
+    expect(matchesFilters({ book: book(), series: series() }, standalone)).toBe(false);
+  });
+
+  it("matches what you have against what you want", () => {
+    const wanted = only({ have: ["wanted"] });
+
+    expect(matchesFilters({ book: book({ ownership: "wanted" }) }, wanted)).toBe(true);
+    expect(matchesFilters({ book: book() }, wanted)).toBe(false);
+  });
+
+  it("names an active filter pill with its group where the value alone is unclear", () => {
+    expect(panelChipLabel("age", "18", labels)).toBe("Age: 18+");
+    expect(panelChipLabel("language", "uk", labels)).toBe("Link language: UK");
+    expect(panelChipLabel("status", "standalone", labels)).toBe("Standalone books");
+    expect(panelChipLabel("genre", "Fantasy", labels)).toBe("Fantasy");
   });
 });

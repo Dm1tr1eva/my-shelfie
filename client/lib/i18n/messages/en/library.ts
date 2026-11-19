@@ -1,8 +1,35 @@
 export const library = {
   title: "Library",
   search: "Search my books",
-  sections: "Library sections",
-  tabs: { library: "My library", wishlist: "Wishlist" },
+  searchAll: "Title, author or series",
+  shelf: {
+    notPartOfSeries: "Not part of a series",
+    notInCatalogue: "Not in the catalogue",
+    add: "+ add",
+    gapLabel: "Add {range} to {series}, not in the catalogue",
+    more: "more",
+    moreLabel: "{count} more in {series}",
+  },
+  panel: {
+    reset: "Reset",
+    have: { owned: "Have" },
+    age: { none: "Not set" },
+    rating: { low: "★ 3 and lower", none: "No rating" },
+    group: {
+      have: "I have",
+      reading: "Status",
+      format: "Format",
+      genre: "Genre",
+      age: "Age",
+      trope: "Tropes",
+      author: "Author",
+      status: "Series status",
+      language: "Link language",
+      kind: "Link type",
+      rating: "Rating",
+    },
+    chip: { age: "Age: {value}", language: "Link language: {value}" },
+  },
   stats: "{owned} owned · {wishlist} on wishlist · {read} read",
   summary: {
     books: { one: "{count} book", other: "{count} books" },
@@ -21,7 +48,7 @@ export const library = {
   },
   emptyLibrary: {
     title: "Your library is empty",
-    text: "Add the paper books you own, and they will gather here, shelf by shelf.",
+    text: "Add the books you have and the ones you want, and they will gather here, shelf by shelf.",
   },
   emptyWishlist: {
     title: "Your wishlist is empty",
@@ -33,11 +60,6 @@ export const library = {
       one: "Not part of a series · {count} book",
       other: "Not part of a series · {count} books",
     },
-  },
-  gap: {
-    badge: "Gap",
-    missing: "Missing from the series",
-    notInLibrary: "Not in library",
   },
   noLinks: "No links yet",
   rating: "Rated {rating} out of 5",

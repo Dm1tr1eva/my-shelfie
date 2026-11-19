@@ -1,285 +1,208 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { BookRow } from "@/components/book-row";
-import { BookTile } from "@/components/book-tile";
+import { useState, useSyncExternalStore } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
-import { FilterBar } from "@/components/filter-bar";
-import { ShelfSkeleton } from "@/components/skeleton";
-import { GapTile } from "@/components/gap-tile";
-import { SearchIcon } from "@/components/icons";
-import { SeriesHeader } from "@/components/series-header";
+import { FilterPanel } from "@/components/filter-panel";
+import { FilterIcon, SearchIcon, XIcon } from "@/components/icons";
+import {
+  LibraryBookTile,
+  LibraryGapTile,
+  LibraryMoreTile,
+  SHELF_COLUMNS,
+  SeriesShelfHeader,
+} from "@/components/library-tiles";
 import { Shelf } from "@/components/shelf";
-import { ViewToggle } from "@/components/view-toggle";
+import { ShelfSkeleton } from "@/components/skeleton";
+import { useBooks } from "@/lib/books";
 import {
-  buildLibraryView,
-  isInTab,
-  matchesQuery,
-  shelfStats,
-  type LibraryTab,
-  type SeriesGroup,
-} from "@/lib/catalogue";
-import {
+  LIBRARY_FILTER_KEYS,
   NO_FILTERS,
   activeFilterCount,
-  applyFilters,
-  buildFilterGroups,
+  libraryFilterGroups,
+  panelChipLabel,
   type Filters,
-  type Subject,
 } from "@/lib/filters";
-import { useBooks, type Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { useSeriesList } from "@/lib/series";
+import { libraryShelves, rowsOf, shelfRow, type SeriesShelf } from "@/lib/shelves";
 import { useRequireAuth } from "@/lib/use-require-auth";
-import { useViewMode } from "@/lib/use-view-mode";
 
-function GroupShelf({
-  group,
-  mode,
-  tab,
-}: {
-  group: SeriesGroup;
-  mode: "grid" | "list";
-  tab: LibraryTab;
-}) {
-  const t = useT();
+const WIDE_SHELF = "(min-width: 1024px)";
 
-  if (mode === "list") {
-    return (
-      <ul>
-        {group.slots.map((slot) =>
-          slot.kind === "book" ? (
-            <BookRow key={slot.book.id} book={slot.book} series={group.series} />
-          ) : (
-            <li key={`gap-${slot.number}`}>
-              <Link
-                href={
-                  slot.wantedBook
-                    ? `/books/${slot.wantedBook.id}`
-                    : `/add?series=${group.series.id}&number=${slot.number}`
-                }
-                className="flex min-h-14 items-center gap-3 border-b border-mist py-3 font-semibold text-burgundy"
-              >
-                <span className="chip bg-burgundy text-card">{t("library.gap.badge")}</span>
-                <span className="num">#{slot.number}</span> ·{" "}
-                {slot.wantedBook ? slot.wantedBook.title : t("library.gap.missing")}
-              </Link>
-            </li>
-          ),
-        )}
-      </ul>
-    );
-  }
-
-  return (
-    <Shelf>
-      {group.slots.map((slot) =>
-        slot.kind === "book" ? (
-          <BookTile key={slot.book.id} book={slot.book} showLinks={tab === "wishlist"} />
-        ) : (
-          <GapTile
-            key={`gap-${slot.number}`}
-            number={slot.number}
-            seriesId={group.series.id}
-            wantedBook={slot.wantedBook}
-          />
-        ),
-      )}
-    </Shelf>
-  );
+function subscribeToWidth(onChange: () => void) {
+  const query = window.matchMedia(WIDE_SHELF);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
 }
 
-function StandaloneShelf({
-  books,
-  mode,
-  tab,
-}: {
-  books: Book[];
-  mode: "grid" | "list";
-  tab: LibraryTab;
-}) {
-  const t = useT();
+function useShelfColumns() {
+  const wide = useSyncExternalStore(
+    subscribeToWidth,
+    () => window.matchMedia(WIDE_SHELF).matches,
+    () => false,
+  );
+  return wide ? 7 : 4;
+}
+
+function SeriesShelfView({ shelf, columns }: { shelf: SeriesShelf; columns: number }) {
+  const { series } = shelf;
+  const { shown, more } = shelfRow(shelf.slots, columns);
+  const headingId = `series-${series.id}`;
 
   return (
-    <section aria-labelledby="standalone-heading" className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h2 id="standalone-heading" className="font-serif text-2xl font-semibold">
-          {t("library.standalone.title")}
-        </h2>
-        <p className="text-sm text-muted">
-          {t("library.standalone.subtitle", { count: books.length })}
-        </p>
-      </header>
-
-      {mode === "list" ? (
-        <ul>
-          {books.map((book) => (
-            <BookRow key={book.id} book={book} />
-          ))}
-        </ul>
-      ) : (
-        <Shelf>
-          {books.map((book) => (
-            <BookTile key={book.id} book={book} showNumber={false} showLinks={tab === "wishlist"} />
-          ))}
-        </Shelf>
-      )}
+    <section aria-labelledby={headingId} className="flex flex-col gap-4">
+      <SeriesShelfHeader series={series} segments={shelf.segments} headingId={headingId} />
+      <Shelf columns={SHELF_COLUMNS}>
+        {shown.map((slot) =>
+          slot.kind === "book" ? (
+            <LibraryBookTile key={slot.book.id} book={slot.book} />
+          ) : (
+            <LibraryGapTile
+              key={`gap-${slot.from}`}
+              series={series}
+              from={slot.from}
+              to={slot.to}
+            />
+          ),
+        )}
+        {more > 0 && <LibraryMoreTile series={series} count={more} />}
+      </Shelf>
     </section>
   );
 }
 
-export function Library({ tab }: { tab: LibraryTab }) {
+export function Library() {
   const t = useT();
   const domain = useDomain();
   const { user, status } = useRequireAuth();
-  const { books, isLoading, error, reload } = useBooks();
-  const { series } = useSeriesList();
-  const { mode, changeMode } = useViewMode();
+  const books = useBooks();
+  const seriesList = useSeriesList();
+  const columns = useShelfColumns();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   if (status !== "authenticated" || !user) {
     return null;
   }
 
-  const stats = shelfStats(books);
-  const view = buildLibraryView(books, series, tab, query, filters);
-  const shown =
-    view.standalone.length + view.groups.reduce((count, group) => count + group.slots.length, 0);
-  const loaded = !isLoading && !error;
-  const filtering = activeFilterCount(filters) > 0;
-  const searching = query.trim() !== "" || filtering;
+  const loading = books.isLoading || seriesList.isLoading;
+  const failed = Boolean(books.error || seriesList.error);
+  const loaded = !loading && !failed;
+  const active = activeFilterCount(filters);
+  const narrowing = active > 0 || query.trim() !== "";
 
-  const seriesById = new Map(series.map((item) => [item.id, item]));
-  const scope = books.filter((book) => isInTab(book, tab) && matchesQuery(book, query));
-  const subjectOf = (book: (typeof books)[number]): Subject => ({
-    book,
-    series: book.seriesId ? seriesById.get(book.seriesId) : undefined,
-  });
-  const filterGroups = buildFilterGroups(scope, subjectOf, filters, { t, domain });
-  const countWith = (draft: Filters) => applyFilters(scope, subjectOf, draft).length;
-  const bookCount =
-    view.standalone.length +
-    view.groups.reduce(
-      (count, group) => count + group.slots.filter((slot) => slot.kind === "book").length,
-      0,
-    );
-  const groupCount = view.groups.length + (view.standalone.length > 0 ? 1 : 0);
-  const booksText = t("library.summary.books", { count: bookCount });
-  const summary =
-    groupCount > 0
-      ? t("library.summary.withGroups", {
-          books: booksText,
-          groups: t("library.summary.inGroups", { count: groupCount }),
-        })
-      : booksText;
-  const statsText = t("library.stats", {
-    owned: stats.owned,
-    wishlist: stats.wishlist,
-    read: stats.read,
-  });
-  const tabs = [
-    {
-      href: "/library",
-      label: t("library.tabs.library"),
-      count: stats.owned,
-      id: "library" as const,
-    },
-    {
-      href: "/wishlist",
-      label: t("library.tabs.wishlist"),
-      count: stats.wishlist,
-      id: "wishlist" as const,
-    },
-  ];
+  const seriesById = new Map(seriesList.series.map((item) => [item.id, item]));
+  const shelves = libraryShelves(books.books, seriesList.series, query, filters);
+  const groups = libraryFilterGroups(
+    books.books.map((book) => ({
+      book,
+      series: book.seriesId ? seriesById.get(book.seriesId) : undefined,
+    })),
+    { t, domain },
+  );
+  const countWith = (draft: Filters) =>
+    libraryShelves(books.books, seriesList.series, query, draft).count;
+  const pills = LIBRARY_FILTER_KEYS.flatMap((key) =>
+    filters[key].map((value) => ({
+      key,
+      value,
+      label: panelChipLabel(key, value, { t, domain }),
+    })),
+  );
+
+  function retry() {
+    books.reload();
+    seriesList.reload();
+  }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">
-          {t("library.title")}
-        </h1>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-6 sm:px-8 sm:py-8 md:gap-10">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
+          <h1 className="text-[32px] font-semibold leading-tight md:text-[38px] lg:text-[44px]">
+            {t("library.title")}
+          </h1>
 
-        <label className="relative w-full sm:w-72">
-          <span className="sr-only">{t("library.search")}</span>
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-            <SearchIcon size={18} />
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("library.search")}
-            className="field pl-10"
-          />
-        </label>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-mist">
-        <nav aria-label={t("library.sections")} className="flex gap-6">
-          {tabs.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              aria-current={item.id === tab ? "page" : undefined}
-              className={`inline-flex min-h-12 items-center gap-2 border-b-[3px] font-semibold ${
-                item.id === tab ? "border-burgundy text-ink" : "border-transparent text-muted"
-              }`}
-            >
-              {item.label}
-              <span className="rounded-full bg-mist px-2 text-sm text-navy">{item.count}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <p className="hidden text-sm text-muted md:block">{statsText}</p>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted md:hidden">{statsText}</p>
-        <div className="ml-auto">
-          <ViewToggle mode={mode} onChange={changeMode} />
+          {loaded && books.books.length > 0 && (
+            <div className="flex items-center gap-2 md:w-[420px]">
+              <label className="relative min-w-0 flex-1">
+                <span className="sr-only">{t("library.searchAll")}</span>
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted">
+                  <SearchIcon size={18} />
+                </span>
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t("library.searchAll")}
+                  className="field pl-10"
+                />
+              </label>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={panelOpen}
+                aria-label={
+                  active > 0
+                    ? t("library.filters.withCount", { count: active })
+                    : t("library.filters.title")
+                }
+                onClick={() => setPanelOpen(true)}
+                className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-field bg-card text-navy hover:bg-row-hover"
+              >
+                <FilterIcon size={20} />
+                {active > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="num absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-burgundy px-1 text-[11px] text-card"
+                  >
+                    {active}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
+
+        {pills.length > 0 && (
+          <ul className="flex flex-wrap gap-x-2">
+            {pills.map((pill) => (
+              <li key={`${pill.key}-${pill.value}`}>
+                <button
+                  type="button"
+                  aria-label={t("library.filters.remove", { label: pill.label })}
+                  onClick={() =>
+                    setFilters({
+                      ...filters,
+                      [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
+                    })
+                  }
+                  className="inline-flex min-h-11 items-center md:min-h-10"
+                >
+                  <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-navy pl-3 pr-2.5 text-sm font-semibold text-page">
+                    {pill.label}
+                    <XIcon size={14} />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {loaded && (scope.length > 0 || filtering) && (
-        <div className="card p-4">
-          <FilterBar
-            groups={filterGroups}
-            filters={filters}
-            onChange={setFilters}
-            countWith={countWith}
-            summary={summary}
-          />
-        </div>
-      )}
-
-      {isLoading && <ShelfSkeleton />}
-      {error && (
+      {loading && <ShelfSkeleton />}
+      {failed && (
         <ErrorState
           title={t("library.loadError.title")}
           text={t("library.loadError.text")}
-          onRetry={reload}
+          onRetry={retry}
         />
       )}
 
-      {loaded && shown === 0 && searching && (
-        <EmptyState
-          title={t("library.noMatch.title")}
-          text={
-            query.trim() !== ""
-              ? t(filtering ? "library.noMatch.queryAndFilters" : "library.noMatch.query", {
-                  query: query.trim(),
-                })
-              : t("library.noMatch.filters")
-          }
-        />
-      )}
-
-      {loaded && shown === 0 && !searching && tab === "library" && (
+      {loaded && books.books.length === 0 && (
         <EmptyState
           title={t("library.emptyLibrary.title")}
           text={t("library.emptyLibrary.text")}
@@ -288,30 +211,56 @@ export function Library({ tab }: { tab: LibraryTab }) {
         />
       )}
 
-      {loaded && shown === 0 && !searching && tab === "wishlist" && (
+      {loaded && books.books.length > 0 && shelves.count === 0 && narrowing && (
         <EmptyState
-          title={t("library.emptyWishlist.title")}
-          text={t("library.emptyWishlist.text")}
-          actionLabel={t("shell.nav.addBook")}
-          actionHref="/add"
+          title={t("library.noMatch.title")}
+          text={
+            query.trim() !== ""
+              ? t(active > 0 ? "library.noMatch.queryAndFilters" : "library.noMatch.query", {
+                  query: query.trim(),
+                })
+              : t("library.noMatch.filters")
+          }
         />
       )}
 
-      {loaded && view.standalone.length > 0 && (
-        <StandaloneShelf books={view.standalone} mode={mode} tab={tab} />
+      {loaded &&
+        shelves.series.map((shelf) => (
+          <SeriesShelfView key={shelf.series.id} shelf={shelf} columns={columns} />
+        ))}
+
+      {loaded && shelves.standalone.length > 0 && (
+        <section aria-labelledby="standalone-heading" className="flex flex-col gap-4">
+          <header className="flex flex-col gap-1">
+            <h2
+              id="standalone-heading"
+              className="font-serif text-[21px] font-semibold leading-tight md:text-2xl"
+            >
+              {t("library.standalone.title")}
+            </h2>
+            <p className="text-sm text-muted">{t("library.shelf.notPartOfSeries")}</p>
+          </header>
+          <div className="flex flex-col gap-6">
+            {rowsOf(shelves.standalone, columns).map((row) => (
+              <Shelf key={row[0].id} columns={SHELF_COLUMNS}>
+                {row.map((book) => (
+                  <LibraryBookTile key={book.id} book={book} showNumber={false} />
+                ))}
+              </Shelf>
+            ))}
+          </div>
+        </section>
       )}
 
-      {loaded &&
-        view.groups.map((group) => (
-          <section
-            key={group.series.id}
-            aria-label={group.series.title}
-            className="flex flex-col gap-4"
-          >
-            <SeriesHeader group={group} />
-            <GroupShelf group={group} mode={mode} tab={tab} />
-          </section>
-        ))}
+      {panelOpen && (
+        <FilterPanel
+          groups={groups}
+          filters={filters}
+          countWith={countWith}
+          onApply={setFilters}
+          onClose={() => setPanelOpen(false)}
+        />
+      )}
     </main>
   );
 }
