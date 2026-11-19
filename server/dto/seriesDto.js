@@ -5,6 +5,14 @@ function toSeriesDto(series, counts = { owned: 0, wanted: 0 }) {
     status: series.status ?? "unknown",
     genres: series.genres ?? [],
     tropes: series.tropes ?? [],
+    ageRating: series.ageRating,
+    desire: series.desire,
+    expected: (series.expected ?? []).map((entry) => ({
+      number: entry.number,
+      ...(entry.expectedYear !== undefined &&
+        entry.expectedYear !== null && { expectedYear: entry.expectedYear }),
+      source: entry.source,
+    })),
     ownedCount: counts.owned,
     wantedCount: counts.wanted,
     createdAt: series.createdAt,

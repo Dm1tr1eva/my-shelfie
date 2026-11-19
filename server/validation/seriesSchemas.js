@@ -1,6 +1,26 @@
 const { z } = require("zod");
-const { SERIES_STATUSES } = require("../constants/library");
+const {
+  SERIES_STATUSES,
+  DESIRE_LEVELS,
+  AGE_RATINGS,
+  EXPECTED_SOURCES,
+} = require("../constants/library");
 const { genreList } = require("./genre");
+
+const expectedSchema = z
+  .object({
+    number: z.number().positive(),
+    expectedYear: z.number().int().min(1900).max(2200).optional(),
+    source: z.enum(EXPECTED_SOURCES),
+  })
+  .strict();
+
+const expectedList = z
+  .array(expectedSchema)
+  .max(50)
+  .refine((entries) => new Set(entries.map((entry) => entry.number)).size === entries.length, {
+    message: "Expected numbers must be unique",
+  });
 
 const baseSeriesSchema = z
   .object({
@@ -12,6 +32,9 @@ const baseSeriesSchema = z
     genres: genreList.optional(),
     tropes: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
     annotation: z.string().max(5000).optional(),
+    ageRating: z.enum(AGE_RATINGS).optional(),
+    desire: z.enum(DESIRE_LEVELS).optional(),
+    expected: expectedList.optional(),
   })
   .strict();
 
