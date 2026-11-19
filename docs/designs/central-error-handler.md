@@ -74,8 +74,8 @@ translations. Malformed JSON cannot come from the client; no translation.
 
 ## Cost
 
-Three new files; six controllers, six routes and `app.js` edited; one test file; one client
-translation key. No dependency.
+Three new files; six controllers, six routes, four services and `app.js` edited; one test
+file; one client translation key. No dependency.
 
 ## Open questions
 
