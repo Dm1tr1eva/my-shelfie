@@ -19,7 +19,7 @@ with each screen's own step; the server.
 
 ## Scale assumptions
 
-Client only; no route, no dependency.
+No route, no dependency.
 
 ## Approach
 
@@ -51,17 +51,16 @@ whether a page is inner (`/series/*`, `/books/*`, `/add*`). `AppNav` (768+): log
 Wishlist · "+ Add a book" (to `/add`) · account. `TabBar` (< 768): floating navy pill, shelf ·
 burgundy `+` · bookmark, icons only with `aria-label`s, lifted by the safe-area inset.
 `MobileHeader` (< 768): navy 56px, logo and account on top-level pages, "← Library" on inner
-ones. The account menu keeps the language switch and install action.
-
-**Next to buy.** No nav item; `/next` still works by URL until the Wishlist step replaces
-it.
+ones. The account menu keeps the language switch and install.
 
 ## Trade-offs accepted
 
 - "← Library" always leads to `/library`, even for a wishlist book, and inner pages have no
   account button on phones, as drawn.
-- `/books/*` highlights nothing: the path does not say which.
-- Next to buy has no way in from the UI for a while.
+- `/books/*` highlights nothing: the path cannot tell.
+- Next to buy has no nav item; `/next` works by URL until the Wishlist step.
+- Below 420px the public header shows only the mark: the name does not fit beside the
+  language switch and Sign in.
 - Inactive tab icons are slate on navy (about 4:1): enough for icons.
 
 ## v2 superseded
@@ -72,8 +71,8 @@ In `docs/design/`: `components.md` Layout (AppNav, TabBar, PublicHeader) and Chi
 ## Cost
 
 New: `logo.tsx`, `mobile-header.tsx`, `lib/nav.ts`, tests. Removed: `status-chip.tsx`.
-Changed: `globals.css`, the shell, labels and their call sites, shell and domain messages,
-six icon files, manifest, layout. About 400 lines.
+Changed: `globals.css`, the shell, labels and call sites, messages, six icon files,
+manifest, layout. About 400 lines.
 
 ## Open questions
 
