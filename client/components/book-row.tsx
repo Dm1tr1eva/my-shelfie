@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
-import { GenreChip, OwnershipChip, TropeChip } from "@/components/chips";
+import { GenreChip, StatusDot, TropeChip, WishlistLabel } from "@/components/chips";
 import { ChevronRightIcon } from "@/components/icons";
-import { StatusChip } from "@/components/status-chip";
 import type { Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import type { Series } from "@/lib/series";
@@ -37,11 +36,7 @@ export function BookRow({ book, series }: { book: Book; series?: Series }) {
           </span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-2">
-          {book.ownership === "wanted" ? (
-            <OwnershipChip ownership="wanted" />
-          ) : (
-            <StatusChip status={book.status} />
-          )}
+          {book.ownership === "wanted" ? <WishlistLabel /> : <StatusDot status={book.status} />}
           {book.rating ? (
             <span
               role="img"

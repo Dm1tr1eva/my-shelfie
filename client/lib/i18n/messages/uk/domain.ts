@@ -2,7 +2,7 @@ import type { Localized } from "../../core";
 import type { domain as en } from "../en/domain";
 
 export const domain: Localized<typeof en> = {
-  status: { want: "Хочу прочитати", reading: "Читаю", read: "Прочитано", dropped: "Покинуто" },
+  status: { want: "У планах", reading: "Читаю", read: "Прочитано", dropped: "Покинуто" },
   ownership: { owned: "У моїй бібліотеці", wanted: "Вішліст" },
   format: {
     paper: "Паперова",

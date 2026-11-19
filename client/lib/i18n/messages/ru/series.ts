@@ -18,7 +18,6 @@ export const series: Localized<typeof en> = {
   missingGap: "#{number} (пропуск)",
   addNext: "Добавить следующую книгу",
   booksRegion: "Книги этой серии",
-  wantedGap: "{ownership} · пропуск",
   missingFromSeries: "Не хватает в серии",
   notInLibrary: "Нет в библиотеке",
   noNumber: "(без номера)",

@@ -38,7 +38,6 @@ export const library = {
     badge: "Gap",
     missing: "Missing from the series",
     notInLibrary: "Not in library",
-    onWishlist: "On wishlist",
   },
   noLinks: "No links yet",
   rating: "Rated {rating} out of 5",

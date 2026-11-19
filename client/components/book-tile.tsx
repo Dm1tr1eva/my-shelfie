@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
-import { LangBadge } from "@/components/chips";
-import { StatusChip } from "@/components/status-chip";
+import { LangBadge, StatusDot } from "@/components/chips";
 import { LINK_LANGUAGES, type Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 
@@ -32,7 +31,7 @@ export function BookTile({
         />
         <span className="line-clamp-2 text-[15px] font-semibold leading-snug">{book.title}</span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-          {book.ownership === "owned" && <StatusChip status={book.status} />}
+          {book.ownership === "owned" && <StatusDot status={book.status} />}
           {book.rating ? (
             <span
               role="img"

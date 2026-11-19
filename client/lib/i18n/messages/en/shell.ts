@@ -9,6 +9,7 @@ export const shell = {
     signIn: "Sign in",
   },
   account: { logOut: "Log out" },
+  labels: { inWishlist: "In wishlist" },
   install: {
     button: "Install app",
     iosTitle: "Install app:",

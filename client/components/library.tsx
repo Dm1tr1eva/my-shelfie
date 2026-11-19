@@ -63,8 +63,9 @@ function GroupShelf({
                 }
                 className="flex min-h-14 items-center gap-3 border-b border-mist py-3 font-semibold text-burgundy"
               >
-                <span className="chip bg-burgundy text-card">{t("library.gap.badge")}</span>#
-                {slot.number} · {slot.wantedBook ? slot.wantedBook.title : t("library.gap.missing")}
+                <span className="chip bg-burgundy text-card">{t("library.gap.badge")}</span>
+                <span className="num">#{slot.number}</span> ·{" "}
+                {slot.wantedBook ? slot.wantedBook.title : t("library.gap.missing")}
               </Link>
             </li>
           ),

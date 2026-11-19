@@ -38,6 +38,25 @@ export function HeartIcon({ size }: IconProps) {
   );
 }
 
+export function BookmarkIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M6.5 3.5h11a1 1 0 0 1 1 1V21l-6.5-4.6L5.5 21V4.5a1 1 0 0 1 1-1z" />
+    </Svg>
+  );
+}
+
+export function ShelfIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <rect x="4" y="5" width="4" height="14" rx="1" />
+      <rect x="9.5" y="3" width="4" height="16" rx="1" />
+      <rect x="15" y="7" width="4" height="12" rx="1" />
+      <path d="M2.5 21.5h19" />
+    </Svg>
+  );
+}
+
 export function PlusIcon({ size }: IconProps) {
   return (
     <Svg size={size}>

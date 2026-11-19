@@ -102,7 +102,9 @@ export function BookCover({
       )}
 
       {number !== undefined && (
-        <span className="absolute left-1 top-1 rounded-full bg-card px-2 py-0.5 text-xs font-bold text-ink shadow">
+        <span
+          className={`num absolute inline-flex items-center justify-center rounded-full bg-card leading-none text-ink ${size === "sm" ? "left-1 top-1 h-5 min-w-6 px-1.5 text-[10px]" : "left-1.5 top-1.5 h-[22px] min-w-[26px] px-[7px] text-[11px]"}`}
+        >
           #{number}
         </span>
       )}

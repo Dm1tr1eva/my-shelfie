@@ -71,7 +71,9 @@ describe("the series page in other languages", () => {
     expect(await screen.findByText("Серія виходить, вже можна читати")).toBeInTheDocument();
     expect(screen.getByText("Бракує: #2 (пропуск) і #4 і #5")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Додати наступну книгу" })).toBeInTheDocument();
-    expect(screen.getByText("Вішліст · пропуск")).toBeInTheDocument();
+    const books = screen.getByRole("region", { name: "Книги цієї серії" });
+    expect(within(books).getByText("У вішлісті")).toBeInTheDocument();
+    expect(within(books).getAllByText("У планах")).toHaveLength(2);
     expect(screen.getByRole("heading", { name: "Про цю серію" })).toBeInTheDocument();
   });
 

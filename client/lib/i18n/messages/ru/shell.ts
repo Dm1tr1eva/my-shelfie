@@ -12,6 +12,7 @@ export const shell: Localized<typeof en> = {
     signIn: "Войти",
   },
   account: { logOut: "Выйти" },
+  labels: { inWishlist: "В вишлисте" },
   install: {
     button: "Установить приложение",
     iosTitle: "Установить приложение:",

@@ -53,7 +53,6 @@ export const library: Localized<typeof en> = {
     badge: "Пропуск",
     missing: "Нет в серии",
     notInLibrary: "Нет в библиотеке",
-    onWishlist: "В вишлисте",
   },
   noLinks: "Ссылок пока нет",
   rating: "Оценка: {rating} из 5",

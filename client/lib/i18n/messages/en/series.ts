@@ -15,7 +15,6 @@ export const series = {
   missingGap: "#{number} (a gap)",
   addNext: "Add the next book",
   booksRegion: "Books in this series",
-  wantedGap: "{ownership} · gap",
   missingFromSeries: "Missing from the series",
   notInLibrary: "Not in library",
   noNumber: "(no number)",

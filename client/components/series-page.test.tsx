@@ -15,6 +15,7 @@ const BOOKS = [
     title: "Ash Three",
     seriesId: "saga",
     seriesNumber: 3,
+    status: "reading",
     format: "ebook",
     genres: ["Fantasy", "Romance"],
     tropes: ["slow burn"],
@@ -256,13 +257,15 @@ describe("SeriesPage", () => {
     expect(screen.getByLabelText("Title")).toHaveFocus();
   });
 
-  it("labels each cover with where the book is and whether it is a gap", async () => {
+  it("labels an owned cover with its reading status and a wanted one as in the wishlist", async () => {
     serve();
     renderApp(<SeriesPage id="saga" />);
 
-    await screen.findByRole("heading", { name: "Saga of Ash" });
+    const books = await screen.findByRole("region", { name: "Books in this series" });
+    const covers = within(books).getAllByRole("link");
 
-    expect(screen.getAllByText("In my library")).toHaveLength(2);
-    expect(screen.getByText("Wishlist · gap")).toBeInTheDocument();
+    expect(covers[0]).toHaveTextContent(/Ash One\s*To read$/);
+    expect(covers[1]).toHaveTextContent(/Ash Two\s*In wishlist$/);
+    expect(covers[2]).toHaveTextContent(/Ash Three\s*Reading$/);
   });
 });

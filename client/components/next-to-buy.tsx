@@ -122,7 +122,7 @@ function MissingRow({ item, ownedNumbers }: { item: MissingItem; ownedNumbers: n
       <div className="flex min-w-0 flex-1 gap-4">
         <span
           aria-hidden="true"
-          className="flex aspect-[2/3] w-16 shrink-0 items-center justify-center rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] text-lg font-bold text-burgundy"
+          className="flex aspect-[2/3] w-16 shrink-0 items-center justify-center rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] text-lg text-burgundy num"
         >
           #{number}
         </span>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BookCover } from "@/components/book-cover";
-import { GenreChip, TropeChip } from "@/components/chips";
+import { GenreChip, StatusDot, TropeChip, WishlistLabel } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
 import { OwnProgress } from "@/components/own-progress";
 import { EditIcon, PlusIcon } from "@/components/icons";
@@ -174,7 +174,6 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             .sort((a, b) => (a.seriesNumber ?? 0) - (b.seriesNumber ?? 0))
             .map((book) => {
               const wanted = !isOwned(book);
-              const isGap = wanted && gaps.includes(book.seriesNumber ?? -1);
               return (
                 <li key={book.id}>
                   <Link href={`/books/${book.id}`} className="flex flex-col gap-2">
@@ -189,12 +188,8 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                     <span className="line-clamp-2 text-[15px] font-semibold leading-snug">
                       {book.title}
                     </span>
-                    <span className="text-xs font-semibold text-muted">
-                      {wanted
-                        ? isGap
-                          ? t("series.wantedGap", { ownership: d.ownership("wanted") })
-                          : d.ownership("wanted")
-                        : d.ownership("owned")}
+                    <span className="flex">
+                      {wanted ? <WishlistLabel /> : <StatusDot status={book.status} />}
                     </span>
                   </Link>
                 </li>
@@ -209,7 +204,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                   className="flex flex-col gap-2"
                 >
                   <span className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1 rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] px-2 text-center">
-                    <span className="text-lg font-bold text-burgundy">#{number}</span>
+                    <span className="num text-lg text-burgundy">#{number}</span>
                     <span className="text-xs font-semibold text-burgundy">
                       {t("series.missingFromSeries")}
                     </span>

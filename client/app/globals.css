@@ -52,14 +52,6 @@
   --color-link: var(--color-navy);
   --color-danger: var(--color-burgundy);
   --color-paper: var(--color-card);
-  --color-want: var(--color-mist);
-  --color-want-fg: var(--color-navy);
-  --color-reading: var(--color-navy);
-  --color-reading-fg: var(--color-page);
-  --color-read: var(--color-burgundy);
-  --color-read-fg: var(--color-card);
-  --color-dropped: var(--color-beige);
-  --color-dropped-fg: var(--color-ink-soft);
 }
 
 :root {
@@ -136,22 +128,6 @@
 
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium;
-  }
-
-  .chip-want {
-    @apply bg-want text-want-fg;
-  }
-
-  .chip-reading {
-    @apply bg-reading text-reading-fg;
-  }
-
-  .chip-read {
-    @apply bg-read text-read-fg;
-  }
-
-  .chip-dropped {
-    @apply bg-dropped text-dropped-fg;
   }
 
   .link {
