@@ -51,17 +51,17 @@ whether a page is inner (`/series/*`, `/books/*`, `/add*`). `AppNav` (768+): log
 Wishlist · "+ Add a book" (to `/add`) · account. `TabBar` (< 768): floating navy pill, shelf ·
 burgundy `+` · bookmark, icons only with `aria-label`s, lifted by the safe-area inset.
 `MobileHeader` (< 768): navy 56px, logo and account on top-level pages, "← Library" on inner
-ones. The account menu keeps the language switch and install.
+ones ("Back to the library" to screen readers). Focus rings on navy are light. The account
+menu keeps the language switch and install.
 
 ## Trade-offs accepted
 
-- "← Library" always leads to `/library`, even for a wishlist book, and inner pages have no
-  account button on phones, as drawn.
+- "← Library" always leads to `/library`, and inner pages have no account button on
+  phones, as drawn.
 - `/books/*` highlights nothing: the path cannot tell.
 - Next to buy has no nav item; `/next` works by URL until the Wishlist step.
-- Below 420px the public header shows only the mark: the name does not fit beside the
-  language switch and Sign in.
-- Inactive tab icons are slate on navy (about 4:1): enough for icons.
+- Below 420px the public header shows only the mark; the name does not fit.
+- Inactive tab icons are slate on navy (about 4:1).
 
 ## v2 superseded
 
