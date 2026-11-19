@@ -3,16 +3,9 @@
 import { useId } from "react";
 import { CheckIcon, StarIcon } from "@/components/icons";
 import { SERIES_STATE_CHOICES, type SeriesStatus } from "@/lib/series";
-import {
-  FORMAT_LABELS,
-  FORMATS,
-  OWNERSHIP_LABELS,
-  STATUS_LABELS,
-  STATUSES,
-  type BookStatus,
-  type Format,
-  type Ownership,
-} from "@/lib/books";
+import { FORMATS, STATUSES, type BookStatus, type Format, type Ownership } from "@/lib/books";
+import { useT } from "@/lib/i18n";
+import { useDomain } from "@/lib/i18n/domain";
 
 const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
 
@@ -64,11 +57,14 @@ export function OwnershipToggle({
   value: Ownership;
   onChange: (value: Ownership) => void;
 }) {
+  const t = useT();
+  const domain = useDomain();
+
   return (
     <SegmentedToggle
-      label="Where this book is"
+      label={t("book.controls.ownership")}
       options={OWNERSHIPS}
-      labels={OWNERSHIP_LABELS}
+      labels={{ owned: domain.ownership("owned"), wanted: domain.ownership("wanted") }}
       value={value}
       onChange={onChange}
     />
@@ -82,11 +78,14 @@ export function FormatToggle({
   value: Format;
   onChange: (value: Format) => void;
 }) {
+  const t = useT();
+  const domain = useDomain();
+
   return (
     <SegmentedToggle
-      label="Format"
+      label={t("book.controls.format")}
       options={FORMATS}
-      labels={FORMAT_LABELS}
+      labels={{ paper: domain.format("paper"), ebook: domain.format("ebook") }}
       value={value}
       onChange={onChange}
     />
@@ -100,8 +99,11 @@ export function ReadingStatusPills({
   value: BookStatus;
   onChange: (value: BookStatus) => void;
 }) {
+  const t = useT();
+  const domain = useDomain();
+
   return (
-    <div role="group" aria-label="Reading status" className="flex flex-wrap gap-2">
+    <div role="group" aria-label={t("book.controls.status")} className="flex flex-wrap gap-2">
       {STATUSES.map((status) => {
         const selected = value === status;
         return (
@@ -115,7 +117,7 @@ export function ReadingStatusPills({
             }`}
           >
             {selected && <CheckIcon size={16} />}
-            {STATUS_LABELS[status]}
+            {domain.status(status)}
           </button>
         );
       })}
@@ -130,14 +132,16 @@ export function StarRating({
   value: number | undefined;
   onChange: (value: number | undefined) => void;
 }) {
+  const t = useT();
+
   return (
     <div className="flex flex-wrap items-center gap-1">
-      <div role="group" aria-label="Rating" className="flex">
+      <div role="group" aria-label={t("book.controls.rating")} className="flex">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            aria-label={`Rate ${star} out of 5`}
+            aria-label={t("book.controls.rate", { star })}
             aria-pressed={value === star}
             onClick={() => onChange(star)}
             className="inline-flex h-11 w-11 items-center justify-center text-burgundy"
@@ -148,10 +152,10 @@ export function StarRating({
       </div>
 
       {value === undefined ? (
-        <span className="text-sm text-muted">Not rated</span>
+        <span className="text-sm text-muted">{t("book.controls.notRated")}</span>
       ) : (
         <button type="button" onClick={() => onChange(undefined)} className="btn-outline">
-          Clear
+          {t("book.controls.clear")}
         </button>
       )}
     </div>
@@ -166,11 +170,13 @@ export function SeriesStatePills({
   onChange: (value: SeriesStatus) => void;
 }) {
   const labelId = useId();
+  const t = useT();
+  const domain = useDomain();
 
   return (
     <div className="flex flex-col gap-2">
       <span id={labelId} className="font-semibold">
-        Is the series finished?
+        {t("book.controls.seriesFinished")}
       </span>
       <div role="radiogroup" aria-labelledby={labelId} className="flex flex-wrap gap-2">
         {SERIES_STATE_CHOICES.map((choice) => {
@@ -187,7 +193,7 @@ export function SeriesStatePills({
               }`}
             >
               {selected && <CheckIcon size={16} />}
-              {choice.label}
+              {domain.seriesChoice(choice.value)}
             </button>
           );
         })}

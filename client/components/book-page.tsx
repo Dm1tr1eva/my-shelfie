@@ -21,8 +21,8 @@ import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
 import {
   LINK_KINDS,
-  LINK_KIND_OPTIONS,
-  LINK_LANGUAGE_OPTIONS,
+  linkKindOptions,
+  linkLanguageOptions,
   useBook,
   useBookActions,
   useBooks,
@@ -37,6 +37,9 @@ import {
   type ShopLink,
 } from "@/lib/books";
 import { highestNumberOf } from "@/lib/catalogue";
+import { useT } from "@/lib/i18n";
+import { translateServerError } from "@/lib/i18n/server-errors";
+import { useDomain } from "@/lib/i18n/domain";
 import { hostOf, isHttpUrl } from "@/lib/links";
 import { useSeriesActions, useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
@@ -97,6 +100,8 @@ function changesBetween(book: Book, draft: Draft): BookChanges {
 }
 
 function BookForm({ book }: { book: Book }) {
+  const t = useT();
+  const domain = useDomain();
   const router = useRouter();
   const { updateBook, deleteBook } = useBookActions();
   const { books } = useBooks();
@@ -135,20 +140,20 @@ function BookForm({ book }: { book: Book }) {
     try {
       await updateBook(book.id, changes);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(err instanceof ApiError ? translateServerError(err.message, t) : t("book.error"));
     } finally {
       setPending(false);
     }
   }
 
   async function remove() {
-    if (!window.confirm(`Delete "${book.title}"? This cannot be undone.`)) return;
+    if (!window.confirm(t("book.remove.confirm", { title: book.title }))) return;
     setPending(true);
     try {
       await deleteBook(book.id);
       router.push("/library");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(err instanceof ApiError ? translateServerError(err.message, t) : t("book.error"));
       setPending(false);
     }
   }
@@ -169,12 +174,17 @@ function BookForm({ book }: { book: Book }) {
     kind,
     links: draft.links.filter((link) => link.kind === kind.value),
   })).filter((group) => group.links.length > 0);
+  const kindOptions = linkKindOptions(domain);
+  const languageOptions = linkLanguageOptions(domain);
 
   return (
     <div className="flex flex-col gap-6 pb-24">
-      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-muted">
+      <nav
+        aria-label={t("book.breadcrumb.label")}
+        className="flex flex-wrap items-center gap-2 text-sm text-muted"
+      >
         <Link href={draft.ownership === "wanted" ? "/wishlist" : "/library"} className="link">
-          Library
+          {t("book.breadcrumb.library")}
         </Link>
         {series && (
           <>
@@ -187,7 +197,7 @@ function BookForm({ book }: { book: Book }) {
         <span aria-hidden="true">/</span>
         <span aria-current="page">
           {draft.series.seriesId && draft.series.seriesNumber !== undefined
-            ? `Book ${draft.series.seriesNumber}`
+            ? t("book.breadcrumb.book", { number: draft.series.seriesNumber })
             : book.title}
         </span>
       </nav>
@@ -200,12 +210,14 @@ function BookForm({ book }: { book: Book }) {
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-4">
-              {!draft.series.seriesId && <p className="font-semibold text-navy">Standalone</p>}
+              {!draft.series.seriesId && (
+                <p className="font-semibold text-navy">{t("book.standalone")}</p>
+              )}
 
               {series && draft.series.seriesNumber !== undefined && (
                 <p className="font-semibold text-navy">
                   <Link href={`/series/${series.id}`} className="underline underline-offset-2">
-                    Book {draft.series.seriesNumber} of {total}
+                    {t("book.position", { number: draft.series.seriesNumber, total })}
                   </Link>{" "}
                   · {series.title}
                 </p>
@@ -217,7 +229,7 @@ function BookForm({ book }: { book: Book }) {
                   className="btn-outline self-start"
                 >
                   <PlusIcon size={18} />
-                  Add a book to this series
+                  {t("book.addToThisSeries")}
                 </Link>
               )}
 
@@ -242,14 +254,14 @@ function BookForm({ book }: { book: Book }) {
                   <TropeChip key={trope} trope={trope} />
                 ))}
                 {draft.genres.length + draft.tropes.length === 0 && (
-                  <span className="text-sm text-muted">No genres or tropes yet.</span>
+                  <span className="text-sm text-muted">{t("book.noTags")}</span>
                 )}
                 {draft.series.seriesId && series ? (
                   <Link
                     href={`/series/${series.id}`}
                     className="inline-flex min-h-11 items-center text-navy underline underline-offset-2"
                   >
-                    Tags belong to the series
+                    {t("book.tagsBelongToSeries")}
                   </Link>
                 ) : (
                   <button
@@ -258,7 +270,7 @@ function BookForm({ book }: { book: Book }) {
                     aria-expanded={editingTags}
                     className="min-h-11 text-navy underline underline-offset-2"
                   >
-                    {editingTags ? "Done" : "Edit tags"}
+                    {editingTags ? t("book.done") : t("book.editTags")}
                   </button>
                 )}
               </div>
@@ -267,7 +279,7 @@ function BookForm({ book }: { book: Book }) {
                 <div className="card flex flex-col gap-4 p-4">
                   <GenreMultiSelect value={draft.genres} onChange={(genres) => patch({ genres })} />
                   <TagInput
-                    label="Tropes"
+                    label={t("book.tropes")}
                     value={draft.tropes}
                     onChange={(tropes) => patch({ tropes })}
                     suggestions={suggestions}
@@ -283,7 +295,11 @@ function BookForm({ book }: { book: Book }) {
                     aria-expanded={editingSeries}
                     className="min-h-11 text-navy underline underline-offset-2"
                   >
-                    {editingSeries ? "Done" : series ? "Change series" : "Add to a series"}
+                    {editingSeries
+                      ? t("book.done")
+                      : series
+                        ? t("book.changeSeries")
+                        : t("book.addToSeries")}
                   </button>
                   {editingSeries && (
                     <div className="card mt-2 p-4">
@@ -311,20 +327,20 @@ function BookForm({ book }: { book: Book }) {
             <section aria-labelledby="buy-heading" className="card flex flex-col gap-4 p-5">
               <div className="flex items-baseline justify-between gap-3">
                 <h2 id="buy-heading" className="text-2xl font-semibold">
-                  Where to get it
+                  {t("book.links.heading")}
                 </h2>
                 <span className="text-sm text-muted">
-                  {draft.links.length} {draft.links.length === 1 ? "link" : "links"}
+                  {t("book.links.count", { count: draft.links.length })}
                 </span>
               </div>
 
-              {linkGroups.length === 0 && <p className="text-muted">No links yet.</p>}
+              {linkGroups.length === 0 && <p className="text-muted">{t("book.links.none")}</p>}
 
               {linkGroups.map((group) => (
                 <div key={group.kind.value} className="flex flex-col gap-2">
                   <p className="flex items-center gap-2 font-semibold">
                     <LinkKindBadge kind={group.kind.value} decorative />
-                    {group.kind.label}
+                    {domain.linkKind(group.kind.value)}
                   </p>
                   <ul className="flex flex-col gap-2">
                     {group.links.map((link) => (
@@ -341,7 +357,7 @@ function BookForm({ book }: { book: Book }) {
                         </a>
                         <button
                           type="button"
-                          aria-label={`Remove link ${hostOf(link.url)}`}
+                          aria-label={t("book.links.remove", { host: hostOf(link.url) })}
                           onClick={() =>
                             patch({ links: draft.links.filter((item) => item.url !== link.url) })
                           }
@@ -358,24 +374,24 @@ function BookForm({ book }: { book: Book }) {
               <div className="flex flex-col gap-2 border-t border-mist pt-4">
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Select
-                    label="Link kind"
+                    label={t("book.links.kindLabel")}
                     hideLabel
                     className="sm:w-36"
                     value={newKind}
                     onChange={(value) => setNewKind(value as LinkKind)}
-                    options={LINK_KIND_OPTIONS}
+                    options={kindOptions}
                   />
                   <Select
-                    label="Link language"
+                    label={t("book.links.languageLabel")}
                     hideLabel
                     className="sm:w-28"
                     value={newLanguage}
                     onChange={(value) => setNewLanguage(value as LinkLanguage)}
-                    options={LINK_LANGUAGE_OPTIONS}
+                    options={languageOptions}
                   />
                   <input
                     type="url"
-                    aria-label="Shop URL"
+                    aria-label={t("book.links.urlLabel")}
                     aria-invalid={linkError}
                     placeholder="https://"
                     value={newUrl}
@@ -391,12 +407,12 @@ function BookForm({ book }: { book: Book }) {
                     className="btn-outline shrink-0 whitespace-nowrap"
                   >
                     <PlusIcon size={18} />
-                    Add link
+                    {t("book.links.add")}
                   </button>
                 </div>
                 {linkError && (
                   <p role="alert" className="text-sm font-semibold text-burgundy">
-                    Start the link with https://
+                    {t("book.links.startWithHttps")}
                   </p>
                 )}
               </div>
@@ -405,7 +421,7 @@ function BookForm({ book }: { book: Book }) {
 
           <div className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">
-              <span className="text-2xl font-semibold font-serif">Notes</span>
+              <span className="text-2xl font-semibold font-serif">{t("book.notes")}</span>
               <textarea
                 value={draft.notes}
                 onChange={(event) => patch({ notes: event.target.value })}
@@ -416,24 +432,26 @@ function BookForm({ book }: { book: Book }) {
 
             {draft.series.seriesId && series ? (
               <div className="flex flex-col gap-1">
-                <h2 className="font-serif text-2xl font-semibold">About the series</h2>
+                <h2 className="font-serif text-2xl font-semibold">{t("book.aboutSeries")}</h2>
                 {draft.annotation ? (
                   <p className="whitespace-pre-line">{draft.annotation}</p>
                 ) : (
-                  <p className="text-muted">The series has no description yet.</p>
+                  <p className="text-muted">{t("book.noSeriesDescription")}</p>
                 )}
                 <Link
                   href={`/series/${series.id}`}
                   className="inline-flex min-h-11 items-center self-start text-navy underline underline-offset-2"
                 >
-                  Edit the series
+                  {t("book.editSeries")}
                 </Link>
               </div>
             ) : (
               <label className="flex flex-col gap-1">
                 <span className="font-serif text-2xl font-semibold">
-                  My annotation{" "}
-                  <span className="font-sans text-sm font-normal text-muted">optional</span>
+                  {t("book.annotation")}{" "}
+                  <span className="font-sans text-sm font-normal text-muted">
+                    {t("book.optional")}
+                  </span>
                 </span>
                 <textarea
                   value={draft.annotation}
@@ -449,30 +467,28 @@ function BookForm({ book }: { book: Book }) {
         <aside className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
           <section aria-labelledby="reading-heading" className="card flex flex-col gap-4 p-5">
             <h2 id="reading-heading" className="text-xl font-semibold">
-              Reading
+              {t("book.reading.heading")}
             </h2>
             <div className="flex flex-col gap-2">
-              <p className="font-semibold">Status</p>
+              <p className="font-semibold">{t("book.reading.status")}</p>
               <ReadingStatusPills value={draft.status} onChange={(status) => patch({ status })} />
             </div>
             <div className="flex flex-col gap-2">
-              <p className="font-semibold">Rating</p>
+              <p className="font-semibold">{t("book.reading.rating")}</p>
               <StarRating value={draft.rating} onChange={(rating) => patch({ rating })} />
             </div>
           </section>
 
           <section className="card flex flex-col gap-3 p-5">
-            <h2 className="text-xl font-semibold">Remove</h2>
-            <p className="text-sm text-muted">
-              Deletes the book, its notes and links. The series stays.
-            </p>
+            <h2 className="text-xl font-semibold">{t("book.remove.heading")}</h2>
+            <p className="text-sm text-muted">{t("book.remove.text")}</p>
             <button
               type="button"
               onClick={remove}
               disabled={pending}
               className="btn-outline border-burgundy text-burgundy"
             >
-              Delete book
+              {t("book.remove.button")}
             </button>
           </section>
         </aside>
@@ -487,20 +503,20 @@ function BookForm({ book }: { book: Book }) {
       {dirty && (
         <div
           role="region"
-          aria-label="Unsaved changes"
+          aria-label={t("book.unsaved.label")}
           className="fixed inset-x-0 bottom-[92px] z-30 mx-auto flex w-[calc(100%-2rem)] max-w-3xl flex-wrap items-center justify-between gap-3 rounded-card bg-navy px-5 py-3 text-page shadow-pop md:bottom-6"
         >
-          <p className="font-semibold">You have unsaved changes</p>
+          <p className="font-semibold">{t("book.unsaved.message")}</p>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setDraft(draftOf(book))}
               className="inline-flex min-h-11 items-center rounded-control border border-mist px-4 font-semibold"
             >
-              Discard
+              {t("book.unsaved.discard")}
             </button>
             <button type="button" onClick={save} disabled={pending} className="btn-beige">
-              {pending ? "Saving..." : "Save changes"}
+              {pending ? t("book.unsaved.saving") : t("book.unsaved.save")}
             </button>
           </div>
         </div>
@@ -510,6 +526,7 @@ function BookForm({ book }: { book: Book }) {
 }
 
 export function BookPage({ id }: { id: string }) {
+  const t = useT();
   const { user, status } = useRequireAuth();
   const { book, error, isLoading, reload } = useBook(id);
 
@@ -521,14 +538,18 @@ export function BookPage({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      {isLoading && <RowsSkeleton label="Loading the book…" />}
+      {isLoading && <RowsSkeleton label={t("book.loading")} />}
       {notFound && (
-        <NotFound title="Book not found" backHref="/library" backLabel="Back to the library" />
+        <NotFound
+          title={t("book.notFound.title")}
+          backHref="/library"
+          backLabel={t("book.notFound.back")}
+        />
       )}
       {error && !notFound && (
         <ErrorState
-          title="Could not load this book"
-          text="Check your connection and try again."
+          title={t("book.loadFailed.title")}
+          text={t("book.loadFailed.text")}
           onRetry={reload}
         />
       )}

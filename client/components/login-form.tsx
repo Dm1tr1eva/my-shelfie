@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PasswordField, TextField } from "@/components/auth-fields";
 import { useAuth, ApiError } from "@/lib/auth-context";
+import { useT } from "@/lib/i18n";
 
 export function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +21,7 @@ export function LoginForm() {
     setError(null);
 
     if (email.trim() === "" || password === "") {
-      setError("Enter your email and password.");
+      setError(t("auth.login.enterBoth"));
       return;
     }
 
@@ -30,8 +32,8 @@ export function LoginForm() {
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 401
-          ? "That email and password do not match an account."
-          : "Something went wrong. Try again.",
+          ? t("auth.login.mismatch")
+          : t("auth.common.somethingWrong"),
       );
     } finally {
       setPending(false);
@@ -48,9 +50,9 @@ export function LoginForm() {
       >
         <div className="flex flex-col gap-1">
           <h1 id="login-heading" className="text-[32px] font-semibold leading-tight">
-            Welcome back
+            {t("auth.login.heading")}
           </h1>
-          <p className="text-muted">Sign in to open your shelves.</p>
+          <p className="text-muted">{t("auth.login.lead")}</p>
         </div>
 
         {error && (
@@ -63,27 +65,27 @@ export function LoginForm() {
         )}
 
         <TextField
-          label="Email"
+          label={t("auth.common.email")}
           type="email"
           value={email}
           onChange={setEmail}
           autoComplete="email"
         />
         <PasswordField
-          label="Password"
+          label={t("auth.common.password")}
           value={password}
           onChange={setPassword}
           autoComplete="current-password"
         />
 
         <button type="submit" disabled={pending} className="btn-primary min-h-12">
-          {pending ? "Signing in..." : "Sign in"}
+          {pending ? t("auth.login.pending") : t("auth.login.submit")}
         </button>
 
         <p className="text-center">
-          New here?{" "}
+          {t("auth.login.newHere")}{" "}
           <Link href="/register" className="link">
-            Create an account
+            {t("auth.login.create")}
           </Link>
         </p>
       </form>

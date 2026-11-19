@@ -73,6 +73,8 @@
   h1,
   h2 {
     font-family: var(--font-serif);
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
   :focus-visible {

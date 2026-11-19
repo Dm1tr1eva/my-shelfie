@@ -9,27 +9,34 @@ import { ApiError, apiFetch } from "@/lib/api";
 import { SEARCH_DEBOUNCE_MS, SEARCH_MIN_LENGTH, type BookSearchResult } from "@/lib/book-search";
 import { useBookActions, useBooks, type Book, type Ownership } from "@/lib/books";
 import { useSeriesList } from "@/lib/series";
+import { useT } from "@/lib/i18n";
+import { translateServerError } from "@/lib/i18n/server-errors";
+import { useDomain } from "@/lib/i18n/domain";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 type Phase = "idle" | "loading" | "done" | "failed";
 type Added = { id: string; title: string; ownership: Ownership };
 type SearchPage = { results: BookSearchResult[]; nextStartIndex?: number };
 
+const TITLE_MARKER = "";
+
 function Stepper() {
+  const t = useT();
+
   return (
-    <ol className="flex items-center gap-4 text-sm font-semibold">
+    <ol className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">
       <li className="flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-page">
           1
         </span>
-        Find it
+        {t("add.steps.find")}
       </li>
       <li aria-hidden="true" className="h-px w-8 bg-field" />
       <li className="flex items-center gap-2 text-muted">
         <span className="flex h-7 w-7 items-center justify-center rounded-full border border-field">
           2
         </span>
-        Details <span className="font-normal">(optional)</span>
+        {t("add.steps.details")} <span className="font-normal">{t("add.steps.optional")}</span>
       </li>
     </ol>
   );
@@ -50,6 +57,7 @@ function ResultRow({
   onOpenSheet: (result: BookSearchResult) => void;
   busy: boolean;
 }) {
+  const t = useT();
   const meta = [result.authors.join(", "), result.year].filter(Boolean).join(" · ");
 
   return (
@@ -66,14 +74,14 @@ function ResultRow({
               rel="noopener noreferrer"
               className="inline-flex min-h-11 items-center text-sm text-navy underline underline-offset-2"
             >
-              View on Google Books
+              {t("add.result.viewOnGoogle")}
             </a>
           )}
           {existing && (
             <span className="text-sm font-semibold text-burgundy">
               {existing.ownership === "wanted"
-                ? "Already on your wishlist"
-                : "Already in your library"}
+                ? t("add.result.inWishlist")
+                : t("add.result.inLibrary")}
             </span>
           )}
         </div>
@@ -87,7 +95,7 @@ function ResultRow({
             onClick={() => onMove(existing)}
             className="btn-primary"
           >
-            Move to library
+            {t("add.result.moveToLibrary")}
           </button>
         )
       ) : (
@@ -99,7 +107,7 @@ function ResultRow({
               onClick={() => onAdd(result, "wanted")}
               className="btn-outline"
             >
-              Add to wishlist
+              {t("add.result.addToWishlist")}
             </button>
             <button
               type="button"
@@ -107,7 +115,7 @@ function ResultRow({
               onClick={() => onAdd(result, "owned")}
               className="btn-primary"
             >
-              Add to library
+              {t("add.result.addToLibrary")}
             </button>
           </div>
           <button
@@ -116,7 +124,7 @@ function ResultRow({
             onClick={() => onOpenSheet(result)}
             className="btn-primary md:hidden"
           >
-            Add this book
+            {t("add.result.addThisBook")}
           </button>
         </>
       )}
@@ -125,6 +133,8 @@ function ResultRow({
 }
 
 export function AddBook() {
+  const t = useT();
+  const d = useDomain();
   const { user, status } = useRequireAuth();
   const router = useRouter();
   const params = useSearchParams();
@@ -281,7 +291,9 @@ export function AddBook() {
       setManualAuthor("");
       router.push(detailsHrefFor(created.id));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError ? translateServerError(err.message, t) : t("add.genericError"),
+      );
     } finally {
       setBusy(false);
     }
@@ -290,7 +302,7 @@ export function AddBook() {
   function addResult(result: BookSearchResult, ownership: Ownership) {
     return create({
       title: result.title,
-      author: result.authors.join(", ") || "Unknown author",
+      author: result.authors.join(", ") || t("add.search.unknownAuthor"),
       ownership,
       coverUrl: result.coverUrl,
       googleVolumeId: result.volumeId,
@@ -303,43 +315,53 @@ export function AddBook() {
       await updateBook(book.id, { ownership: "owned" });
       setAdded({ id: book.id, title: book.title, ownership: "owned" });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError ? translateServerError(err.message, t) : t("add.genericError"),
+      );
     } finally {
       setBusy(false);
     }
   }
 
+  const targetText = targetSeries
+    ? t(seriesNumber !== undefined ? "add.target.numbered" : "add.target.plain", {
+        title: TITLE_MARKER,
+        number: seriesNumber ?? 0,
+      }).split(TITLE_MARKER)
+    : [];
+
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">Add a book</h1>
+      <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{t("add.title")}</h1>
       <Stepper />
 
       {targetSeries && (
         <p className="card px-4 py-3 text-sm">
-          Adding to <strong>{targetSeries.title}</strong>
-          {seriesNumber !== undefined && <> as book #{seriesNumber}</>}.
+          {targetText[0]}
+          <strong>{targetSeries.title}</strong>
+          {targetText[1]}
         </p>
       )}
 
       <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row" role="search">
         <label className="relative flex-1">
-          <span className="sr-only">Search Google Books</span>
+          <span className="sr-only">{t("add.search.label")}</span>
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
             <SearchIcon size={18} />
           </span>
           <input
             type="search"
             value={query}
-            placeholder={targetSeries ? `${targetSeries.title} …` : "Search Google Books"}
+            placeholder={targetSeries ? `${targetSeries.title} …` : t("add.search.label")}
             onChange={(event) => changeQuery(event.target.value)}
             className="field pl-10"
           />
         </label>
         <button type="submit" className="btn-primary">
-          Search
+          {t("add.search.button")}
         </button>
       </form>
-      <p className="-mt-3 text-sm text-muted">Search by title, author or ISBN.</p>
+      <p className="-mt-3 text-sm text-muted">{t("add.search.hint")}</p>
 
       {added && (
         <div
@@ -347,16 +369,18 @@ export function AddBook() {
           className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-card bg-navy px-5 py-3 text-page"
         >
           <CheckIcon size={20} />
-          <span className="flex-1 font-semibold">{added.title} moved to your library.</span>
+          <span className="flex-1 font-semibold">
+            {t("add.moved.text", { title: added.title })}
+          </span>
           <Link href={detailsHrefFor(added.id)} className="btn-beige">
-            Add series &amp; tags
+            {t("add.moved.addSeries")}
           </Link>
           <button
             type="button"
             onClick={() => setAdded(null)}
             className="inline-flex min-h-11 items-center rounded-control border border-mist px-4 font-semibold"
           >
-            Done
+            {t("add.moved.done")}
           </button>
         </div>
       )}
@@ -369,20 +393,20 @@ export function AddBook() {
 
       {phase === "loading" && (
         <p role="status" aria-busy="true">
-          Searching...
+          {t("add.search.searching")}
         </p>
       )}
 
       {phase === "failed" && (
         <div role="alert" className="card flex flex-col gap-3 border-2 border-burgundy p-5">
-          <p className="font-serif text-xl font-semibold">Google Books isn&apos;t answering</p>
-          <p className="text-muted">You can try again, or add the book without search.</p>
+          <p className="font-serif text-xl font-semibold">{t("add.failed.title")}</p>
+          <p className="text-muted">{t("add.failed.text")}</p>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={retry} className="btn-primary">
-              Try again
+              {t("add.failed.tryAgain")}
             </button>
             <button type="button" onClick={() => setManual(true)} className="btn-outline">
-              Add it without search
+              {t("add.failed.addWithoutSearch")}
             </button>
           </div>
         </div>
@@ -390,18 +414,14 @@ export function AddBook() {
 
       {(phase === "done" || (phase === "loading" && results.length > 0)) && (
         <section
-          aria-label="Search results"
+          aria-label={t("add.search.resultsLabel")}
           aria-busy={phase === "loading" || query.trim() !== searchedText}
           className={`flex flex-col gap-3 ${
             phase === "loading" || query.trim() !== searchedText ? "opacity-60" : ""
           }`}
         >
-          <p className="text-sm text-muted">
-            {results.length} {results.length === 1 ? "result" : "results"}.
-          </p>
-          {phase === "done" && results.length === 0 && (
-            <p>No books found. Try fewer words, or add it without search.</p>
-          )}
+          <p className="text-sm text-muted">{t("add.search.results", { count: results.length })}</p>
+          {phase === "done" && results.length === 0 && <p>{t("add.search.none")}</p>}
           <ul className="flex flex-col gap-3">
             {results.map((result) => (
               <ResultRow
@@ -418,7 +438,7 @@ export function AddBook() {
 
           {moreFailed && (
             <p role="alert" className="font-semibold text-burgundy">
-              Could not load more results.
+              {t("add.search.moreFailed")}
             </p>
           )}
           {nextStart !== null && (
@@ -428,21 +448,21 @@ export function AddBook() {
               onClick={loadMore}
               className="btn-outline self-center"
             >
-              {loadingMore ? "Loading..." : "Show more results"}
+              {loadingMore ? t("add.search.loadingMore") : t("add.search.showMore")}
             </button>
           )}
         </section>
       )}
 
       <div className="flex flex-col gap-3 border-t border-mist pt-5">
-        <p className="font-semibold">Not on Google Books?</p>
+        <p className="font-semibold">{t("add.manual.heading")}</p>
         {!manual ? (
           <button type="button" onClick={() => setManual(true)} className="btn-outline self-start">
-            Add it without search
+            {t("add.manual.open")}
           </button>
         ) : (
           <form
-            aria-label="Add a book by hand"
+            aria-label={t("add.manual.formLabel")}
             onSubmit={(event) => {
               event.preventDefault();
               create({
@@ -454,7 +474,7 @@ export function AddBook() {
             className="card flex flex-col gap-3 p-4"
           >
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Title</span>
+              <span className="font-semibold">{t("add.manual.title")}</span>
               <input
                 required
                 value={manualTitle}
@@ -463,7 +483,7 @@ export function AddBook() {
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Author</span>
+              <span className="font-semibold">{t("add.manual.author")}</span>
               <input
                 required
                 value={manualAuthor}
@@ -472,7 +492,7 @@ export function AddBook() {
               />
             </label>
             <fieldset className="flex flex-wrap gap-4">
-              <legend className="mb-1 font-semibold">Where does it go?</legend>
+              <legend className="mb-1 font-semibold">{t("add.manual.where")}</legend>
               {(["owned", "wanted"] as const).map((option) => (
                 <label key={option} className="flex min-h-11 items-center gap-2">
                   <input
@@ -482,16 +502,16 @@ export function AddBook() {
                     onChange={() => setManualOwnership(option)}
                     className="h-5 w-5 accent-burgundy"
                   />
-                  {option === "owned" ? "In my library" : "Wishlist"}
+                  {d.ownership(option)}
                 </label>
               ))}
             </fieldset>
             <div className="flex gap-2">
               <button type="submit" disabled={busy} className="btn-primary">
-                Add book
+                {t("add.manual.submit")}
               </button>
               <button type="button" onClick={() => setManual(false)} className="btn-outline">
-                Cancel
+                {t("add.manual.cancel")}
               </button>
             </div>
           </form>
@@ -503,14 +523,14 @@ export function AddBook() {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={`Add ${sheetFor.title}`}
+            aria-label={t("add.sheet.label", { title: sheetFor.title })}
             className="w-full rounded-t-card bg-card p-5 pb-8"
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <p className="font-serif text-xl font-semibold">{sheetFor.title}</p>
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={t("add.sheet.close")}
                 onClick={() => setSheetFor(null)}
                 className="btn-outline w-11 px-0"
               >
@@ -524,7 +544,7 @@ export function AddBook() {
                 onClick={() => addResult(sheetFor, "owned")}
                 className="btn-primary min-h-12"
               >
-                Add to library
+                {t("add.result.addToLibrary")}
               </button>
               <button
                 type="button"
@@ -532,7 +552,7 @@ export function AddBook() {
                 onClick={() => addResult(sheetFor, "wanted")}
                 className="btn-outline min-h-12"
               >
-                Add to wishlist
+                {t("add.result.addToWishlist")}
               </button>
             </div>
           </div>

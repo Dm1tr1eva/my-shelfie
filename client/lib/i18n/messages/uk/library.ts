@@ -1,0 +1,113 @@
+import type { Localized } from "../../core";
+import type { library as en } from "../en/library";
+
+export const library: Localized<typeof en> = {
+  title: "Бібліотека",
+  search: "Пошук по моїх книгах",
+  sections: "Розділи бібліотеки",
+  tabs: { library: "Моя бібліотека", wishlist: "Вішліст" },
+  stats: "{owned} у бібліотеці · {wishlist} у вішлісті · {read} прочитано",
+  summary: {
+    books: {
+      one: "{count} книга",
+      few: "{count} книги",
+      many: "{count} книг",
+      other: "{count} книги",
+    },
+    inGroups: {
+      one: "у {count} групі",
+      few: "у {count} групах",
+      many: "у {count} групах",
+      other: "у {count} групах",
+    },
+    withGroups: "{books} {groups}",
+  },
+  loadError: {
+    title: "Не вдалося завантажити книги",
+    text: "Перевірте з’єднання та спробуйте ще раз.",
+  },
+  noMatch: {
+    title: "Нічого не знайдено",
+    query: "У цьому списку немає нічого за запитом «{query}».",
+    queryAndFilters: "У цьому списку немає нічого за запитом «{query}» з вибраними фільтрами.",
+    filters: "У цьому списку немає книг, що підходять під фільтри.",
+  },
+  emptyLibrary: {
+    title: "Ваша бібліотека порожня",
+    text: "Додайте паперові книги, які у вас є, і вони зберуться тут, полиця за полицею.",
+  },
+  emptyWishlist: {
+    title: "Ваш вішліст порожній",
+    text: "Книги, які ви хочете купити, чекатимуть тут, згруповані за серіями.",
+  },
+  standalone: {
+    title: "Окремі книги",
+    subtitle: {
+      one: "Не входять до серії · {count} книга",
+      few: "Не входять до серії · {count} книги",
+      many: "Не входять до серії · {count} книг",
+      other: "Не входять до серії · {count} книги",
+    },
+  },
+  gap: {
+    badge: "Пропуск",
+    missing: "Немає в серії",
+    notInLibrary: "Немає в бібліотеці",
+    onWishlist: "У вішлісті",
+  },
+  noLinks: "Посилань поки немає",
+  rating: "Оцінка: {rating} з 5",
+  openSeries: "Відкрити серію",
+  progress: {
+    own: "Є {owned} з {total}",
+    ownWithBooks: "Є {owned} з {total}: книги {numbers}",
+  },
+  view: { label: "Вигляд", grid: "Сітка", list: "Список" },
+  filters: {
+    title: "Фільтри",
+    withCount: "Фільтри · {count}",
+    close: "Закрити",
+    clear: "Скинути",
+    clearAll: "Скинути все",
+    apply: "Застосувати",
+    nothingFound: "Нічого не знайдено.",
+    more: "ще {count}",
+    show: {
+      one: "Показати {count} книгу",
+      few: "Показати {count} книги",
+      many: "Показати {count} книг",
+      other: "Показати {count} книги",
+    },
+    remove: "Прибрати фільтр «{label}»",
+    findIn: "Пошук: {group}",
+    group: {
+      genre: "Жанр",
+      trope: "Троп",
+      status: "Статус серії",
+      author: "Автор",
+      language: "Мова магазину",
+      kind: "Тип посилання",
+    },
+    searchInGroup: {
+      genre: "Знайти жанр",
+      trope: "Знайти троп",
+      status: "Знайти статус серії",
+      author: "Знайти автора",
+      language: "Знайти мову магазину",
+      kind: "Знайти тип посилання",
+    },
+    searchForOne: {
+      genre: "Знайти жанр",
+      trope: "Знайти троп",
+      status: "Знайти статус серії",
+      author: "Знайти автора",
+      language: "Знайти мову магазину",
+      kind: "Знайти тип посилання",
+    },
+    chip: {
+      language: "Мова магазину: {value}",
+      status: "Серія: {value}",
+      kind: "Посилання: {value}",
+    },
+  },
+};

@@ -1,11 +1,14 @@
 "use client";
 
 import { InstallAction } from "@/components/install-action";
+import { LanguageSwitch } from "@/components/language-switch";
 import { useAuth } from "@/lib/auth-context";
+import { useT } from "@/lib/i18n";
 import { UserIcon } from "@/components/icons";
 
 export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
   const { user, logout } = useAuth();
+  const t = useT();
   if (!user) return null;
 
   const initial = user.name.trim().charAt(0).toUpperCase() || "?";
@@ -15,7 +18,7 @@ export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
   return (
     <details className="group relative">
       <summary
-        aria-label="Account"
+        aria-label={t("shell.nav.account")}
         className={
           variant === "avatar"
             ? "flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full bg-beige font-semibold text-ink [&::-webkit-details-marker]:hidden"
@@ -27,7 +30,7 @@ export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
         ) : (
           <>
             <UserIcon />
-            <span>Account</span>
+            <span>{t("shell.nav.account")}</span>
           </>
         )}
       </summary>
@@ -35,8 +38,11 @@ export function AccountMenu({ variant }: { variant: "avatar" | "tab" }) {
         <p className="truncate font-semibold">{user.name}</p>
         <p className="truncate text-sm text-muted">{user.email}</p>
         <button type="button" onClick={() => logout()} className="btn-outline mt-3 w-full">
-          Log out
+          {t("shell.account.logOut")}
         </button>
+        <div className="mt-3">
+          <LanguageSwitch tone="light" />
+        </div>
         <InstallAction />
       </div>
     </details>

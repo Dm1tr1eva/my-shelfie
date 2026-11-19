@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
 import { LangBadge } from "@/components/chips";
 import { StatusChip } from "@/components/status-chip";
 import { LINK_LANGUAGES, type Book } from "@/lib/books";
+import { useT } from "@/lib/i18n";
 
 export function BookTile({
   book,
@@ -13,6 +16,7 @@ export function BookTile({
   showNumber?: boolean;
   showLinks?: boolean;
 }) {
+  const t = useT();
   const languages = LINK_LANGUAGES.map((item) => item.value).filter((language) =>
     book.links.some((link) => link.language === language),
   );
@@ -32,7 +36,7 @@ export function BookTile({
           {book.rating ? (
             <span
               role="img"
-              aria-label={`Rated ${book.rating} out of 5`}
+              aria-label={t("library.rating", { rating: book.rating })}
               className="font-semibold text-burgundy"
             >
               ★ {book.rating}
@@ -42,7 +46,7 @@ export function BookTile({
             (languages.length > 0 ? (
               languages.map((language) => <LangBadge key={language} language={language} />)
             ) : (
-              <span>No links yet</span>
+              <span>{t("library.noLinks")}</span>
             ))}
         </span>
       </Link>

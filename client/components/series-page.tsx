@@ -16,17 +16,16 @@ import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
 import { useBooks, type Book, type Genre } from "@/lib/books";
 import { gapNumbersOf, highestNumberOf, isOwned, ownedNumbersOf } from "@/lib/catalogue";
-import {
-  SERIES_STATUS_LABELS,
-  useSeries,
-  useSeriesActions,
-  type Series,
-  type SeriesStatus,
-} from "@/lib/series";
+import { useSeries, useSeriesActions, type Series, type SeriesStatus } from "@/lib/series";
+import { useT } from "@/lib/i18n";
+import { translateServerError } from "@/lib/i18n/server-errors";
+import { useDomain } from "@/lib/i18n/domain";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
   const router = useRouter();
+  const t = useT();
+  const d = useDomain();
   const { updateSeries, deleteSeries } = useSeriesActions();
   const [editing, setEditing] = useState(false);
   const [firstField, setFirstField] = useState<"title" | "note">("title");
@@ -90,21 +89,24 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
       });
       setEditing(false);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError ? translateServerError(err.message, t) : t("series.somethingWrong"),
+      );
     } finally {
       setPending(false);
     }
   }
 
   async function remove() {
-    if (!window.confirm(`Delete the series "${series.title}"? Its books stay on your shelf.`))
-      return;
+    if (!window.confirm(t("series.form.confirmDelete", { title: series.title }))) return;
     setPending(true);
     try {
       await deleteSeries(series.id);
       router.push("/library");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError ? translateServerError(err.message, t) : t("series.somethingWrong"),
+      );
       setPending(false);
     }
   }
@@ -113,9 +115,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-3">
         <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-          {series.status === "readable"
-            ? "Ongoing series, readable now"
-            : `${SERIES_STATUS_LABELS[series.status]} series`}
+          {d.seriesHeader(series.status)}
         </p>
         <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{series.title}</h1>
         {(series.author || series.note) && (
@@ -131,7 +131,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
           className="btn-outline self-start"
         >
           <EditIcon size={18} />
-          {series.note ? "Edit note" : "Add a note"}
+          {series.note ? t("series.editNote") : t("series.addNote")}
         </button>
       </header>
 
@@ -144,28 +144,31 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             id="copies-heading"
             className="font-sans text-sm font-semibold uppercase tracking-wide text-mist"
           >
-            Your copies
+            {t("series.copies")}
           </h2>
           <p className="font-serif text-4xl font-semibold">
-            {ownedCount} <span className="text-xl text-mist">of {total}</span>
+            {ownedCount} <span className="text-xl text-mist">{t("series.ofTotal", { total })}</span>
           </p>
           <OwnProgress ownedNumbers={ownedNumbers} ownedCount={ownedCount} total={total} onDark />
           {missing.length > 0 && (
             <p className="text-sm text-mist">
-              Missing:{" "}
-              {missing
-                .map((number) => `#${number}${gaps.includes(number) ? " (a gap)" : ""}`)
-                .join(" and ")}
+              {t("series.missing", {
+                list: missing
+                  .map((number) =>
+                    gaps.includes(number) ? t("series.missingGap", { number }) : `#${number}`,
+                  )
+                  .join(t("series.joinAnd")),
+              })}
             </p>
           )}
         </div>
         <Link href={`/add?series=${series.id}&number=${nextNumber}`} className="btn-beige">
           <PlusIcon size={18} />
-          Add the next book
+          {t("series.addNext")}
         </Link>
       </section>
 
-      <section aria-label="Books in this series" className="flex flex-col gap-4">
+      <section aria-label={t("series.booksRegion")} className="flex flex-col gap-4">
         <Shelf>
           {numbered
             .sort((a, b) => (a.seriesNumber ?? 0) - (b.seriesNumber ?? 0))
@@ -187,7 +190,11 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                       {book.title}
                     </span>
                     <span className="text-xs font-semibold text-muted">
-                      {wanted ? (isGap ? "Wishlist · gap" : "Wishlist") : "In my library"}
+                      {wanted
+                        ? isGap
+                          ? t("series.wantedGap", { ownership: d.ownership("wanted") })
+                          : d.ownership("wanted")
+                        : d.ownership("owned")}
                     </span>
                   </Link>
                 </li>
@@ -204,10 +211,10 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                   <span className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1 rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] px-2 text-center">
                     <span className="text-lg font-bold text-burgundy">#{number}</span>
                     <span className="text-xs font-semibold text-burgundy">
-                      Missing from the series
+                      {t("series.missingFromSeries")}
                     </span>
                   </span>
-                  <span className="text-[15px] font-semibold">Not in library</span>
+                  <span className="text-[15px] font-semibold">{t("series.notInLibrary")}</span>
                 </Link>
               </li>
             ))}
@@ -220,7 +227,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                 <Link href={`/books/${book.id}`} className="link">
                   {book.title}
                 </Link>{" "}
-                <span className="text-muted">(no number)</span>
+                <span className="text-muted">{t("series.noNumber")}</span>
               </li>
             ))}
           </ul>
@@ -229,14 +236,14 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
 
       <section aria-labelledby="about-heading" className="card flex flex-col gap-4 p-5">
         <h2 id="about-heading" className="text-xl font-semibold">
-          About this series
+          {t("series.about.title")}
         </h2>
         {series.annotation ? (
           <p className="max-w-3xl whitespace-pre-line">{series.annotation}</p>
         ) : (
-          <p className="text-muted">No description yet. Add one with Edit series.</p>
+          <p className="text-muted">{t("series.about.noDescription")}</p>
         )}
-        <ul aria-label="Genres and tropes" className="flex flex-wrap gap-2">
+        <ul aria-label={t("series.about.genresAndTropes")} className="flex flex-wrap gap-2">
           {series.genres.map((genre) => (
             <li key={genre}>
               <GenreChip genre={genre} />
@@ -248,10 +255,10 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             </li>
           ))}
           {series.genres.length + series.tropes.length === 0 && (
-            <li className="text-sm text-muted">No genres or tropes yet.</li>
+            <li className="text-sm text-muted">{t("series.about.noTags")}</li>
           )}
         </ul>
-        <p className="text-sm text-muted">These are shared by every book of the series.</p>
+        <p className="text-sm text-muted">{t("series.about.shared")}</p>
       </section>
 
       <div className="flex flex-col gap-3">
@@ -261,17 +268,17 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             onClick={() => openEditing("title")}
             className="btn-outline self-start"
           >
-            Edit series
+            {t("series.form.editSeries")}
           </button>
         ) : (
           <form
             ref={formRef}
             onSubmit={save}
-            aria-label="Edit series"
+            aria-label={t("series.form.editSeries")}
             className="card flex scroll-mt-20 flex-col gap-3 p-5"
           >
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Title</span>
+              <span className="font-semibold">{t("series.form.title")}</span>
               <input
                 ref={titleRef}
                 required
@@ -281,48 +288,48 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Author</span>
+              <span className="font-semibold">{t("series.form.author")}</span>
               <input value={author} onChange={(e) => setAuthor(e.target.value)} className="field" />
             </label>
             <SeriesStatePills value={status} onChange={setStatus} />
             <GenreMultiSelect value={genres} onChange={setGenres} />
             <TagInput
-              label="Tropes"
+              label={t("series.form.tropes")}
               value={tropes}
               onChange={setTropes}
               suggestions={suggestions}
             />
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Description</span>
+              <span className="font-semibold">{t("series.form.description")}</span>
               <textarea
                 value={annotation}
                 onChange={(e) => setAnnotation(e.target.value)}
                 rows={5}
-                placeholder="What the series is about, in your words"
+                placeholder={t("series.form.descriptionPlaceholder")}
                 className="field"
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Books in the series</span>
+              <span className="font-semibold">{t("series.form.totalBooks")}</span>
               <input
                 type="number"
                 min={1}
                 max={200}
                 inputMode="numeric"
-                placeholder="Optional"
+                placeholder={t("series.form.optional")}
                 value={totalText}
                 onChange={(e) => setTotalText(e.target.value)}
                 className="field sm:w-40"
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-semibold">Note</span>
+              <span className="font-semibold">{t("series.form.note")}</span>
               <textarea
                 ref={noteRef}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
-                placeholder="Book 4 delayed to 2027"
+                placeholder={t("series.form.notePlaceholder")}
                 className="field"
               />
             </label>
@@ -333,10 +340,10 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
             )}
             <div className="flex flex-wrap gap-2">
               <button type="submit" disabled={pending} className="btn-primary">
-                {pending ? "Saving..." : "Save"}
+                {pending ? t("series.form.saving") : t("series.form.save")}
               </button>
               <button type="button" onClick={() => setEditing(false)} className="btn-outline">
-                Cancel
+                {t("series.form.cancel")}
               </button>
               <button
                 type="button"
@@ -344,7 +351,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
                 disabled={pending}
                 className="btn-outline ml-auto border-burgundy text-burgundy"
               >
-                Delete series
+                {t("series.form.delete")}
               </button>
             </div>
           </form>
@@ -355,6 +362,7 @@ function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
 }
 
 export function SeriesPage({ id }: { id: string }) {
+  const t = useT();
   const { user, status } = useRequireAuth();
   const { series, books, error, isLoading, reload } = useSeries(id);
 
@@ -366,20 +374,24 @@ export function SeriesPage({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <nav aria-label="Breadcrumb" className="text-sm">
+      <nav aria-label={t("series.breadcrumb")} className="text-sm">
         <Link href="/library" className="link">
-          Library
+          {t("shell.nav.library")}
         </Link>
       </nav>
 
-      {isLoading && <ShelfSkeleton label="Loading the series…" />}
+      {isLoading && <ShelfSkeleton label={t("series.loading")} />}
       {notFound && (
-        <NotFound title="Series not found" backHref="/library" backLabel="Back to the library" />
+        <NotFound
+          title={t("series.notFound")}
+          backHref="/library"
+          backLabel={t("series.backToLibrary")}
+        />
       )}
       {error && !notFound && (
         <ErrorState
-          title="Could not load this series"
-          text="Check your connection and try again."
+          title={t("series.loadError")}
+          text={t("series.checkConnection")}
           onRetry={reload}
         />
       )}

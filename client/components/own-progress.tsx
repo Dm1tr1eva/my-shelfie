@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/lib/i18n";
+
 export function OwnProgress({
   ownedNumbers,
   ownedCount,
@@ -9,12 +13,17 @@ export function OwnProgress({
   total: number;
   onDark?: boolean;
 }) {
+  const t = useT();
   const segments = Math.min(Math.max(total, 1), 40);
   const owned = new Set(ownedNumbers);
+  const counts = { owned: ownedCount, total };
   const label =
     ownedNumbers.length > 0
-      ? `Own ${ownedCount} of ${total}: books ${ownedNumbers.map((number) => `#${number}`).join(", ")}`
-      : `Own ${ownedCount} of ${total}`;
+      ? t("library.progress.ownWithBooks", {
+          ...counts,
+          numbers: ownedNumbers.map((number) => `#${number}`).join(", "),
+        })
+      : t("library.progress.own", counts);
 
   return (
     <div className="flex items-center gap-3">
@@ -32,7 +41,7 @@ export function OwnProgress({
       <span
         className={`whitespace-nowrap text-sm font-semibold ${onDark ? "text-page" : "text-ink"}`}
       >
-        Own {ownedCount} of {total}
+        {t("library.progress.own", counts)}
       </span>
     </div>
   );

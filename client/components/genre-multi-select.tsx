@@ -5,6 +5,8 @@ import { GenreChip } from "@/components/chips";
 import { ChevronDownIcon } from "@/components/icons";
 import { MAX_GENRE_LENGTH, MAX_GENRES, useBooks, type Genre } from "@/lib/books";
 import { knownGenres } from "@/lib/genres";
+import { useT } from "@/lib/i18n";
+import { useDomain } from "@/lib/i18n/domain";
 import { useSeriesList } from "@/lib/series";
 
 export function GenreMultiSelect({
@@ -14,6 +16,8 @@ export function GenreMultiSelect({
   value: Genre[];
   onChange: (genres: Genre[]) => void;
 }) {
+  const t = useT();
+  const domain = useDomain();
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -68,7 +72,7 @@ export function GenreMultiSelect({
 
   return (
     <div ref={root} className="relative flex flex-col gap-1">
-      <span className="font-semibold">Genres</span>
+      <span className="font-semibold">{t("book.genres.label")}</span>
 
       <button
         type="button"
@@ -78,7 +82,7 @@ export function GenreMultiSelect({
         className="field flex flex-wrap items-center gap-2 py-1.5 text-left"
       >
         {value.length === 0 ? (
-          <span className="text-muted">Choose genres</span>
+          <span className="text-muted">{t("book.genres.choose")}</span>
         ) : (
           value.map((genre) => <GenreChip key={genre} genre={genre} />)
         )}
@@ -91,14 +95,14 @@ export function GenreMultiSelect({
         <div
           id={panelId}
           role="group"
-          aria-label="Genres"
+          aria-label={t("book.genres.label")}
           className="absolute left-0 right-0 top-full z-20 mt-1 flex max-h-[70vh] flex-col gap-3 overflow-y-auto rounded-card border border-mist bg-card p-3 shadow-pop"
         >
           <div className="flex flex-col gap-1 border-b border-mist pb-3">
             <div className="flex gap-2">
               <input
-                aria-label="Add your own genre"
-                placeholder="Add your own genre"
+                aria-label={t("book.genres.addOwn")}
+                placeholder={t("book.genres.addOwn")}
                 maxLength={MAX_GENRE_LENGTH}
                 disabled={full}
                 value={text}
@@ -121,17 +125,17 @@ export function GenreMultiSelect({
                 disabled={full || text.trim() === ""}
                 className="btn-outline"
               >
-                Add
+                {t("book.genres.add")}
               </button>
             </div>
             {already && (
               <p role="status" className="text-sm font-semibold text-burgundy">
-                Already added
+                {t("book.alreadyAdded")}
               </p>
             )}
             {full && (
               <p role="status" className="text-sm font-semibold text-burgundy">
-                Up to {MAX_GENRES} genres.
+                {t("book.genres.limit", { max: MAX_GENRES })}
               </p>
             )}
           </div>
@@ -145,14 +149,14 @@ export function GenreMultiSelect({
                   onChange={() => toggle(genre)}
                   className="h-5 w-5 accent-burgundy"
                 />
-                {genre}
+                {domain.genre(genre)}
               </label>
             ))}
           </div>
         </div>
       )}
 
-      <p className="text-sm text-muted">Pick from the list or add your own.</p>
+      <p className="text-sm text-muted">{t("book.genres.hint")}</p>
     </div>
   );
 }

@@ -1,5 +1,8 @@
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/react";
 import { vi } from "vitest";
+
+configure({ asyncUtilTimeout: 4000 });
 
 Element.prototype.scrollIntoView = vi.fn();
 

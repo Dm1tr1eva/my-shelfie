@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import { EyeIcon, EyeOffIcon, XIcon } from "@/components/icons";
+import { useT } from "@/lib/i18n";
 
 type FieldProps = {
   label: string;
@@ -65,6 +66,7 @@ export function PasswordField({ label, value, onChange, error, hint, autoComplet
   const id = useId();
   const messageId = `${id}-message`;
   const [shown, setShown] = useState(false);
+  const t = useT();
 
   return (
     <div className="flex flex-col gap-1">
@@ -84,7 +86,7 @@ export function PasswordField({ label, value, onChange, error, hint, autoComplet
         />
         <button
           type="button"
-          aria-label={shown ? "Hide password" : "Show password"}
+          aria-label={shown ? t("auth.common.hidePassword") : t("auth.common.showPassword")}
           aria-pressed={shown}
           onClick={() => setShown((current) => !current)}
           className="absolute right-1 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-control text-muted hover:text-ink"

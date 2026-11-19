@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDownIcon, SearchIcon, XIcon } from "@/components/icons";
+import { useDomain } from "@/lib/i18n/domain";
+import { useT } from "@/lib/i18n";
 import {
   FILTER_KEYS,
   NO_FILTERS,
@@ -36,6 +38,7 @@ function FilterPopover({
   selected: string[];
   onApply: (values: string[]) => void;
 }) {
+  const t = useT();
   const panelId = useId();
   const root = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -106,7 +109,7 @@ function FilterPopover({
         >
           {group.searchable && group.options.length >= SEARCH_FROM && (
             <label className="relative mb-2 block">
-              <span className="sr-only">Find in {group.label}</span>
+              <span className="sr-only">{t("library.filters.findIn", { group: group.label })}</span>
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
                 <SearchIcon size={16} />
               </span>
@@ -114,7 +117,7 @@ function FilterPopover({
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder={`Find in ${group.label.toLowerCase()}`}
+                placeholder={t(`library.filters.searchInGroup.${group.key}`)}
                 className="field pl-9"
               />
             </label>
@@ -134,7 +137,9 @@ function FilterPopover({
                 </label>
               </li>
             ))}
-            {shown.length === 0 && <li className="px-1 py-2 text-muted">Nothing found.</li>}
+            {shown.length === 0 && (
+              <li className="px-1 py-2 text-muted">{t("library.filters.nothingFound")}</li>
+            )}
           </ul>
 
           <div className="mt-3 flex justify-between gap-2 border-t border-mist pt-3">
@@ -146,7 +151,7 @@ function FilterPopover({
               }}
               className="btn-outline"
             >
-              Clear
+              {t("library.filters.clear")}
             </button>
             <button
               type="button"
@@ -156,7 +161,7 @@ function FilterPopover({
               }}
               className="btn-primary"
             >
-              Apply
+              {t("library.filters.apply")}
             </button>
           </div>
         </div>
@@ -174,6 +179,7 @@ function SheetGroup({
   draft: string[];
   onToggle: (value: string) => void;
 }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -191,7 +197,7 @@ function SheetGroup({
 
       {group.searchable && group.options.length >= SEARCH_FROM && (
         <label className="relative block">
-          <span className="sr-only">Find in {group.label}</span>
+          <span className="sr-only">{t("library.filters.findIn", { group: group.label })}</span>
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
             <SearchIcon size={16} />
           </span>
@@ -199,7 +205,7 @@ function SheetGroup({
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder={`Find a ${group.label.toLowerCase()}`}
+            placeholder={t(`library.filters.searchForOne.${group.key}`)}
             className="field pl-9"
           />
         </label>
@@ -234,7 +240,7 @@ function SheetGroup({
           onClick={() => setExpanded(true)}
           className="min-h-11 self-start text-navy underline"
         >
-          +{matching.length - visible.length} more
+          {t("library.filters.more", { count: matching.length - visible.length })}
         </button>
       )}
     </section>
@@ -254,6 +260,7 @@ function FilterSheet({
   onApply: (next: Filters) => void;
   onClose: () => void;
 }) {
+  const t = useT();
   const [draft, setDraft] = useState<Filters>(filters);
   const count = countWith(draft);
 
@@ -279,14 +286,14 @@ function FilterSheet({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Filters"
+        aria-label={t("library.filters.title")}
         className="flex max-h-[88vh] w-full flex-col rounded-t-card bg-card"
       >
         <div className="flex items-center justify-between gap-3 border-b border-mist p-4">
-          <h2 className="text-xl font-semibold">Filters</h2>
+          <h2 className="text-xl font-semibold">{t("library.filters.title")}</h2>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t("library.filters.close")}
             onClick={onClose}
             className="btn-outline w-11 px-0"
           >
@@ -307,7 +314,7 @@ function FilterSheet({
 
         <div className="flex justify-between gap-3 border-t border-mist p-4">
           <button type="button" onClick={() => setDraft(NO_FILTERS)} className="btn-outline">
-            Clear all
+            {t("library.filters.clearAll")}
           </button>
           <button
             type="button"
@@ -317,7 +324,7 @@ function FilterSheet({
             }}
             className="btn-primary"
           >
-            Show {count} {count === 1 ? "book" : "books"}
+            {t("library.filters.show", { count })}
           </button>
         </div>
       </div>
@@ -338,12 +345,14 @@ export function FilterBar({
   countWith: (draft: Filters) => number;
   summary: string;
 }) {
+  const t = useT();
+  const domain = useDomain();
   const [sheetOpen, setSheetOpen] = useState(false);
   const active = activeFilterCount(filters);
   const usable = groups.filter((group) => group.options.length > 0);
 
   const chips = FILTER_KEYS.flatMap((key) =>
-    filters[key].map((value) => ({ key, value, label: chipLabel(key, value) })),
+    filters[key].map((value) => ({ key, value, label: chipLabel(key, value, { t, domain }) })),
   );
 
   return (
@@ -365,7 +374,9 @@ export function FilterBar({
           onClick={() => setSheetOpen(true)}
           className="inline-flex min-h-11 items-center gap-2 rounded-control border border-field px-4 font-semibold"
         >
-          Filters{active > 0 ? ` · ${active}` : ""}
+          {active > 0
+            ? t("library.filters.withCount", { count: active })
+            : t("library.filters.title")}
         </button>
       </div>
 
@@ -379,7 +390,7 @@ export function FilterBar({
             {chip.label}
             <button
               type="button"
-              aria-label={`Remove filter ${chip.label}`}
+              aria-label={t("library.filters.remove", { label: chip.label })}
               onClick={() =>
                 onChange({
                   ...filters,
@@ -398,7 +409,7 @@ export function FilterBar({
             onClick={() => onChange(NO_FILTERS)}
             className="min-h-9 px-2 text-sm font-semibold text-navy underline"
           >
-            Clear all
+            {t("library.filters.clearAll")}
           </button>
         )}
       </div>

@@ -1,9 +1,12 @@
+"use client";
+
 import { GridIcon, ListIcon } from "@/components/icons";
+import { useT, type MessageKey } from "@/lib/i18n";
 import type { ViewMode } from "@/lib/use-view-mode";
 
-const OPTIONS: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
-  { value: "grid", label: "Grid", icon: <GridIcon size={18} /> },
-  { value: "list", label: "List", icon: <ListIcon size={18} /> },
+const OPTIONS: { value: ViewMode; label: MessageKey; icon: React.ReactNode }[] = [
+  { value: "grid", label: "library.view.grid", icon: <GridIcon size={18} /> },
+  { value: "list", label: "library.view.list", icon: <ListIcon size={18} /> },
 ];
 
 export function ViewToggle({
@@ -13,8 +16,14 @@ export function ViewToggle({
   mode: ViewMode;
   onChange: (mode: ViewMode) => void;
 }) {
+  const t = useT();
+
   return (
-    <div role="group" aria-label="View" className="flex rounded-control border border-field p-0.5">
+    <div
+      role="group"
+      aria-label={t("library.view.label")}
+      className="flex rounded-control border border-field p-0.5"
+    >
       {OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -26,7 +35,7 @@ export function ViewToggle({
           }`}
         >
           {option.icon}
-          {option.label}
+          {t(option.label)}
         </button>
       ))}
     </div>

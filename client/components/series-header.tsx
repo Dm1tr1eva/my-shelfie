@@ -1,10 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/icons";
 import { OwnProgress } from "@/components/own-progress";
 import { SeriesStatusChip } from "@/components/chips";
 import type { SeriesGroup } from "@/lib/catalogue";
+import { useT } from "@/lib/i18n";
 
 export function SeriesHeader({ group }: { group: SeriesGroup }) {
+  const t = useT();
   const { series } = group;
 
   return (
@@ -33,7 +37,7 @@ export function SeriesHeader({ group }: { group: SeriesGroup }) {
           href={`/series/${series.id}`}
           className="inline-flex min-h-11 items-center gap-1 self-start font-semibold text-navy underline underline-offset-2 md:self-end"
         >
-          Open series
+          {t("library.openSeries")}
           <ChevronRightIcon size={16} />
         </Link>
       </div>

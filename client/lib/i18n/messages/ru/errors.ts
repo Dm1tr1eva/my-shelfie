@@ -1,0 +1,36 @@
+import type { Localized } from "../../core";
+import type { errors as en } from "../en/errors";
+
+export const errors: Localized<typeof en> = {
+  server: {
+    invalidCredentials: "Неверный email или пароль",
+    userExists: "Пользователь уже существует",
+    registrationFailed: "Не удалось зарегистрироваться",
+    loginFailed: "Не удалось войти",
+    notAuthenticated: "Вы не вошли в аккаунт",
+    invalidToken: "Сессия недействительна, войдите снова",
+    requestFailed: "Не удалось выполнить запрос",
+    validEmail: "должно быть корректным email",
+    required: "обязательное поле",
+    passwordShort: "должен быть не короче 8 символов",
+    passwordLong: "должен быть не длиннее 72 байт",
+    bookNotFound: "Книга не найдена",
+    seriesNotFound: "Серия не найдена",
+    searchUnavailable: "Поиск книг сейчас недоступен",
+    failedCreateBook: "Не удалось создать книгу",
+    failedUpdateBook: "Не удалось обновить книгу",
+    failedDeleteBook: "Не удалось удалить книгу",
+    failedCreateSeries: "Не удалось создать серию",
+    failedUpdateSeries: "Не удалось обновить серию",
+    failedDeleteSeries: "Не удалось удалить серию",
+    failedFetchBook: "Не удалось загрузить книгу",
+    failedFetchBooks: "Не удалось загрузить книги",
+    failedFetchSeries: "Не удалось загрузить серию",
+    failedFetchTropes: "Не удалось загрузить тропы",
+    failedFetchUser: "Не удалось загрузить данные пользователя",
+    failedSearchBooks: "Не удалось выполнить поиск книг",
+    failedBuildList: "Не удалось собрать список",
+    unknownSeries: "неизвестная серия",
+    needsSeriesId: "нужна серия",
+  },
+};

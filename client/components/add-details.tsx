@@ -22,10 +22,13 @@ import {
   type Format,
   type Genre,
 } from "@/lib/books";
+import { useT } from "@/lib/i18n";
+import { translateServerError } from "@/lib/i18n/server-errors";
 import { useSeriesActions, useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 function DetailsForm({ book }: { book: Book }) {
+  const t = useT();
   const router = useRouter();
   const params = useSearchParams();
   const { books } = useBooks();
@@ -101,7 +104,9 @@ function DetailsForm({ book }: { book: Book }) {
       }
       router.push(destination(seriesId));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong.");
+      setError(
+        err instanceof ApiError ? translateServerError(err.message, t) : t("add.genericError"),
+      );
       setPending(false);
     }
   }
@@ -114,7 +119,9 @@ function DetailsForm({ book }: { book: Book }) {
           <p className="font-serif text-xl font-semibold">{book.title}</p>
           <p className="text-muted">{book.author}</p>
           <p className="mt-1 text-sm font-semibold text-burgundy">
-            Added to {book.ownership === "owned" ? "library" : "wishlist"}
+            {book.ownership === "owned"
+              ? t("add.details.addedToLibrary")
+              : t("add.details.addedToWishlist")}
           </p>
         </div>
       </div>
@@ -124,11 +131,11 @@ function DetailsForm({ book }: { book: Book }) {
       {!wanted && (
         <>
           <div className="flex flex-col gap-2">
-            <p className="font-semibold">Status</p>
+            <p className="font-semibold">{t("add.details.status")}</p>
             <ReadingStatusPills value={status} onChange={setStatus} />
           </div>
           <div className="flex flex-col gap-2">
-            <p className="font-semibold">Rating</p>
+            <p className="font-semibold">{t("add.details.rating")}</p>
             <StarRating value={rating} onChange={setRating} />
           </div>
         </>
@@ -150,7 +157,7 @@ function DetailsForm({ book }: { book: Book }) {
 
       <GenreMultiSelect value={genres} onChange={setPickedGenres} />
       <TagInput
-        label="Tropes"
+        label={t("add.details.tropes")}
         value={tropes}
         onChange={setPickedTropes}
         suggestions={suggestions}
@@ -158,13 +165,13 @@ function DetailsForm({ book }: { book: Book }) {
       {wanted && <ShopLinkEditor rows={rows} onChange={setRows} />}
 
       <label className="flex flex-col gap-1">
-        <span className="font-semibold">Notes</span>
+        <span className="font-semibold">{t("add.details.notes")}</span>
         <textarea
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
           rows={3}
           maxLength={5000}
-          placeholder="Anything you want to remember about this book"
+          placeholder={t("add.details.notesPlaceholder")}
           className="field"
         />
       </label>
@@ -181,14 +188,14 @@ function DetailsForm({ book }: { book: Book }) {
           onClick={() => router.push(destination(book.seriesId))}
           className="btn-outline"
         >
-          Skip for now
+          {t("add.details.skip")}
         </button>
         <button type="button" onClick={save} disabled={pending} className="btn-primary">
           {pending
-            ? "Saving..."
+            ? t("add.details.saving")
             : newSeriesPending
-              ? "Save details & create series"
-              : "Save details"}
+              ? t("add.details.saveAndCreate")
+              : t("add.details.save")}
         </button>
       </div>
     </div>
@@ -196,6 +203,7 @@ function DetailsForm({ book }: { book: Book }) {
 }
 
 export function AddDetails({ id }: { id: string }) {
+  const t = useT();
   const { user, status } = useRequireAuth();
   const { book, error, isLoading } = useBook(id);
 
@@ -205,26 +213,27 @@ export function AddDetails({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">Add a book</h1>
-      <ol className="flex items-center gap-4 text-sm font-semibold">
-        <li className="text-muted">Find it</li>
+      <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{t("add.title")}</h1>
+      <ol className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold">
+        <li className="text-muted">{t("add.steps.find")}</li>
         <li aria-hidden="true" className="h-px w-8 bg-field" />
         <li aria-current="step" className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-navy text-page">
             2
           </span>
-          Details <span className="font-normal text-muted">(optional)</span>
+          {t("add.steps.details")}{" "}
+          <span className="font-normal text-muted">{t("add.steps.optional")}</span>
         </li>
       </ol>
 
       {isLoading && (
         <p role="status" aria-busy="true">
-          Loading...
+          {t("add.details.loading")}
         </p>
       )}
       {error && (
         <p role="alert" className="text-burgundy">
-          Could not load this book.
+          {t("add.details.loadFailed")}
         </p>
       )}
       {book && <DetailsForm key={book.id} book={book} />}

@@ -30,6 +30,8 @@ import {
   type Subject,
 } from "@/lib/filters";
 import { useBooks, type Book } from "@/lib/books";
+import { useT } from "@/lib/i18n";
+import { useDomain } from "@/lib/i18n/domain";
 import { useSeriesList } from "@/lib/series";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useViewMode } from "@/lib/use-view-mode";
@@ -43,6 +45,8 @@ function GroupShelf({
   mode: "grid" | "list";
   tab: LibraryTab;
 }) {
+  const t = useT();
+
   if (mode === "list") {
     return (
       <ul>
@@ -59,8 +63,8 @@ function GroupShelf({
                 }
                 className="flex min-h-14 items-center gap-3 border-b border-mist py-3 font-semibold text-burgundy"
               >
-                <span className="chip bg-burgundy text-card">Gap</span>#{slot.number} ·{" "}
-                {slot.wantedBook ? slot.wantedBook.title : "Missing from the series"}
+                <span className="chip bg-burgundy text-card">{t("library.gap.badge")}</span>#
+                {slot.number} · {slot.wantedBook ? slot.wantedBook.title : t("library.gap.missing")}
               </Link>
             </li>
           ),
@@ -96,14 +100,16 @@ function StandaloneShelf({
   mode: "grid" | "list";
   tab: LibraryTab;
 }) {
+  const t = useT();
+
   return (
     <section aria-labelledby="standalone-heading" className="flex flex-col gap-4">
       <header className="flex flex-col gap-1">
         <h2 id="standalone-heading" className="font-serif text-2xl font-semibold">
-          Standalone books
+          {t("library.standalone.title")}
         </h2>
         <p className="text-sm text-muted">
-          Not part of a series · {books.length} {books.length === 1 ? "book" : "books"}
+          {t("library.standalone.subtitle", { count: books.length })}
         </p>
       </header>
 
@@ -125,6 +131,8 @@ function StandaloneShelf({
 }
 
 export function Library({ tab }: { tab: LibraryTab }) {
+  const t = useT();
+  const domain = useDomain();
   const { user, status } = useRequireAuth();
   const { books, isLoading, error, reload } = useBooks();
   const { series } = useSeriesList();
@@ -150,7 +158,7 @@ export function Library({ tab }: { tab: LibraryTab }) {
     book,
     series: book.seriesId ? seriesById.get(book.seriesId) : undefined,
   });
-  const filterGroups = buildFilterGroups(scope, subjectOf, filters);
+  const filterGroups = buildFilterGroups(scope, subjectOf, filters, { t, domain });
   const countWith = (draft: Filters) => applyFilters(scope, subjectOf, draft).length;
   const bookCount =
     view.standalone.length +
@@ -159,21 +167,43 @@ export function Library({ tab }: { tab: LibraryTab }) {
       0,
     );
   const groupCount = view.groups.length + (view.standalone.length > 0 ? 1 : 0);
-  const summary = `${bookCount} ${bookCount === 1 ? "book" : "books"}${
-    groupCount > 0 ? ` in ${groupCount} ${groupCount === 1 ? "group" : "groups"}` : ""
-  }`;
+  const booksText = t("library.summary.books", { count: bookCount });
+  const summary =
+    groupCount > 0
+      ? t("library.summary.withGroups", {
+          books: booksText,
+          groups: t("library.summary.inGroups", { count: groupCount }),
+        })
+      : booksText;
+  const statsText = t("library.stats", {
+    owned: stats.owned,
+    wishlist: stats.wishlist,
+    read: stats.read,
+  });
   const tabs = [
-    { href: "/library", label: "My library", count: stats.owned, id: "library" as const },
-    { href: "/wishlist", label: "Wishlist", count: stats.wishlist, id: "wishlist" as const },
+    {
+      href: "/library",
+      label: t("library.tabs.library"),
+      count: stats.owned,
+      id: "library" as const,
+    },
+    {
+      href: "/wishlist",
+      label: t("library.tabs.wishlist"),
+      count: stats.wishlist,
+      id: "wishlist" as const,
+    },
   ];
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">Library</h1>
+        <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">
+          {t("library.title")}
+        </h1>
 
         <label className="relative w-full sm:w-72">
-          <span className="sr-only">Search my books</span>
+          <span className="sr-only">{t("library.search")}</span>
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
             <SearchIcon size={18} />
           </span>
@@ -181,14 +211,14 @@ export function Library({ tab }: { tab: LibraryTab }) {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search my books"
+            placeholder={t("library.search")}
             className="field pl-10"
           />
         </label>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-mist">
-        <nav aria-label="Library sections" className="flex gap-6">
+        <nav aria-label={t("library.sections")} className="flex gap-6">
           {tabs.map((item) => (
             <Link
               key={item.id}
@@ -204,15 +234,11 @@ export function Library({ tab }: { tab: LibraryTab }) {
           ))}
         </nav>
 
-        <p className="hidden text-sm text-muted md:block">
-          {stats.owned} owned · {stats.wishlist} on wishlist · {stats.read} read
-        </p>
+        <p className="hidden text-sm text-muted md:block">{statsText}</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted md:hidden">
-          {stats.owned} owned · {stats.wishlist} on wishlist · {stats.read} read
-        </p>
+        <p className="text-sm text-muted md:hidden">{statsText}</p>
         <div className="ml-auto">
           <ViewToggle mode={mode} onChange={changeMode} />
         </div>
@@ -233,37 +259,39 @@ export function Library({ tab }: { tab: LibraryTab }) {
       {isLoading && <ShelfSkeleton />}
       {error && (
         <ErrorState
-          title="Could not load your books"
-          text="Check your connection and try again."
+          title={t("library.loadError.title")}
+          text={t("library.loadError.text")}
           onRetry={reload}
         />
       )}
 
       {loaded && shown === 0 && searching && (
         <EmptyState
-          title="No books match"
+          title={t("library.noMatch.title")}
           text={
             query.trim() !== ""
-              ? `Nothing in this list matches “${query.trim()}”${filtering ? " and the filters" : ""}.`
-              : "Nothing in this list matches the filters."
+              ? t(filtering ? "library.noMatch.queryAndFilters" : "library.noMatch.query", {
+                  query: query.trim(),
+                })
+              : t("library.noMatch.filters")
           }
         />
       )}
 
       {loaded && shown === 0 && !searching && tab === "library" && (
         <EmptyState
-          title="Your library is empty"
-          text="Add the paper books you own, and they will gather here, shelf by shelf."
-          actionLabel="Add a book"
+          title={t("library.emptyLibrary.title")}
+          text={t("library.emptyLibrary.text")}
+          actionLabel={t("shell.nav.addBook")}
           actionHref="/add"
         />
       )}
 
       {loaded && shown === 0 && !searching && tab === "wishlist" && (
         <EmptyState
-          title="Your wishlist is empty"
-          text="Books you want to buy will wait here, grouped by series."
-          actionLabel="Add a book"
+          title={t("library.emptyWishlist.title")}
+          text={t("library.emptyWishlist.text")}
+          actionLabel={t("shell.nav.addBook")}
           actionHref="/add"
         />
       )}

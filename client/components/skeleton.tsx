@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/lib/i18n";
+
 function Block({ className }: { className: string }) {
   return <div aria-hidden="true" className={`rounded-control bg-beige ${className}`} />;
 }
@@ -21,11 +25,13 @@ function ShelfPlaceholder({ faded = false }: { faded?: boolean }) {
   );
 }
 
-export function ShelfSkeleton({ label = "Loading your shelves…" }: { label?: string }) {
+export function ShelfSkeleton({ label }: { label?: string }) {
+  const t = useT();
+
   return (
     <div aria-busy="true" className="flex flex-col gap-8">
       <p role="status" className="text-muted">
-        {label}
+        {label ?? t("shell.states.loadingShelves")}
       </p>
       <ShelfPlaceholder />
       <ShelfPlaceholder faded />
@@ -33,11 +39,13 @@ export function ShelfSkeleton({ label = "Loading your shelves…" }: { label?: s
   );
 }
 
-export function RowsSkeleton({ label = "Loading…" }: { label?: string }) {
+export function RowsSkeleton({ label }: { label?: string }) {
+  const t = useT();
+
   return (
     <div aria-busy="true" className="flex flex-col gap-3">
       <p role="status" className="text-muted">
-        {label}
+        {label ?? t("shell.states.loading")}
       </p>
       {Array.from({ length: 3 }, (_, index) => (
         <div

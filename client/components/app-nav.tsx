@@ -4,20 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountMenu } from "@/components/account-menu";
 import { PlusIcon } from "@/components/icons";
+import { useT, type MessageKey } from "@/lib/i18n";
 
-export const NAV_LINKS = [
-  { href: "/library", label: "Library" },
-  { href: "/wishlist", label: "Wishlist" },
-  { href: "/next", label: "Next to buy" },
+export const NAV_LINKS: { href: string; label: MessageKey }[] = [
+  { href: "/library", label: "shell.nav.library" },
+  { href: "/wishlist", label: "shell.nav.wishlist" },
+  { href: "/next", label: "shell.nav.nextToBuy" },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <header className="hidden bg-navy text-page md:block">
       <nav
-        aria-label="Main"
+        aria-label={t("shell.nav.main")}
         className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between gap-4 px-8"
       >
         <Link href="/" className="font-serif text-2xl font-bold">
@@ -36,7 +38,7 @@ export function AppNav() {
                     active ? "bg-mist/20 text-page" : "text-mist hover:text-page"
                   }`}
                 >
-                  {link.label}
+                  {t(link.label)}
                 </Link>
               </li>
             );
@@ -46,7 +48,7 @@ export function AppNav() {
         <div className="flex items-center gap-3">
           <Link href="/add" className="btn-beige">
             <PlusIcon />
-            Add a book
+            {t("shell.nav.addBook")}
           </Link>
           <AccountMenu variant="avatar" />
         </div>

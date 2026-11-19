@@ -2,6 +2,7 @@
 
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import { XIcon } from "@/components/icons";
+import { useT } from "@/lib/i18n";
 
 export type TagSuggestion = { name: string; count: number };
 
@@ -22,6 +23,7 @@ export function TagInput({
   onChange: (tags: string[]) => void;
   suggestions: TagSuggestion[];
 }) {
+  const t = useT();
   const inputId = useId();
   const listId = useId();
   const field = useRef<HTMLTextAreaElement>(null);
@@ -106,7 +108,7 @@ export function TagInput({
               {tag}
               <button
                 type="button"
-                aria-label={`Remove ${tag}`}
+                aria-label={t("book.tagInput.remove", { tag })}
                 onClick={() => onChange(value.filter((item) => item !== tag))}
                 className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-beige hover:bg-mist"
               >
@@ -142,7 +144,7 @@ export function TagInput({
           <ul
             id={listId}
             role="listbox"
-            aria-label={`${label} suggestions`}
+            aria-label={t("book.tagInput.suggestions", { label })}
             className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-card border border-mist bg-card shadow-pop"
           >
             {options.map((option, index) => (
@@ -160,12 +162,12 @@ export function TagInput({
                 }`}
               >
                 {option.kind === "create" ? (
-                  <span>Create “{option.name}”</span>
+                  <span>{t("book.tagInput.create", { name: option.name })}</span>
                 ) : (
                   <>
                     <span>{option.name}</span>
                     <span className="text-sm text-muted">
-                      used in {option.count} {option.count === 1 ? "book" : "books"}
+                      {t("book.tagInput.usedIn", { count: option.count })}
                     </span>
                   </>
                 )}
@@ -177,18 +179,18 @@ export function TagInput({
 
       {duplicate !== undefined ? (
         <p role="status" className="text-sm font-semibold text-burgundy">
-          Already added
+          {t("book.alreadyAdded")}
         </p>
       ) : full ? (
         <p role="status" className="text-sm font-semibold text-burgundy">
-          A book can have up to {MAX_TAGS} tropes.
+          {t("book.tagInput.limit", { max: MAX_TAGS })}
         </p>
       ) : text.length >= SHOW_COUNTER_FROM ? (
         <p role="status" className="text-sm text-muted">
-          {remaining} {remaining === 1 ? "character" : "characters"} left
+          {t("book.tagInput.charactersLeft", { count: remaining })}
         </p>
       ) : (
-        <p className="text-sm text-muted">Free text. Enter or comma adds a tag.</p>
+        <p className="text-sm text-muted">{t("book.tagInput.hint")}</p>
       )}
     </div>
   );

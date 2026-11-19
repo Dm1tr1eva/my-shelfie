@@ -1,5 +1,8 @@
+"use client";
+
 import { BookIcon, TabletIcon } from "@/components/icons";
 import type { Format } from "@/lib/catalogue-constants";
+import { useDomain } from "@/lib/i18n/domain";
 
 const SIZES = {
   sm: "w-10",
@@ -17,9 +20,9 @@ const PAIRS = [
   "bg-beige text-burgundy",
 ];
 
-const FORMAT_BADGES: Record<Format, { label: string; Icon: typeof BookIcon }> = {
-  paper: { label: "Paper book", Icon: BookIcon },
-  ebook: { label: "E-book", Icon: TabletIcon },
+const FORMAT_ICONS: Record<Format, typeof BookIcon> = {
+  paper: BookIcon,
+  ebook: TabletIcon,
 };
 
 function withoutPageCurl(url: string) {
@@ -48,7 +51,9 @@ export function BookCover({
   format?: Format;
 }) {
   const box = `${SIZES[size]} aspect-[2/3] shrink-0`;
-  const badge = format ? FORMAT_BADGES[format] : undefined;
+  const domain = useDomain();
+  const Icon = format ? FORMAT_ICONS[format] : undefined;
+  const badgeLabel = format ? domain.formatBook(format) : undefined;
 
   return (
     <div className={`relative @container ${box}`}>
@@ -80,14 +85,14 @@ export function BookCover({
         </span>
       )}
 
-      {badge && (
+      {Icon && badgeLabel && (
         <span
           role="img"
-          aria-label={badge.label}
-          title={badge.label}
+          aria-label={badgeLabel}
+          title={badgeLabel}
           className={`absolute right-1 top-1 flex items-center justify-center rounded-full bg-card text-ink shadow ${size === "sm" ? "h-5 w-5" : "h-7 w-7"}`}
         >
-          <badge.Icon size={size === "sm" ? 12 : 16} />
+          <Icon size={size === "sm" ? 12 : 16} />
         </span>
       )}
     </div>

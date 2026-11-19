@@ -1,14 +1,14 @@
+"use client";
+
 import {
-  LINK_KINDS,
   LINK_LANGUAGES,
-  OWNERSHIP_LABELS,
-  SERIES_STATUS_LABELS,
   type LinkKind,
   type LinkLanguage,
   type Ownership,
   type SeriesStatus,
 } from "@/lib/catalogue-constants";
 import { CheckIcon } from "@/components/icons";
+import { useDomain } from "@/lib/i18n/domain";
 
 const SERIES_STATUS_CLASSES: Record<SeriesStatus, string> = {
   ongoing: "bg-navy text-page",
@@ -25,18 +25,22 @@ const LANGUAGE_CLASSES: Record<LinkLanguage, string> = {
 };
 
 export function OwnershipChip({ ownership }: { ownership: Ownership }) {
+  const domain = useDomain();
+
   return (
     <span
       className={`chip ${ownership === "owned" ? "bg-burgundy text-card" : "bg-mist text-navy"}`}
     >
-      {OWNERSHIP_LABELS[ownership]}
+      {domain.ownership(ownership)}
     </span>
   );
 }
 
 export function SeriesStatusChip({ status }: { status: SeriesStatus }) {
+  const domain = useDomain();
+
   return (
-    <span className={`chip ${SERIES_STATUS_CLASSES[status]}`}>{SERIES_STATUS_LABELS[status]}</span>
+    <span className={`chip ${SERIES_STATUS_CLASSES[status]}`}>{domain.seriesStatus(status)}</span>
   );
 }
 
@@ -45,7 +49,9 @@ export function GapChip({ text }: { text: string }) {
 }
 
 export function GenreChip({ genre }: { genre: string }) {
-  return <span className="chip bg-slate text-ink">{genre}</span>;
+  const domain = useDomain();
+
+  return <span className="chip bg-slate text-ink">{domain.genre(genre)}</span>;
 }
 
 export function TropeChip({ trope }: { trope: string }) {
@@ -66,26 +72,27 @@ export function LinkKindBadge({
   kind: LinkKind;
   decorative?: boolean;
 }) {
-  const info = LINK_KINDS.find((item) => item.value === kind);
+  const domain = useDomain();
 
   return (
     <span
-      title={info?.label}
+      title={domain.linkKind(kind)}
       aria-hidden={decorative || undefined}
       className={`inline-flex items-center justify-center rounded-[5px] px-1.5 py-0.5 text-xs font-bold ${KIND_CLASSES[kind]}`}
     >
-      <span aria-hidden="true">{info?.short ?? kind}</span>
-      {!decorative && <span className="sr-only">{info?.label ?? kind}</span>}
+      <span aria-hidden="true">{domain.linkKindShort(kind)}</span>
+      {!decorative && <span className="sr-only">{domain.linkKind(kind)}</span>}
     </span>
   );
 }
 
 export function LangBadge({ language }: { language: LinkLanguage }) {
+  const domain = useDomain();
   const info = LINK_LANGUAGES.find((item) => item.value === language);
 
   return (
     <span
-      title={info?.name}
+      title={domain.language(language)}
       className={`inline-flex min-w-7 items-center justify-center rounded-[5px] px-1.5 py-0.5 text-xs font-bold ${LANGUAGE_CLASSES[language]}`}
     >
       {info?.badge ?? language.toUpperCase()}

@@ -4,13 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AccountMenu } from "@/components/account-menu";
 import { BagIcon, HeartIcon, LibraryIcon, PlusIcon } from "@/components/icons";
+import { useT, type MessageKey } from "@/lib/i18n";
 
-const ITEMS = [
-  { href: "/library", label: "Library", icon: <LibraryIcon /> },
-  { href: "/wishlist", label: "Wishlist", icon: <HeartIcon /> },
+type Item = { href: string; label: MessageKey; icon: React.ReactNode };
+
+const ITEMS: Item[] = [
+  { href: "/library", label: "shell.nav.library", icon: <LibraryIcon /> },
+  { href: "/wishlist", label: "shell.nav.wishlist", icon: <HeartIcon /> },
 ];
 
-const ITEMS_AFTER_ADD = [{ href: "/next", label: "Next to buy", icon: <BagIcon /> }];
+const ITEMS_AFTER_ADD: Item[] = [
+  { href: "/next", label: "shell.nav.nextToBuy", icon: <BagIcon /> },
+];
 
 function TabLink({
   href,
@@ -19,10 +24,12 @@ function TabLink({
   active,
 }: {
   href: string;
-  label: string;
+  label: MessageKey;
   icon: React.ReactNode;
   active: boolean;
 }) {
+  const t = useT();
+
   return (
     <Link
       href={href}
@@ -32,18 +39,19 @@ function TabLink({
       }`}
     >
       {icon}
-      <span>{label}</span>
+      <span>{t(label)}</span>
     </Link>
   );
 }
 
 export function TabBar() {
   const pathname = usePathname();
+  const t = useT();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <nav
-      aria-label="Main"
+      aria-label={t("shell.nav.main")}
       className="fixed inset-x-0 bottom-0 z-20 grid h-[calc(78px+env(safe-area-inset-bottom))] grid-cols-5 items-center bg-navy px-2 pb-[env(safe-area-inset-bottom)] text-page md:hidden"
     >
       {ITEMS.map((item) => (
@@ -52,7 +60,7 @@ export function TabBar() {
 
       <Link
         href="/add"
-        aria-label="Add a book"
+        aria-label={t("shell.nav.addBook")}
         aria-current={pathname === "/add" ? "page" : undefined}
         className="mx-auto -mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-burgundy text-card ring-4 ring-page"
       >

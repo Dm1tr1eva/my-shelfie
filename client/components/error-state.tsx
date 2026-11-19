@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useT } from "@/lib/i18n";
 
 export function ErrorState({
   title,
@@ -13,6 +16,8 @@ export function ErrorState({
   backHref?: string;
   backLabel?: string;
 }) {
+  const t = useT();
+
   return (
     <div role="alert" className="card flex flex-col gap-3 border-2 border-burgundy p-5">
       <p className="font-serif text-xl font-semibold">{title}</p>
@@ -21,12 +26,12 @@ export function ErrorState({
         <div className="flex flex-wrap gap-2">
           {onRetry && (
             <button type="button" onClick={onRetry} className="btn-primary">
-              Try again
+              {t("shell.states.tryAgain")}
             </button>
           )}
           {backHref && (
             <Link href={backHref} className="btn-outline">
-              {backLabel ?? "Back"}
+              {backLabel ?? t("shell.states.back")}
             </Link>
           )}
         </div>
@@ -44,12 +49,12 @@ export function NotFound({
   backHref: string;
   backLabel: string;
 }) {
+  const t = useT();
+
   return (
     <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center">
       <h1 className="font-serif text-2xl font-semibold">{title}</h1>
-      <p className="max-w-md text-muted">
-        It may have been deleted, or the link is wrong. Nothing was changed.
-      </p>
+      <p className="max-w-md text-muted">{t("shell.states.notFoundText")}</p>
       <Link href={backHref} className="btn-primary mt-2">
         {backLabel}
       </Link>

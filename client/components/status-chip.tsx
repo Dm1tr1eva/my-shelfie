@@ -1,5 +1,10 @@
-import { STATUS_LABELS, type BookStatus } from "@/lib/books";
+"use client";
+
+import type { BookStatus } from "@/lib/books";
+import { useDomain } from "@/lib/i18n/domain";
 
 export function StatusChip({ status }: { status: BookStatus }) {
-  return <span className={`chip chip-${status}`}>{STATUS_LABELS[status]}</span>;
+  const domain = useDomain();
+
+  return <span className={`chip chip-${status}`}>{domain.status(status)}</span>;
 }

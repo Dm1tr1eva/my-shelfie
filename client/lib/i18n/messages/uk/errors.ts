@@ -1,0 +1,36 @@
+import type { Localized } from "../../core";
+import type { errors as en } from "../en/errors";
+
+export const errors: Localized<typeof en> = {
+  server: {
+    invalidCredentials: "Неправильний email або пароль",
+    userExists: "Користувач уже існує",
+    registrationFailed: "Не вдалося зареєструватися",
+    loginFailed: "Не вдалося увійти",
+    notAuthenticated: "Ви не увійшли в акаунт",
+    invalidToken: "Сесія недійсна, увійдіть знову",
+    requestFailed: "Не вдалося виконати запит",
+    validEmail: "має бути дійсним email",
+    required: "обов’язкове поле",
+    passwordShort: "має бути не коротшим за 8 символів",
+    passwordLong: "має бути не довшим за 72 байти",
+    bookNotFound: "Книгу не знайдено",
+    seriesNotFound: "Серію не знайдено",
+    searchUnavailable: "Пошук книжок зараз недоступний",
+    failedCreateBook: "Не вдалося створити книгу",
+    failedUpdateBook: "Не вдалося оновити книгу",
+    failedDeleteBook: "Не вдалося видалити книгу",
+    failedCreateSeries: "Не вдалося створити серію",
+    failedUpdateSeries: "Не вдалося оновити серію",
+    failedDeleteSeries: "Не вдалося видалити серію",
+    failedFetchBook: "Не вдалося завантажити книгу",
+    failedFetchBooks: "Не вдалося завантажити книги",
+    failedFetchSeries: "Не вдалося завантажити серію",
+    failedFetchTropes: "Не вдалося завантажити тропи",
+    failedFetchUser: "Не вдалося завантажити дані користувача",
+    failedSearchBooks: "Не вдалося виконати пошук книжок",
+    failedBuildList: "Не вдалося зібрати список",
+    unknownSeries: "невідома серія",
+    needsSeriesId: "потрібна серія",
+  },
+};

@@ -1,0 +1,48 @@
+export const shell = {
+  nav: {
+    main: "Main",
+    library: "Library",
+    wishlist: "Wishlist",
+    nextToBuy: "Next to buy",
+    addBook: "Add a book",
+    account: "Account",
+    signIn: "Sign in",
+  },
+  account: { logOut: "Log out" },
+  install: {
+    button: "Install app",
+    iosTitle: "Install app:",
+    iosSteps: "tap Share, then Add to Home Screen.",
+  },
+  footer: {
+    tagline: "my-shelfie · a book-catalogue pet project",
+    home: "Home",
+    source: "Source on GitHub",
+    privacy: "Privacy",
+  },
+  loading: {
+    title: "Loading your library…",
+    slow: "The server is waking up after a pause. This can take up to a minute — thanks for waiting.",
+  },
+  language: { label: "Language" },
+  states: {
+    tryAgain: "Try again",
+    back: "Back",
+    notFoundText: "It may have been deleted, or the link is wrong. Nothing was changed.",
+    loadingShelves: "Loading your shelves…",
+    loading: "Loading…",
+  },
+  notFound: { title: "Page not found", back: "Back to the home page" },
+  titles: {
+    library: "Library",
+    wishlist: "Wishlist",
+    next: "Next to buy",
+    add: "Add a book",
+    details: "Add details",
+    book: "Book",
+    series: "Series",
+    login: "Log in",
+    register: "Register",
+    privacy: "Privacy",
+  },
+};

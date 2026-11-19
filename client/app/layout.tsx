@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { AppFrame } from "@/components/app-frame";
+import { LocaleEffects } from "@/components/locale-effects";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
+        <LocaleEffects />
         <AuthProvider>
           <AppFrame>{children}</AppFrame>
         </AuthProvider>

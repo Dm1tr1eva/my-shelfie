@@ -3,12 +3,14 @@
 import { PlusIcon, XIcon } from "@/components/icons";
 import { Select } from "@/components/select";
 import {
-  LINK_KIND_OPTIONS,
-  LINK_LANGUAGE_OPTIONS,
+  linkKindOptions,
+  linkLanguageOptions,
   type LinkKind,
   type LinkLanguage,
   type ShopLink,
 } from "@/lib/books";
+import { useT } from "@/lib/i18n";
+import { useDomain } from "@/lib/i18n/domain";
 import { isHttpUrl } from "@/lib/links";
 
 export type LinkRow = { kind: LinkKind; language: LinkLanguage; url: string };
@@ -26,13 +28,18 @@ export function ShopLinkEditor({
   rows: LinkRow[];
   onChange: (rows: LinkRow[]) => void;
 }) {
+  const t = useT();
+  const domain = useDomain();
+  const kindOptions = linkKindOptions(domain);
+  const languageOptions = linkLanguageOptions(domain);
+
   function update(index: number, patch: Partial<LinkRow>) {
     onChange(rows.map((row, position) => (position === index ? { ...row, ...patch } : row)));
   }
 
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="font-semibold">Links</legend>
+      <legend className="font-semibold">{t("book.shopLinks.legend")}</legend>
 
       {rows.map((row, index) => {
         const invalid = row.url.trim() !== "" && !isHttpUrl(row.url);
@@ -40,25 +47,25 @@ export function ShopLinkEditor({
           <div key={index} className="flex flex-col gap-1">
             <div className="flex flex-wrap gap-2">
               <Select
-                label={`Kind of link ${index + 1}`}
+                label={t("book.shopLinks.kind", { number: index + 1 })}
                 hideLabel
                 className="w-36 shrink-0"
                 value={row.kind}
                 onChange={(value) => update(index, { kind: value as LinkKind })}
-                options={LINK_KIND_OPTIONS}
+                options={kindOptions}
               />
               <Select
-                label={`Language of link ${index + 1}`}
+                label={t("book.shopLinks.language", { number: index + 1 })}
                 hideLabel
                 className="w-28 shrink-0"
                 value={row.language}
                 onChange={(value) => update(index, { language: value as LinkLanguage })}
-                options={LINK_LANGUAGE_OPTIONS}
+                options={languageOptions}
               />
               <div className="flex min-w-0 flex-1 basis-56 gap-2">
                 <input
                   type="url"
-                  aria-label={`URL of link ${index + 1}`}
+                  aria-label={t("book.shopLinks.url", { number: index + 1 })}
                   aria-invalid={invalid}
                   placeholder="https://"
                   value={row.url}
@@ -67,7 +74,7 @@ export function ShopLinkEditor({
                 />
                 <button
                   type="button"
-                  aria-label={`Remove link ${index + 1}`}
+                  aria-label={t("book.shopLinks.remove", { number: index + 1 })}
                   onClick={() => onChange(rows.filter((_, position) => position !== index))}
                   className="btn-outline w-11 shrink-0 px-0"
                 >
@@ -76,7 +83,9 @@ export function ShopLinkEditor({
               </div>
             </div>
             {invalid && (
-              <p className="text-sm font-semibold text-burgundy">Start the link with https://</p>
+              <p className="text-sm font-semibold text-burgundy">
+                {t("book.links.startWithHttps")}
+              </p>
             )}
           </div>
         );
@@ -88,7 +97,7 @@ export function ShopLinkEditor({
         className="btn-outline self-start"
       >
         <PlusIcon size={18} />
-        Add another link
+        {t("book.shopLinks.add")}
       </button>
     </fieldset>
   );

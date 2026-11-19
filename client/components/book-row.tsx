@@ -1,12 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
 import { GenreChip, OwnershipChip, TropeChip } from "@/components/chips";
 import { ChevronRightIcon } from "@/components/icons";
 import { StatusChip } from "@/components/status-chip";
 import type { Book } from "@/lib/books";
+import { useT } from "@/lib/i18n";
 import type { Series } from "@/lib/series";
 
 export function BookRow({ book, series }: { book: Book; series?: Series }) {
+  const t = useT();
   const tropes = book.tropes.slice(0, 2);
   const hidden = book.tropes.length - tropes.length;
 
@@ -41,7 +45,7 @@ export function BookRow({ book, series }: { book: Book; series?: Series }) {
           {book.rating ? (
             <span
               role="img"
-              aria-label={`Rated ${book.rating} out of 5`}
+              aria-label={t("library.rating", { rating: book.rating })}
               className="font-semibold text-burgundy"
             >
               ★ {book.rating}

@@ -1,5 +1,8 @@
 import { LINK_KINDS, LINK_LANGUAGES, type Book } from "./books";
-import { SERIES_STATUS_LABELS, SERIES_STATUSES, type Series } from "./series";
+import { translator, type Translate } from "./i18n";
+import { englishDomain, type Domain } from "./i18n/domain";
+import type { SeriesStatus } from "./catalogue-constants";
+import { SERIES_STATUSES, type Series } from "./series";
 
 export type FilterKey = "genre" | "trope" | "status" | "author" | "language" | "kind";
 
@@ -27,14 +30,9 @@ export type FilterGroup = {
   searchable: boolean;
 };
 
-const GROUP_LABELS: Record<FilterKey, string> = {
-  genre: "Genre",
-  trope: "Trope",
-  status: "Series status",
-  author: "Author",
-  language: "Shop language",
-  kind: "Link type",
-};
+export type FilterLabels = { t: Translate; domain: Domain };
+
+const ENGLISH_LABELS: FilterLabels = { t: translator("en"), domain: englishDomain };
 
 export function activeFilterCount(filters: Filters) {
   return FILTER_KEYS.reduce((sum, key) => sum + filters[key].length, 0);
@@ -77,14 +75,21 @@ export function applyFilters<T>(items: T[], subjectOf: (item: T) => Subject, fil
   return items.filter((item) => matchesFilters(subjectOf(item), filters));
 }
 
-function labelOf(key: FilterKey, value: string) {
+function labelOf(key: FilterKey, value: string, { domain }: FilterLabels) {
   if (key === "status") {
-    return SERIES_STATUS_LABELS[value as keyof typeof SERIES_STATUS_LABELS] ?? value;
+    return SERIES_STATUSES.includes(value as SeriesStatus)
+      ? domain.seriesStatus(value as SeriesStatus)
+      : value;
   }
   if (key === "language") {
-    return LINK_LANGUAGES.find((language) => language.value === value)?.name ?? value;
+    const language = LINK_LANGUAGES.find((item) => item.value === value);
+    return language ? domain.language(language.value) : value;
   }
-  if (key === "kind") return LINK_KINDS.find((kind) => kind.value === value)?.label ?? value;
+  if (key === "kind") {
+    const kind = LINK_KINDS.find((item) => item.value === value);
+    return kind ? domain.linkKind(kind.value) : value;
+  }
+  if (key === "genre") return domain.genre(value);
   return value;
 }
 
@@ -110,6 +115,7 @@ export function buildFilterGroups<T>(
   items: T[],
   subjectOf: (item: T) => Subject,
   filters: Filters,
+  labels: FilterLabels = ENGLISH_LABELS,
 ): FilterGroup[] {
   const subjects = items.map(subjectOf);
 
@@ -136,11 +142,11 @@ export function buildFilterGroups<T>(
 
     return {
       key,
-      label: GROUP_LABELS[key],
+      label: labels.t(`library.filters.group.${key}`),
       searchable: key === "trope" || key === "author",
       options: values.map((value) => ({
         value,
-        label: labelOf(key, value),
+        label: labelOf(key, value, labels),
         badge: badgeOf(key, value),
         count: counts.get(value) ?? 0,
       })),
@@ -148,10 +154,12 @@ export function buildFilterGroups<T>(
   });
 }
 
-export function chipLabel(key: FilterKey, value: string) {
-  const label = labelOf(key, value);
-  if (key === "language") return `Shop language: ${badgeOf(key, value) ?? label}`;
-  if (key === "status") return `Series: ${label}`;
-  if (key === "kind") return `Link: ${label}`;
+export function chipLabel(key: FilterKey, value: string, labels: FilterLabels = ENGLISH_LABELS) {
+  const label = labelOf(key, value, labels);
+  if (key === "language" || key === "status" || key === "kind") {
+    return labels.t(`library.filters.chip.${key}`, {
+      value: key === "language" ? (badgeOf(key, value) ?? label) : label,
+    });
+  }
   return label;
 }

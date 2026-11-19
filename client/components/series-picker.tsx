@@ -6,6 +6,7 @@ import { CheckIcon, ChevronDownIcon } from "@/components/icons";
 import { SeriesStatePills } from "@/components/form-controls";
 import { gapNumbersOf, highestNumberOf, isOwned } from "@/lib/catalogue";
 import type { Book } from "@/lib/books";
+import { useT } from "@/lib/i18n";
 import { type NewSeries, type Series, type SeriesStatus } from "@/lib/series";
 
 export type SeriesChoice = { seriesId?: string; seriesNumber?: number };
@@ -35,6 +36,7 @@ export function SeriesPicker({
   onPendingChange?: (pending: boolean) => void;
   ref?: React.Ref<SeriesPickerHandle>;
 }) {
+  const t = useT();
   const inputId = useId();
   const listId = useId();
   const selected = series.find((item) => item.id === value.seriesId);
@@ -90,7 +92,7 @@ export function SeriesPicker({
 
   async function submitNewSeries() {
     if (totalInvalid) {
-      setError("Books in the series must be a whole number from 1 to 200.");
+      setError(t("add.picker.totalInvalid"));
       throw new Error("invalid series size");
     }
 
@@ -108,7 +110,7 @@ export function SeriesPicker({
       onChange({ seriesId: created.id, seriesNumber: value.seriesNumber });
       return created;
     } catch (err) {
-      setError((current) => current ?? "Could not create the series. Try again.");
+      setError((current) => current ?? t("add.picker.createFailed"));
       throw err;
     }
   }
@@ -146,7 +148,7 @@ export function SeriesPicker({
       <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
         <div className="relative flex flex-col gap-1">
           <label htmlFor={inputId} className="font-semibold">
-            Series
+            {t("add.picker.label")}
           </label>
           <input
             id={inputId}
@@ -155,7 +157,7 @@ export function SeriesPicker({
             aria-controls={listId}
             aria-autocomplete="list"
             value={query}
-            placeholder="Find or create a series"
+            placeholder={t("add.picker.placeholder")}
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
@@ -172,7 +174,7 @@ export function SeriesPicker({
           />
           <button
             type="button"
-            aria-label="Show all series"
+            aria-label={t("add.picker.showAll")}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => {
               setShowAll(true);
@@ -208,7 +210,7 @@ export function SeriesPicker({
                       {item.author && <span className="text-sm text-muted">{item.author}</span>}
                     </span>
                     <span className="flex items-center gap-2 text-sm text-muted">
-                      Own {counts.owned} of {counts.total}
+                      {t("add.picker.own", { owned: counts.owned, total: counts.total })}
                       <SeriesStatusChip status={item.status} />
                     </span>
                   </li>
@@ -225,7 +227,7 @@ export function SeriesPicker({
                   }}
                   className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-navy hover:bg-beige"
                 >
-                  New series “{typed}”
+                  {t("add.picker.newSeries", { title: typed })}
                 </li>
               )}
             </ul>
@@ -233,7 +235,7 @@ export function SeriesPicker({
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="font-semibold">No.</span>
+          <span className="font-semibold">{t("add.picker.number")}</span>
           <input
             type="number"
             min={1}
@@ -253,9 +255,9 @@ export function SeriesPicker({
 
       {showCreate && (
         <div className="card flex flex-col gap-3 p-4">
-          <p className="font-semibold">New series “{typed}”</p>
+          <p className="font-semibold">{t("add.picker.newSeries", { title: typed })}</p>
           <label className="flex flex-col gap-1">
-            <span className="font-semibold">Author</span>
+            <span className="font-semibold">{t("add.picker.author")}</span>
             <input
               value={newAuthor}
               onChange={(e) => setNewAuthor(e.target.value)}
@@ -264,20 +266,18 @@ export function SeriesPicker({
           </label>
           <SeriesStatePills value={newStatus} onChange={setNewStatus} />
           <label className="flex flex-col gap-1">
-            <span className="font-semibold">Books in the series</span>
+            <span className="font-semibold">{t("add.picker.total")}</span>
             <input
               type="number"
               min={1}
               max={200}
               inputMode="numeric"
-              placeholder="Optional"
+              placeholder={t("add.picker.totalPlaceholder")}
               value={newTotal}
               onChange={(e) => setNewTotal(e.target.value)}
               className="field sm:w-40"
             />
-            <span className="text-sm text-muted">
-              How many books the series has, or has announced. You can change it later.
-            </span>
+            <span className="text-sm text-muted">{t("add.picker.totalHint")}</span>
           </label>
           {error && (
             <p role="alert" className="font-semibold text-burgundy">
@@ -286,7 +286,7 @@ export function SeriesPicker({
           )}
           <div className="flex gap-2">
             <button type="button" onClick={createSeries} className="btn-primary">
-              Create series
+              {t("add.picker.create")}
             </button>
             <button
               type="button"
@@ -296,7 +296,7 @@ export function SeriesPicker({
               }}
               className="btn-outline"
             >
-              Cancel
+              {t("add.picker.cancel")}
             </button>
           </div>
         </div>
@@ -308,24 +308,24 @@ export function SeriesPicker({
           onClick={() => choose(existingSuggested)}
           className="self-start font-semibold text-navy underline"
         >
-          Use the existing series “{existingSuggested.title}”
+          {t("add.picker.useExisting", { title: existingSuggested.title })}
         </button>
       )}
 
       {gapFilled && value.seriesNumber !== undefined && (
         <p className="text-sm font-semibold text-burgundy">
-          This fills the gap at #{value.seriesNumber}.
+          {t("add.picker.fillsGap", { number: value.seriesNumber })}
         </p>
       )}
 
       {markedStandalone ? (
         <p role="status" className="flex items-center gap-2 font-semibold text-navy">
           <CheckIcon size={16} />
-          Standalone book. It is not part of a series.
+          {t("add.picker.standalone")}
         </p>
       ) : (
         <button type="button" onClick={markStandalone} className="self-start text-navy underline">
-          Mark as standalone
+          {t("add.picker.markStandalone")}
         </button>
       )}
     </div>

@@ -1,0 +1,53 @@
+import type { Localized } from "../../core";
+import type { domain as en } from "../en/domain";
+
+export const domain: Localized<typeof en> = {
+  status: { want: "Хочу прочитать", reading: "Читаю", read: "Прочитано", dropped: "Брошено" },
+  ownership: { owned: "В моей библиотеке", wanted: "Вишлист" },
+  format: {
+    paper: "Бумажная",
+    ebook: "Электронная",
+    paperBook: "Бумажная книга",
+    ebookBook: "Электронная книга",
+  },
+  seriesStatus: {
+    ongoing: "Выходит",
+    readable: "Можно читать",
+    complete: "Завершена",
+    unknown: "Неизвестно",
+  },
+  seriesChoice: {
+    ongoing: "Ещё выходит",
+    readable: "Ещё выходит, но уже можно читать",
+    complete: "Завершена",
+    unknown: "Не знаю",
+  },
+  seriesHeader: {
+    ongoing: "Серия выходит",
+    readable: "Серия выходит, уже можно читать",
+    complete: "Завершённая серия",
+    unknown: "Статус серии неизвестен",
+  },
+  linkKind: {
+    paper: "Купить бумажную",
+    ebook: "Купить электронную",
+    free: "Скачать электронную бесплатно",
+    online: "Читать онлайн",
+  },
+  linkKindShort: { paper: "Бумага", ebook: "Эл. книга", free: "Бесплатно", online: "Онлайн" },
+  language: { ru: "Русский", uk: "Украинский", en: "Английский", misc: "Другой" },
+  genre: {
+    Fantasy: "Фэнтези",
+    Romantasy: "Романтическое фэнтези",
+    Romance: "Любовный роман",
+    "Science fiction": "Научная фантастика",
+    "Mystery & thriller": "Детектив и триллер",
+    Horror: "Ужасы",
+    "Historical fiction": "Исторический роман",
+    "Contemporary fiction": "Современная проза",
+    Classics: "Классика",
+    "Young adult": "Молодёжная проза",
+    "Non-fiction": "Нон-фикшн",
+    Poetry: "Поэзия",
+  },
+};

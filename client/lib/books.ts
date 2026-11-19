@@ -15,6 +15,7 @@ import {
   type LinkLanguage,
   type Ownership,
 } from "./catalogue-constants";
+import type { Domain } from "./i18n/domain";
 
 export { FORMAT_LABELS, FORMATS, LINK_KINDS, LINK_LANGUAGES, OWNERSHIP_LABELS };
 export type { Format, LinkKind, LinkLanguage, Ownership };
@@ -40,6 +41,22 @@ export const LINK_LANGUAGE_OPTIONS = LINK_LANGUAGES.map((language) => ({
   label: `${language.badge} · ${language.name}`,
   short: language.badge,
 }));
+
+export function linkKindOptions(domain: Domain) {
+  return LINK_KINDS.map((kind) => ({
+    value: kind.value,
+    label: domain.linkKind(kind.value),
+    short: domain.linkKindShort(kind.value),
+  }));
+}
+
+export function linkLanguageOptions(domain: Domain) {
+  return LINK_LANGUAGES.map((language) => ({
+    value: language.value,
+    label: `${language.badge} · ${domain.language(language.value)}`,
+    short: language.badge,
+  }));
+}
 
 export const DEFAULT_GENRES: readonly string[] = [
   "Fantasy",

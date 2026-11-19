@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PasswordField, TextField } from "@/components/auth-fields";
 import { useAuth, ApiError } from "@/lib/auth-context";
+import { useT, type Translate } from "@/lib/i18n";
+import { translateServerError } from "@/lib/i18n/server-errors";
 
 type Field = "name" | "email" | "password" | "confirm";
 type Errors = Partial<Record<Field, React.ReactNode>>;
@@ -12,19 +14,22 @@ type Errors = Partial<Record<Field, React.ReactNode>>;
 const MIN_PASSWORD = 8;
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function validate(values: Record<Field, string>): Errors {
+function validate(values: Record<Field, string>, t: Translate): Errors {
   const errors: Errors = {};
 
-  if (values.name.trim() === "") errors.name = "Enter your name.";
-  if (!EMAIL_SHAPE.test(values.email.trim())) errors.email = "Enter a valid email address.";
-  if (values.password === "") errors.password = "Enter a password.";
+  if (values.name.trim() === "") errors.name = t("auth.register.enterName");
+  if (!EMAIL_SHAPE.test(values.email.trim())) errors.email = t("auth.register.validEmail");
+  if (values.password === "") errors.password = t("auth.register.enterPassword");
   else if (values.password.length < MIN_PASSWORD) {
-    errors.password = `Too short: ${values.password.length} of the ${MIN_PASSWORD} characters needed.`;
+    errors.password = t("auth.register.tooShort", {
+      length: values.password.length,
+      min: MIN_PASSWORD,
+    });
   }
   if (new TextEncoder().encode(values.password).length > 72) {
-    errors.password = "That password is too long.";
+    errors.password = t("auth.register.tooLong");
   }
-  if (values.confirm !== values.password) errors.confirm = "Passwords do not match.";
+  if (values.confirm !== values.password) errors.confirm = t("auth.register.noMatch");
 
   return errors;
 }
@@ -32,6 +37,7 @@ function validate(values: Record<Field, string>): Errors {
 export function RegisterForm() {
   const router = useRouter();
   const { register } = useAuth();
+  const t = useT();
   const [values, setValues] = useState<Record<Field, string>>({
     name: "",
     email: "",
@@ -58,7 +64,7 @@ export function RegisterForm() {
     event.preventDefault();
     setBanner(null);
 
-    const found = validate(values);
+    const found = validate(values, t);
     setErrors(found);
     if (Object.keys(found).length > 0) {
       setFailedAttempts((count) => count + 1);
@@ -74,9 +80,9 @@ export function RegisterForm() {
         setErrors({
           email: (
             <>
-              This email already has an account.{" "}
+              {t("auth.register.emailTaken")}{" "}
               <Link href="/login" className="link">
-                Sign in instead
+                {t("auth.register.signInInstead")}
               </Link>
             </>
           ),
@@ -85,10 +91,13 @@ export function RegisterForm() {
         const field = (["name", "email", "password"] as const).find((name) =>
           err.message.startsWith(`${name}:`),
         );
-        if (field) setErrors({ [field]: err.message.slice(field.length + 1).trim() });
-        else setBanner("Check the fields and try again.");
+        if (field) {
+          setErrors({
+            [field]: translateServerError(err.message.slice(field.length + 1).trim(), t),
+          });
+        } else setBanner(t("auth.register.checkFields"));
       } else {
-        setBanner("Something went wrong. Try again.");
+        setBanner(t("auth.common.somethingWrong"));
       }
     } finally {
       setPending(false);
@@ -106,9 +115,9 @@ export function RegisterForm() {
       >
         <div className="flex flex-col gap-1">
           <h1 id="register-heading" className="text-[32px] font-semibold leading-tight">
-            Start your shelf
+            {t("auth.register.heading")}
           </h1>
-          <p className="text-muted">Create an account to catalogue your books.</p>
+          <p className="text-muted">{t("auth.register.lead")}</p>
         </div>
 
         {banner && (
@@ -121,14 +130,14 @@ export function RegisterForm() {
         )}
 
         <TextField
-          label="Name"
+          label={t("auth.register.name")}
           value={values.name}
           onChange={(value) => set("name", value)}
           error={errors.name}
           autoComplete="name"
         />
         <TextField
-          label="Email"
+          label={t("auth.common.email")}
           type="email"
           value={values.email}
           onChange={(value) => set("email", value)}
@@ -136,15 +145,15 @@ export function RegisterForm() {
           autoComplete="email"
         />
         <PasswordField
-          label="Password"
+          label={t("auth.common.password")}
           value={values.password}
           onChange={(value) => set("password", value)}
           error={errors.password}
-          hint="Use at least 8 characters."
+          hint={t("auth.register.hint")}
           autoComplete="new-password"
         />
         <PasswordField
-          label="Confirm password"
+          label={t("auth.register.confirm")}
           value={values.confirm}
           onChange={(value) => set("confirm", value)}
           error={errors.confirm}
@@ -152,21 +161,21 @@ export function RegisterForm() {
         />
 
         <button type="submit" disabled={pending} className="btn-primary min-h-12">
-          {pending ? "Creating account..." : "Create account"}
+          {pending ? t("auth.register.pending") : t("auth.register.submit")}
         </button>
 
         <p className="text-center text-sm text-muted">
-          By creating an account you agree to the{" "}
+          {t("auth.register.agree")}{" "}
           <Link href="/privacy" className="link">
-            privacy notice
+            {t("auth.register.privacyNotice")}
           </Link>
           .
         </p>
 
         <p className="text-center">
-          Already have an account?{" "}
+          {t("auth.register.already")}{" "}
           <Link href="/login" className="link">
-            Sign in
+            {t("auth.register.signIn")}
           </Link>
         </p>
       </form>
