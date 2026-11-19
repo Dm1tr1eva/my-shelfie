@@ -39,6 +39,12 @@ describe("translateServerError", () => {
     }
   });
 
+  it("translates the answer to a body over the server's size limit", () => {
+    expect(translateServerError("Request body is too large", translator("ru"))).toBe(
+      "Слишком много текста, чтобы сохранить",
+    );
+  });
+
   it("keeps the field name when a validation message carries one", () => {
     expect(translateServerError("password: must be at most 72 bytes", translator("uk"))).toBe(
       "password: має бути не довшим за 72 байти",

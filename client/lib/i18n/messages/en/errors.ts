@@ -7,6 +7,7 @@ export const errors = {
     notAuthenticated: "Not authenticated",
     invalidToken: "Invalid token",
     requestFailed: "Request failed",
+    bodyTooLarge: "Too much text to save at once",
     validEmail: "must be a valid email address",
     required: "is required",
     passwordShort: "must be at least 8 characters",

@@ -10,6 +10,7 @@ export const errors: Localized<typeof en> = {
     notAuthenticated: "Ви не увійшли в акаунт",
     invalidToken: "Сесія недійсна, увійдіть знову",
     requestFailed: "Не вдалося виконати запит",
+    bodyTooLarge: "Забагато тексту, щоб зберегти",
     validEmail: "має бути дійсним email",
     required: "обов’язкове поле",
     passwordShort: "має бути не коротшим за 8 символів",

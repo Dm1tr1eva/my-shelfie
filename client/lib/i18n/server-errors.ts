@@ -8,6 +8,7 @@ const SERVER_MESSAGES: Record<string, MessageKey> = {
   "Not authenticated": "errors.server.notAuthenticated",
   "Invalid token": "errors.server.invalidToken",
   "Request failed": "errors.server.requestFailed",
+  "Request body is too large": "errors.server.bodyTooLarge",
   "must be a valid email address": "errors.server.validEmail",
   "is required": "errors.server.required",
   "must be at least 8 characters": "errors.server.passwordShort",
