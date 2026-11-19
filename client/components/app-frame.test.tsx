@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
+import { resetLocale } from "@/lib/i18n";
 import { mockApi, renderApp } from "@/test/helpers";
 import { AppFrame } from "./app-frame";
 import { MobileHeader } from "./mobile-header";
@@ -18,6 +19,8 @@ describe("AppFrame", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.unstubAllGlobals();
+    localStorage.clear();
+    act(() => resetLocale());
   });
 
   describe("while the session is being checked", () => {
@@ -155,16 +158,66 @@ describe("AppFrame", () => {
     );
 
     await screen.findAllByRole("link", { name: "Add a book" });
-    const sections = screen
-      .getAllByRole("link")
-      .filter((link) =>
-        ["Library", "Wishlist"].includes(link.getAttribute("aria-label") ?? link.textContent ?? ""),
-      );
-    const highlighted = sections.filter((link) => link.getAttribute("aria-current") === "page");
+    const expected = { Library: ["/library"], Wishlist: ["/wishlist"], nothing: [] }[current];
+    const [nav, tabBar] = screen.getAllByRole("navigation", { name: "Main" });
 
-    expect(sections.length).toBeGreaterThanOrEqual(4);
-    expect(new Set(highlighted.map((link) => link.getAttribute("href")))).toEqual(
-      new Set({ Library: ["/library"], Wishlist: ["/wishlist"], nothing: [] }[current]),
+    for (const bar of [nav, tabBar]) {
+      const highlighted = within(bar)
+        .getAllByRole("link")
+        .filter((link) => link.getAttribute("aria-current") === "page")
+        .map((link) => link.getAttribute("href"));
+      expect(highlighted).toEqual(expected);
+    }
+    expect(within(tabBar).getByRole("link", { name: "Add a book" })).toBeInTheDocument();
+  });
+
+  it("lets a visitor switch the language in the public header", async () => {
+    route.pathname = "/";
+    mockApi(() => undefined, false);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+
+    await screen.findByRole("link", { name: "Sign in" });
+    fireEvent.click(screen.getByRole("button", { name: "RU" }));
+
+    expect(screen.getByRole("link", { name: "Войти" })).toHaveAttribute("href", "/login");
+  });
+
+  it("lets a signed-in user switch the language from the account menu", async () => {
+    route.pathname = "/library";
+    mockApi(() => undefined);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+
+    const [logOut] = await screen.findAllByRole("button", { name: "Log out" });
+    const menu = logOut.parentElement!;
+    fireEvent.click(
+      within(within(menu).getByRole("group", { name: "Language" })).getByRole("button", {
+        name: "UK",
+      }),
+    );
+
+    expect(screen.getAllByRole("button", { name: "Вийти" }).length).toBeGreaterThan(0);
+  });
+
+  it("gives a phone a way back to the library from an inner page", async () => {
+    route.pathname = "/series/saga";
+    mockApi(() => undefined);
+    renderApp(
+      <AppFrame>
+        <p>page</p>
+      </AppFrame>,
+    );
+
+    expect(await screen.findByRole("link", { name: "Back to the library" })).toHaveAttribute(
+      "href",
+      "/library",
     );
   });
 
@@ -293,7 +346,7 @@ describe("MobileHeader", () => {
       mockApi(() => undefined);
       renderApp(<MobileHeader />);
 
-      const back = await screen.findByRole("link", { name: "Library" });
+      const back = await screen.findByRole("link", { name: "Back to the library" });
       expect(back).toHaveAttribute("href", "/library");
       expect(screen.queryByRole("link", { name: "My Shelfie" })).not.toBeInTheDocument();
       expect(screen.queryByLabelText("Account")).not.toBeInTheDocument();
