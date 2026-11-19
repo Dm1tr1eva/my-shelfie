@@ -120,6 +120,38 @@ describe("NextToBuy", () => {
     }
   });
 
+  it("shows a badge for every language of a link", async () => {
+    mockApi(({ path }) => {
+      if (path.startsWith("/api/next-to-buy")) {
+        return {
+          body: {
+            items: [
+              {
+                type: "standalone",
+                gap: false,
+                book: book({
+                  id: "y",
+                  title: "Two languages",
+                  ownership: "wanted",
+                  links: [
+                    { kind: "ebook", languages: ["ru", "en"], url: "https://shop.example/b" },
+                  ],
+                }),
+              },
+            ],
+          },
+        };
+      }
+      if (path.startsWith("/api/books")) return booksResponse([]);
+    });
+    renderApp(<NextToBuy />);
+
+    const link = await screen.findByRole("link", { name: /shop\.example/ });
+
+    expect(within(link).getByText("RU")).toBeInTheDocument();
+    expect(within(link).getByText("EN")).toBeInTheDocument();
+  });
+
   it("moves a book to the library when you say you bought it", async () => {
     const calls = serve();
     renderApp(<NextToBuy />);

@@ -55,6 +55,24 @@ describe("ShopLinkEditor", () => {
     expect(screen.getByTestId("saved").textContent).toBe("[]");
   });
 
+  it("saves a link with several languages untouched when only another link changes", () => {
+    render(
+      <Harness
+        initial={[{ kind: "ebook", languages: ["ru", "en"], url: "https://a.example/both" }]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add another link" }));
+    fireEvent.change(screen.getByLabelText("URL of link 2"), {
+      target: { value: "https://b.example/y" },
+    });
+
+    expect(JSON.parse(screen.getByTestId("saved").textContent ?? "")).toEqual([
+      { kind: "ebook", languages: ["ru", "en"], url: "https://a.example/both" },
+      { kind: "paper", languages: ["uk"], url: "https://b.example/y" },
+    ]);
+  });
+
   it("adds another row and removes a row", () => {
     render(
       <Harness initial={[{ kind: "paper", languages: ["uk"], url: "https://a.example/x" }]} />,
