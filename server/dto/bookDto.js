@@ -40,7 +40,7 @@ function toBookDto(book, series) {
     ownership: book.ownership ?? "owned",
     format: book.format,
     desire: book.desire,
-    ageRating: shared ? shared.ageRating : book.ageRating,
+    ageRating: shared && shared.ageRating !== "none" ? shared.ageRating : book.ageRating,
     genres: shared ? (shared.genres ?? []) : (book.genres ?? []),
     tropes: shared ? (shared.tropes ?? []) : (book.tropes ?? []),
     moods: book.moods ?? [],

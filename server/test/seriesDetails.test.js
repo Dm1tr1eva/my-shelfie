@@ -113,6 +113,17 @@ describe("series details", () => {
     assert.equal(fifty.status, 200);
   });
 
+  it("keeps a book's own age rating while its series has none", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice);
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1, ageRating: "16" });
+
+    const fetched = await api(`/api/books/${book.id}`, { cookie: alice });
+
+    assert.equal(book.ageRating, "16");
+    assert.equal(fetched.body.ageRating, "16");
+  });
+
   it("gives a book of a series the age rating of the series, and its own back when it leaves", async () => {
     const alice = await signIn("alice@example.com");
     const series = await addSeries(alice, { ageRating: "18" });
