@@ -199,10 +199,11 @@ describe("BookPage", () => {
     ) as HTMLElement;
     const text = section.textContent ?? "";
 
-    expect(text.indexOf("Buy paper")).toBeGreaterThan(-1);
-    expect(text.indexOf("Buy paper")).toBeLessThan(text.indexOf("Free e-book download"));
+    expect(text.indexOf("Paper")).toBeGreaterThan(-1);
+    expect(text.indexOf("Paper")).toBeLessThan(text.indexOf("Free e-book download"));
     expect(text.indexOf("Free e-book download")).toBeLessThan(text.indexOf("Read online"));
-    expect(text).not.toContain("Buy e-book");
+    expect(text).not.toContain("E-book");
+    expect(text).not.toMatch(/buy/i);
     expect(within(section).getByRole("link", { name: /library\.example/ })).toHaveTextContent("RU");
   });
 

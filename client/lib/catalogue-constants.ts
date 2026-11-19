@@ -14,8 +14,8 @@ export const OWNERSHIP_LABELS: Record<Ownership, string> = {
 };
 
 export const LINK_KINDS: { value: LinkKind; label: string; short: string }[] = [
-  { value: "paper", label: "Buy paper", short: "Paper" },
-  { value: "ebook", label: "Buy e-book", short: "E-book" },
+  { value: "paper", label: "Paper", short: "Paper" },
+  { value: "ebook", label: "E-book", short: "E-book" },
   { value: "audio", label: "Audio", short: "Audio" },
   { value: "free", label: "Free e-book download", short: "Free" },
   { value: "online", label: "Read online", short: "Online" },

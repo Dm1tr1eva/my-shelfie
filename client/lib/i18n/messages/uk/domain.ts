@@ -31,8 +31,8 @@ export const domain: Localized<typeof en> = {
     unknown: "Статус серії невідомий",
   },
   linkKind: {
-    paper: "Купити паперову",
-    ebook: "Купити електронну",
+    paper: "Паперова",
+    ebook: "Електронна",
     audio: "Аудіо",
     free: "Завантажити електронну безкоштовно",
     online: "Читати онлайн",

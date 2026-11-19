@@ -89,8 +89,8 @@ describe("filters by what a link leads to", () => {
 
     expect(group?.label).toBe("Link type");
     expect(group?.options.map((option) => [option.value, option.label, option.count])).toEqual([
-      ["paper", "Buy paper", 1],
-      ["ebook", "Buy e-book", 1],
+      ["paper", "Paper", 1],
+      ["ebook", "E-book", 1],
       ["free", "Free e-book download", 1],
       ["online", "Read online", 1],
     ]);

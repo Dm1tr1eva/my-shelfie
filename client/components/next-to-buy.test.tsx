@@ -115,9 +115,10 @@ describe("NextToBuy", () => {
       "li",
     ) as HTMLElement;
 
-    for (const name of ["Buy paper", "Buy e-book", "Free e-book download", "Read online"]) {
-      expect(within(row).getByText(name)).toBeInTheDocument();
+    for (const name of ["Paper", "E-book", "Free e-book download", "Read online"]) {
+      expect(within(row).getAllByText(name).length).toBeGreaterThan(0);
     }
+    expect(row.textContent).not.toMatch(/buy/i);
   });
 
   it("shows a badge for every language of a link", async () => {

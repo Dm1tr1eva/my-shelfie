@@ -28,8 +28,8 @@ export const domain = {
     unknown: "Unknown series",
   },
   linkKind: {
-    paper: "Buy paper",
-    ebook: "Buy e-book",
+    paper: "Paper",
+    ebook: "E-book",
     audio: "Audio",
     free: "Free e-book download",
     online: "Read online",
