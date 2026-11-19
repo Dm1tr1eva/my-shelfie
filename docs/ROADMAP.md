@@ -162,7 +162,17 @@ in steps, each on its own branch:
    its `500` text, one Zod formatter, JSON for a body that is too large or not JSON; every other
    message unchanged. New endpoints are written this way. Follow-up: move `auth` to a repository —
    [designs/central-error-handler.md](designs/central-error-handler.md)
-4. ⬜ The following steps: the screens, the wishlist endpoint, `/api/stats`
+4. ✅ **Library, 2026-11-19** — one library of owned and wanted books: a shelf per series with
+   `#N` covers, dimmed wanted books, one dashed tile per run of missing numbers, a `+N more` tile
+   past one row (seven slots from 1024 px, four below), standalone books wrapping onto further
+   shelves; `SeriesSegments` (at most ten, then `+N`); search by title, author or series; a
+   filter panel in a reusable `Drawer` (side panel / bottom sheet) with the decision-37 groups
+   that have data, removable filter pills and a count on the button. Tabs, the stats line, the
+   view toggle and series notes are gone from the library; `/wishlist` keeps the v2 shelves in
+   `components/wishlist.tsx` without the tabs, `/next` is unchanged —
+   [designs/v3-library.md](designs/v3-library.md)
+5. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page and
+   endpoint, home and `/api/stats`
 
 ## Course submission MVP — done 2026-10-09
 

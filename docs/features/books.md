@@ -138,13 +138,35 @@ The screens, from the handoff in [../design/](../design/), are described in
 [series.md](series.md) and [../designs/library-and-wishlist.md](../designs/library-and-wishlist.md).
 The list is loaded once with `?limit=500` — no pagination UI, so a shelf past that size would be
 silently truncated, and the counts and gaps with it — and everything else is derived on the
-client in `lib/catalogue.ts`: the library and wishlist tabs, series groups, gaps, "own n of m"
-and the stats. A number is a gap when it is wanted or missing and lower than the highest owned
-number in the series, which is the rule `server/services/nextToBuy.js` applies; a novella such as
-#2.5 counts. The shelf shows as a list or a cover grid, the choice kept in `localStorage`
-(`lib/use-view-mode.ts`).
+client.
 
-- `/library` and `/wishlist` — `components/library.tsx`
+- `/library` — `components/library.tsx`, the v3 library
+  ([../designs/v3-library.md](../designs/v3-library.md)), derived in `lib/shelves.ts`. Every
+  book, owned and wanted, on one page: a shelf per series (newest first), then "Standalone
+  books" by title. A series shelf holds its books by number (unnumbered last) and one dashed gap
+  tile per run of missing whole numbers, counted up to the largest of `totalBooks`, the highest
+  book number and the highest `expected` number; the gap opens `/add?series=…&number=<first>`.
+  A half number (#2.5) is a book and never fills a gap. Seven slots a row from 1024 px, four
+  below (`matchMedia`); a longer series shows one slot fewer and a "+N more" tile (N books and
+  missing numbers) to `/series/[id]`; standalone books wrap onto as many shelves as they need.
+  The series header (title, author, status, `SeriesSegments`) is one link to the series page.
+  A tile is a cover, a two-line title and one meta line: status and rating for an owned book,
+  "In wishlist" with a dimmed cover for a wanted one; below 768 px the text is for screen
+  readers only. Search matches title, author or series title. The filter button opens
+  `FilterPanel` in a `Drawer` (side panel 420 px from 768 px, bottom sheet below; Esc, scrim and
+  × close it, focus moves in and back): I have, Status, Format, Genre, Age (only when some book
+  has one), Tropes (with search), Author, Series status (with "Standalone books"), Link
+  language, Link type, Rating (5, 4, 3 and lower, none). Genre, Tropes and Author fold after
+  four. The choices are a draft until "Show N books", whose count follows it; Reset empties the
+  draft, closing drops it. Applied filters show as removable navy pills under the title and as
+  a count on the button. Under a search or a filter a series keeps its gap tiles, shows only
+  its matching books and disappears when none match; segments always describe the whole series.
+  No tabs, stats line, view toggle or series notes, as in the v3 handoff. Filters are not kept
+  across a reload or a visit to a book.
+- `/wishlist` — `components/wishlist.tsx`, the v2 shelves until the Wishlist step: wanted
+  books only, series groups from `lib/catalogue.ts` with "own n of m", a list or a cover grid
+  (the choice kept in `localStorage`, `lib/use-view-mode.ts`), the v2 filter bar. Since
+  2026-11-19 it has no My library / Wishlist tabs; its heading is "Wishlist".
 - `/books/[id]` — `components/book-page.tsx`: edits are a local draft, saved together from a
   "You have unsaved changes" bar that sends only the fields that changed; deleting asks
   `window.confirm`
@@ -159,7 +181,7 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   no series starts the series field from its own title, with its author ready in the "new
   series" form, so a series named after its first book is one click (an existing series of
   that name is offered instead of a duplicate)
-- Library and Wishlist show standalone books first, then series by the time their latest book
+- Wishlist shows standalone books first, then series by the time their latest book
   was added, newest on top. A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to get it" shows for a wishlist book only: its links grouped by what they lead to
   (Paper, E-book, Audio, Free e-book download, Read online — no "buy", as in the v3
@@ -192,13 +214,12 @@ number in the series, which is the rule `server/services/nextToBuy.js` applies; 
   the bookmark pill "In wishlist" (`WishlistLabel`); series status is an outline pill, a link
   language a one-colour outline code, a number `#N` in Inter tabular figures, on covers a white
   pill top-left
-- Filters (`lib/filters.ts`, `components/filter-bar.tsx`): genre, trope, series status, author
-  and shop language. Values within a group are OR, groups are AND, and each option's count is
+- Filters on Wishlist and Next to buy (`lib/filters.ts`, `components/filter-bar.tsx`): genre,
+  trope, series status, author and shop language. Values within a group are OR, groups are AND, and each option's count is
   taken among the books that match the other groups. From 768 px each group is a button with a
   checkbox popover (Clear / Apply) and removable chips; below it a "Filters · n" button opens a
-  bottom sheet of pills applied by "Show n books". Library and Wishlist filter the loaded list;
-  Next to buy fetches the list once and filters in the browser. A filter on the Library hides
-  gap tiles, like a search.
+  bottom sheet of pills applied by "Show n books". Wishlist filters the loaded list;
+  Next to buy fetches the list once and filters in the browser.
 - Loading shows `components/skeleton.tsx` with a visible status line; a failed load shows
   `ErrorState` with "Try again" (the hooks expose `reload`); a missing book or series shows
   `NotFound` with a way back.

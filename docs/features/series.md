@@ -69,8 +69,10 @@ it" is a `PATCH` of the book's `ownership` to `owned`; the book then leaves the 
    her highest owned number. The language, genre and trope filters drop `missing` items (there
    is nothing to match); `seriesStatus` keeps them. They sort among the series' books by number.
 
-Without `totalBooks` a number with no record cannot appear here; the Library draws such a gap
-as a dashed tile from the series' numbers.
+Without `totalBooks` a number with no record cannot appear here. The Library has its own,
+wider rule ([v3-library.md](../designs/v3-library.md)): every whole number up to the largest of
+`totalBooks`, the highest book number and the highest `expected` number that has no book, owned
+or wanted, is missing, and each run of them is one dashed gap tile.
 
 ## Data
 
