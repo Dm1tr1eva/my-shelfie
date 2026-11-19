@@ -2,39 +2,182 @@ require("dotenv").config({ quiet: true });
 
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
+const { format } = require("node:util");
 
+const User = require("../models/user");
 const bookService = require("../services/bookService");
+const googleBooksService = require("../services/googleBooksService");
+const libraryService = require("../services/libraryService");
+const progressService = require("../services/progressService");
+const seriesService = require("../services/seriesService");
+const yearGoalService = require("../services/yearGoalService");
 const { useTestApp } = require("./helpers/app");
 
 const { api, signIn, addBook } = useTestApp();
+
+const SOME_ID = "000000000000000000000000";
+
+const ROUTE_FAILURES = [
+  {
+    method: "POST",
+    path: "/api/auth/register",
+    body: { email: "new@example.com", password: "secret123", name: "New" },
+    breaks: [User, "findOne"],
+    error: "Registration failed",
+  },
+  {
+    method: "POST",
+    path: "/api/auth/login",
+    body: { email: "failing@example.com", password: "secret123" },
+    breaks: [User, "findOne"],
+    error: "Login failed",
+  },
+  {
+    method: "GET",
+    path: "/api/auth/me",
+    breaks: [User, "findById"],
+    error: "Failed to fetch the current user",
+  },
+  {
+    method: "POST",
+    path: "/api/books",
+    body: { title: "A book", author: "An author" },
+    breaks: [bookService, "createBook"],
+    error: "Failed to create book",
+  },
+  {
+    method: "GET",
+    path: "/api/books",
+    breaks: [bookService, "listBooks"],
+    error: "Failed to fetch books",
+  },
+  {
+    method: "GET",
+    path: "/api/books/search?q=dracula",
+    breaks: [googleBooksService, "searchVolumes"],
+    error: "Failed to search books",
+  },
+  {
+    method: "GET",
+    path: `/api/books/${SOME_ID}`,
+    breaks: [bookService, "getBook"],
+    error: "Failed to fetch book",
+  },
+  {
+    method: "PATCH",
+    path: `/api/books/${SOME_ID}`,
+    body: { title: "Renamed" },
+    breaks: [bookService, "updateBook"],
+    error: "Failed to update book",
+  },
+  {
+    method: "DELETE",
+    path: `/api/books/${SOME_ID}`,
+    breaks: [bookService, "deleteBook"],
+    error: "Failed to delete book",
+  },
+  {
+    method: "POST",
+    path: "/api/series",
+    body: { title: "A series" },
+    breaks: [seriesService, "createSeries"],
+    error: "Failed to create series",
+  },
+  {
+    method: "GET",
+    path: "/api/series",
+    breaks: [seriesService, "listSeries"],
+    error: "Failed to fetch series",
+  },
+  {
+    method: "GET",
+    path: `/api/series/${SOME_ID}`,
+    breaks: [seriesService, "getSeries"],
+    error: "Failed to fetch series",
+  },
+  {
+    method: "PATCH",
+    path: `/api/series/${SOME_ID}`,
+    body: { title: "Renamed" },
+    breaks: [seriesService, "updateSeries"],
+    error: "Failed to update series",
+  },
+  {
+    method: "DELETE",
+    path: `/api/series/${SOME_ID}`,
+    breaks: [seriesService, "deleteSeries"],
+    error: "Failed to delete series",
+  },
+  {
+    method: "GET",
+    path: "/api/next-to-buy",
+    breaks: [libraryService, "nextToBuy"],
+    error: "Failed to build the list",
+  },
+  {
+    method: "GET",
+    path: "/api/tropes",
+    breaks: [libraryService, "listTropes"],
+    error: "Failed to fetch tropes",
+  },
+  {
+    method: "POST",
+    path: "/api/progress",
+    body: { bookId: SOME_ID, percent: 10 },
+    breaks: [progressService, "recordProgress"],
+    error: "Failed to save progress",
+  },
+  {
+    method: "GET",
+    path: "/api/progress",
+    breaks: [progressService, "listLatest"],
+    error: "Failed to fetch progress",
+  },
+  {
+    method: "GET",
+    path: "/api/year-goal",
+    breaks: [yearGoalService, "getYearGoal"],
+    error: "Failed to fetch the goal",
+  },
+  {
+    method: "PUT",
+    path: "/api/year-goal",
+    body: { year: 2026, books: 12 },
+    breaks: [yearGoalService, "setYearGoal"],
+    error: "Failed to save the goal",
+  },
+];
 
 function silenceErrors(t) {
   return t.mock.method(console, "error", () => {});
 }
 
 function loggedText(log) {
-  return log.mock.calls.map((call) => call.arguments.join(" ")).join("\n");
+  return log.mock.calls.map((call) => format(...call.arguments)).join("\n");
 }
 
 describe("error responses", () => {
-  it("answers an unexpected failure with the route's message, never the thrown one", async (t) => {
-    const cookie = await signIn("unexpected@example.com");
-    silenceErrors(t);
-    t.mock.method(bookService, "listBooks", async () => {
-      throw new Error("internal detail that must stay on the server");
+  for (const { method, path, body, breaks, error } of ROUTE_FAILURES) {
+    it(`answers an unexpected failure of ${method} ${path} with "${error}", never the thrown message`, async (t) => {
+      const cookie = await signIn(`failing-${method.toLowerCase()}@example.com`);
+      silenceErrors(t);
+      const [owner, name] = breaks;
+      t.mock.method(owner, name, async () => {
+        throw new Error("internal detail that must stay on the server");
+      });
+
+      const response = await api(path, { method, cookie, body });
+
+      assert.equal(response.status, 500);
+      assert.deepEqual(response.body, { error });
     });
-
-    const response = await api("/api/books", { cookie });
-
-    assert.equal(response.status, 500);
-    assert.deepEqual(response.body, { error: "Failed to fetch books" });
-  });
+  }
 
   it("logs an unexpected failure once with the method, path and stack, but no body, query or cookie", async (t) => {
     const cookie = await signIn("logged@example.com");
     const log = silenceErrors(t);
     t.mock.method(bookService, "createBook", async () => {
-      throw new Error("thrown-marker");
+      throw Object.assign(new Error("thrown-marker"), { body: "body-marker" });
     });
 
     const response = await api("/api/books?q=query-marker", {
