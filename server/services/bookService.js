@@ -56,6 +56,10 @@ async function updateBook(userId, id, updates) {
   }
 
   const changes = { ...updates };
+  if (updates.notes !== undefined) {
+    changes.review = null;
+  }
+
   const touchesSeries = updates.seriesId !== undefined || typeof updates.seriesNumber === "number";
 
   if (touchesSeries) {

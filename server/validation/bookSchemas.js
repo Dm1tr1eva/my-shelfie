@@ -1,9 +1,29 @@
 const { z } = require("zod");
-const { OWNERSHIP, FORMATS, LINK_KINDS, LINK_LANGUAGES } = require("../constants/library");
+const {
+  OWNERSHIP,
+  FORMATS,
+  LINK_KINDS,
+  LINK_LANGUAGES,
+  DESIRE_LEVELS,
+  AGE_RATINGS,
+  RECOMMEND,
+} = require("../constants/library");
 const { genreList, genreName } = require("./genre");
+const { uniqueTextList } = require("./textList");
 const { SEARCH_MAX_START_INDEX } = require("../constants/search");
 
 const objectId = z.string().regex(/^[a-f\d]{24}$/i, "Not a valid id");
+
+const wholeCount = z.number().int().min(1).max(10000);
+
+const moodList = uniqueTextList(z.string().trim().min(1).max(40), 12, "Moods must be unique");
+
+const quoteSchema = z
+  .object({
+    text: z.string().trim().min(1).max(2000),
+    page: wholeCount.optional(),
+  })
+  .strict();
 
 const linkSchema = z
   .object({
@@ -22,6 +42,8 @@ const baseBookSchema = z
     description: z.string().optional(),
     ownership: z.enum(OWNERSHIP).optional(),
     format: z.enum(FORMATS).optional(),
+    pages: wholeCount.optional(),
+    durationMinutes: wholeCount.optional(),
     seriesId: objectId.optional(),
     seriesNumber: z.number().positive().optional(),
     genres: genreList.optional(),
@@ -31,7 +53,11 @@ const baseBookSchema = z
     annotation: z.string().max(5000).optional(),
     status: z.enum(["want", "reading", "dropped", "read"]).optional(),
     rating: z.number().min(1).max(5).optional(),
-    review: z.string().optional(),
+    moods: moodList.optional(),
+    recommend: z.enum(RECOMMEND).optional(),
+    quotes: z.array(quoteSchema).max(50).optional(),
+    desire: z.enum(DESIRE_LEVELS).optional(),
+    ageRating: z.enum(AGE_RATINGS).optional(),
     startedAt: z.coerce.date().optional(),
     finishedAt: z.coerce.date().optional(),
   })
@@ -50,7 +76,9 @@ const CLEARABLE_FIELDS = [
   "notes",
   "annotation",
   "rating",
-  "review",
+  "pages",
+  "durationMinutes",
+  "recommend",
   "startedAt",
   "finishedAt",
 ];

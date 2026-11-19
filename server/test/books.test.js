@@ -219,21 +219,21 @@ describe("books API", () => {
 
   it("clears an optional field when PATCH sends null", async () => {
     const alice = await signIn("alice@example.com");
-    const book = await addBook(alice, { rating: 4, review: "Good" });
+    const book = await addBook(alice, { rating: 4, notes: "Good" });
 
     const response = await api(`/api/books/${book.id}`, {
       method: "PATCH",
       cookie: alice,
-      body: { rating: null, review: null },
+      body: { rating: null, notes: null },
     });
 
     assert.equal(response.status, 200);
     assert.equal(response.body.rating, undefined);
-    assert.equal(response.body.review, undefined);
+    assert.equal(response.body.notes, undefined);
 
     const reread = await api(`/api/books/${book.id}`, { cookie: alice });
     assert.equal(reread.body.rating, undefined);
-    assert.equal(reread.body.review, undefined);
+    assert.equal(reread.body.notes, undefined);
   });
 
   it("clears a date with null instead of turning it into 1970", async () => {
