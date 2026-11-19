@@ -12,7 +12,7 @@ const progressRouter = require("./routes/progress");
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "512kb" }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);

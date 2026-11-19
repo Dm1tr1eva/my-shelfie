@@ -162,6 +162,31 @@ describe("book details", () => {
     assert.equal(fifty.body.quotes.length, 50);
   });
 
+  it("accepts a book filled to every text limit, in Cyrillic", async () => {
+    const alice = await signIn("alice@example.com");
+    const quotes = Array.from({ length: 50 }, (_, index) => ({
+      text: "ж".repeat(2000),
+      page: index + 1,
+    }));
+
+    const response = await api("/api/books", {
+      method: "POST",
+      cookie: alice,
+      body: {
+        title: "Книга",
+        author: "Автор",
+        quotes,
+        notes: "щ".repeat(5000),
+        annotation: "ю".repeat(5000),
+        moods: Array.from({ length: 12 }, (_, index) => `${"я".repeat(38)}${index + 10}`),
+        tropes: Array.from({ length: 30 }, (_, index) => `${"ф".repeat(58)}${index + 10}`),
+      },
+    });
+
+    assert.equal(response.status, 201, JSON.stringify(response.body)?.slice(0, 200));
+    assert.equal(response.body.quotes.length, 50);
+  });
+
   it("replaces the quotes as a whole and empties them with an empty array", async () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice, { quotes: [{ text: "First" }, { text: "Second" }] });
