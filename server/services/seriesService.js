@@ -1,12 +1,6 @@
 const bookRepository = require("../repositories/bookRepository");
 const seriesRepository = require("../repositories/seriesRepository");
-
-class SeriesNotFoundError extends Error {
-  constructor() {
-    super("Unknown series");
-    this.name = "SeriesNotFoundError";
-  }
-}
+const { HttpError } = require("../errors/httpError");
 
 const NO_COUNTS = { owned: 0, wanted: 0 };
 
@@ -97,11 +91,10 @@ async function deleteSeries(userId, id) {
 
 async function assertSeriesExists(userId, id) {
   const series = await seriesRepository.findOneForUser(userId, id);
-  if (!series) throw new SeriesNotFoundError();
+  if (!series) throw new HttpError(400, "seriesId: unknown series");
 }
 
 module.exports = {
-  SeriesNotFoundError,
   createSeries,
   listSeries,
   getSeries,

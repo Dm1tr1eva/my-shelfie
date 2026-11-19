@@ -1,13 +1,7 @@
 const bookRepository = require("../repositories/bookRepository");
 const progressRepository = require("../repositories/progressRepository");
 const seriesService = require("./seriesService");
-
-class SeriesNumberWithoutSeriesError extends Error {
-  constructor() {
-    super("seriesNumber needs a seriesId");
-    this.name = "SeriesNumberWithoutSeriesError";
-  }
-}
+const { HttpError } = require("../errors/httpError");
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -71,7 +65,7 @@ async function updateBook(userId, id, updates) {
 
     if (!seriesId) {
       if (typeof updates.seriesNumber === "number") {
-        throw new SeriesNumberWithoutSeriesError();
+        throw new HttpError(400, "seriesNumber: needs a seriesId");
       }
       changes.seriesNumber = null;
     }
@@ -100,6 +94,5 @@ module.exports = {
   getBook,
   updateBook,
   deleteBook,
-  SeriesNumberWithoutSeriesError,
   seriesMapFor,
 };

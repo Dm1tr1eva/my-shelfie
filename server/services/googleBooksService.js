@@ -1,13 +1,14 @@
 const { SEARCH_PAGE_SIZE, SEARCH_MAX_START_INDEX } = require("../constants/search");
+const { HttpError } = require("../errors/httpError");
 
 const GOOGLE_BOOKS_URL = "https://www.googleapis.com/books/v1/volumes";
 const TIMEOUT_MS = 8000;
 const FIELDS =
   "items(id,volumeInfo(title,authors,publishedDate,pageCount,imageLinks/thumbnail,canonicalVolumeLink,infoLink))";
 
-class UpstreamError extends Error {
-  constructor(message) {
-    super(message);
+class UpstreamError extends HttpError {
+  constructor() {
+    super(502, "Book search is unavailable right now");
     this.name = "UpstreamError";
   }
 }
@@ -55,11 +56,11 @@ async function searchVolumes(query, startIndex = 0) {
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
   } catch (err) {
-    throw new UpstreamError("Google Books is unreachable");
+    throw new UpstreamError();
   }
 
   if (!response.ok) {
-    throw new UpstreamError(`Google Books answered ${response.status}`);
+    throw new UpstreamError();
   }
 
   const body = await response.json();

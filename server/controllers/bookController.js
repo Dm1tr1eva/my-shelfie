@@ -1,139 +1,84 @@
 const bookService = require("../services/bookService");
-const { SeriesNumberWithoutSeriesError } = bookService;
 const googleBooksService = require("../services/googleBooksService");
-const { SeriesNotFoundError } = require("../services/seriesService");
 const {
   createBookSchema,
   updateBookSchema,
   searchBooksQuerySchema,
   listBooksFiltersSchema,
 } = require("../validation/bookSchemas");
+const { validate } = require("../validation/validate");
 const { toBookDto } = require("../dto/bookDto");
 
-function formatZodError(error) {
-  return error.issues
-    .map((issue) => `${issue.path.join(".") || "body"}: ${issue.message}`)
-    .join("; ");
-}
-
 async function createBook(req, res) {
-  const parsed = createBookSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: formatZodError(parsed.error) });
-  }
+  const data = validate(createBookSchema, req.body);
 
-  try {
-    const book = await bookService.createBook(req.userId, parsed.data);
-    const shared = await bookService.seriesMapFor(req.userId, [book]);
-    res.status(201).json(toBookDto(book, shared.get(String(book.seriesId))));
-  } catch (err) {
-    if (err instanceof SeriesNotFoundError) {
-      return res.status(400).json({ error: "seriesId: unknown series" });
-    }
-    res.status(500).json({ error: "Failed to create book" });
-  }
+  const book = await bookService.createBook(req.userId, data);
+  const shared = await bookService.seriesMapFor(req.userId, [book]);
+  res.status(201).json(toBookDto(book, shared.get(String(book.seriesId))));
 }
 
 async function getBooks(req, res) {
-  const filters = listBooksFiltersSchema.safeParse(req.query);
-  if (!filters.success) {
-    return res.status(400).json({ error: formatZodError(filters.error) });
-  }
+  const filters = validate(listBooksFiltersSchema, req.query);
 
-  try {
-    const { status } = req.query;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 20;
+  const { status } = req.query;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
 
-    const { books, total } = await bookService.listBooks(req.userId, {
-      ...filters.data,
-      status,
-      page,
-      limit,
-    });
+  const { books, total } = await bookService.listBooks(req.userId, {
+    ...filters,
+    status,
+    page,
+    limit,
+  });
 
-    const shared = await bookService.seriesMapFor(req.userId, books);
-    res.json({
-      books: books.map((book) => toBookDto(book, shared.get(String(book.seriesId)))),
-      total,
-      page,
-      limit,
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch books" });
-  }
+  const shared = await bookService.seriesMapFor(req.userId, books);
+  res.json({
+    books: books.map((book) => toBookDto(book, shared.get(String(book.seriesId)))),
+    total,
+    page,
+    limit,
+  });
 }
 
 async function searchBooks(req, res) {
-  const parsed = searchBooksQuerySchema.safeParse(req.query);
-  if (!parsed.success) {
-    return res.status(400).json({ error: formatZodError(parsed.error) });
-  }
+  const { q, startIndex } = validate(searchBooksQuerySchema, req.query);
 
-  try {
-    const page = await googleBooksService.searchVolumes(parsed.data.q, parsed.data.startIndex);
-    res.json(page);
-  } catch (err) {
-    if (err instanceof googleBooksService.UpstreamError) {
-      return res.status(502).json({ error: "Book search is unavailable right now" });
-    }
-    res.status(500).json({ error: "Failed to search books" });
-  }
+  const page = await googleBooksService.searchVolumes(q, startIndex);
+  res.json(page);
 }
 
 async function getBook(req, res) {
-  try {
-    const book = await bookService.getBook(req.userId, req.params.id);
+  const book = await bookService.getBook(req.userId, req.params.id);
 
-    if (!book) {
-      return res.status(404).json({ error: "Book not found" });
-    }
-
-    const shared = await bookService.seriesMapFor(req.userId, [book]);
-    res.json(toBookDto(book, shared.get(String(book.seriesId))));
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch book" });
+  if (!book) {
+    return res.status(404).json({ error: "Book not found" });
   }
+
+  const shared = await bookService.seriesMapFor(req.userId, [book]);
+  res.json(toBookDto(book, shared.get(String(book.seriesId))));
 }
 
 async function updateBook(req, res) {
-  const parsed = updateBookSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: formatZodError(parsed.error) });
+  const updates = validate(updateBookSchema, req.body);
+
+  const book = await bookService.updateBook(req.userId, req.params.id, updates);
+
+  if (!book) {
+    return res.status(404).json({ error: "Book not found" });
   }
 
-  try {
-    const book = await bookService.updateBook(req.userId, req.params.id, parsed.data);
-
-    if (!book) {
-      return res.status(404).json({ error: "Book not found" });
-    }
-
-    const shared = await bookService.seriesMapFor(req.userId, [book]);
-    res.json(toBookDto(book, shared.get(String(book.seriesId))));
-  } catch (err) {
-    if (err instanceof SeriesNotFoundError) {
-      return res.status(400).json({ error: "seriesId: unknown series" });
-    }
-    if (err instanceof SeriesNumberWithoutSeriesError) {
-      return res.status(400).json({ error: "seriesNumber: needs a seriesId" });
-    }
-    res.status(500).json({ error: "Failed to update book" });
-  }
+  const shared = await bookService.seriesMapFor(req.userId, [book]);
+  res.json(toBookDto(book, shared.get(String(book.seriesId))));
 }
 
 async function deleteBook(req, res) {
-  try {
-    const book = await bookService.deleteBook(req.userId, req.params.id);
+  const book = await bookService.deleteBook(req.userId, req.params.id);
 
-    if (!book) {
-      return res.status(404).json({ error: "Book not found" });
-    }
-
-    res.status(204).end();
-  } catch (err) {
-    res.status(500).json({ error: "Failed to delete book" });
+  if (!book) {
+    return res.status(404).json({ error: "Book not found" });
   }
+
+  res.status(204).end();
 }
 
 module.exports = { createBook, getBooks, searchBooks, getBook, updateBook, deleteBook };

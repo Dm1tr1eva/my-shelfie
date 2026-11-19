@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+const { handleErrors } = require("./middleware/errors");
+
 const authRouter = require("./routes/auth");
 const booksRouter = require("./routes/books");
 const seriesRouter = require("./routes/series");
@@ -25,5 +27,7 @@ app.use("/api", libraryRouter);
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use(handleErrors);
 
 module.exports = app;

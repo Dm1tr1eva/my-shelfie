@@ -1,12 +1,6 @@
 const bookRepository = require("../repositories/bookRepository");
 const progressRepository = require("../repositories/progressRepository");
-
-class ProgressPageError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "ProgressPageError";
-  }
-}
+const { HttpError } = require("../errors/httpError");
 
 function positionOf(book, { page, percent }) {
   if (page === undefined) {
@@ -14,10 +8,10 @@ function positionOf(book, { page, percent }) {
   }
 
   if (!book.pages) {
-    throw new ProgressPageError("page: the book has no page count");
+    throw new HttpError(400, "page: the book has no page count");
   }
   if (page > book.pages) {
-    throw new ProgressPageError(`page: the book has ${book.pages} pages`);
+    throw new HttpError(400, `page: the book has ${book.pages} pages`);
   }
 
   return { page, percent: Math.floor((page * 100) / book.pages) };
@@ -34,4 +28,4 @@ async function listLatest(userId) {
   return progressRepository.findLatestPerBook(userId);
 }
 
-module.exports = { recordProgress, listLatest, ProgressPageError };
+module.exports = { recordProgress, listLatest };
