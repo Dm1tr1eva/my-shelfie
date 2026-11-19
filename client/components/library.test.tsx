@@ -249,8 +249,11 @@ describe("Library", () => {
       expect(screen.queryByRole("link", { name: tileName("Stand Alone") })).not.toBeInTheDocument();
       expect(screen.getByRole("link", { name: tileName("Wished Alone") })).toBeInTheDocument();
 
-      fireEvent.click(screen.getByRole("button", { name: "Remove filter In wishlist" }));
+      const pill = screen.getByRole("button", { name: "Remove filter In wishlist" });
+      pill.focus();
+      fireEvent.click(pill);
 
+      expect(screen.getByRole("button", { name: "Filters" })).toHaveFocus();
       expect(screen.getByRole("link", { name: tileName("Stand Alone") })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
     });

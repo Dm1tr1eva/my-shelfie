@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { FilterPanel } from "@/components/filter-panel";
@@ -83,6 +83,7 @@ export function Library() {
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [panelOpen, setPanelOpen] = useState(false);
+  const filterButton = useRef<HTMLButtonElement>(null);
 
   if (status !== "authenticated" || !user) {
     return null;
@@ -142,6 +143,7 @@ export function Library() {
                 />
               </label>
               <button
+                ref={filterButton}
                 type="button"
                 aria-haspopup="dialog"
                 aria-expanded={panelOpen}
@@ -174,12 +176,13 @@ export function Library() {
                 <button
                   type="button"
                   aria-label={t("library.filters.remove", { label: pill.label })}
-                  onClick={() =>
+                  onClick={() => {
                     setFilters({
                       ...filters,
                       [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
-                    })
-                  }
+                    });
+                    filterButton.current?.focus();
+                  }}
                   className="inline-flex min-h-11 items-center md:min-h-10"
                 >
                   <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-navy pl-3 pr-2.5 text-sm font-semibold text-page">
