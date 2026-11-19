@@ -51,7 +51,7 @@ whether a page is inner (`/series/*`, `/books/*`, `/add*`). `AppNav` (768+): log
 Wishlist · "+ Add a book" (to `/add`) · account. `TabBar` (< 768): floating navy pill, shelf ·
 burgundy `+` · bookmark, icons only with `aria-label`s, lifted by the safe-area inset.
 `MobileHeader` (< 768): navy 56px, logo and account on top-level pages, "← Library" on inner
-ones ("Back to the library" to screen readers). Focus rings on navy are light. The account
+ones ("Back to Library" to screen readers). Focus rings on navy are light. The account
 menu keeps the language switch and install.
 
 ## Trade-offs accepted

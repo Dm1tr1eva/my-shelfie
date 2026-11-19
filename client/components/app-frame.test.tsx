@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
-import { resetLocale } from "@/lib/i18n";
+import { resetLocale, setLocale } from "@/lib/i18n";
 import { mockApi, renderApp } from "@/test/helpers";
 import { AppFrame } from "./app-frame";
 import { MobileHeader } from "./mobile-header";
@@ -215,7 +215,7 @@ describe("AppFrame", () => {
       </AppFrame>,
     );
 
-    expect(await screen.findByRole("link", { name: "Back to the library" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "Back to Library" })).toHaveAttribute(
       "href",
       "/library",
     );
@@ -328,6 +328,8 @@ describe("TabBar", () => {
 describe("MobileHeader", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    localStorage.clear();
+    act(() => resetLocale());
   });
 
   it("shows the logo and the account on a top-level page", async () => {
@@ -346,10 +348,28 @@ describe("MobileHeader", () => {
       mockApi(() => undefined);
       renderApp(<MobileHeader />);
 
-      const back = await screen.findByRole("link", { name: "Back to the library" });
+      const back = await screen.findByRole("link", { name: "Back to Library" });
       expect(back).toHaveAttribute("href", "/library");
       expect(screen.queryByRole("link", { name: "My Shelfie" })).not.toBeInTheDocument();
       expect(screen.queryByLabelText("Account")).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    ["en", "Library", "Back to Library"],
+    ["ru", "Библиотека", "Назад: Библиотека"],
+    ["uk", "Бібліотека", "Назад: Бібліотека"],
+  ] as const)(
+    "names the back link in %s with the word it shows, %s",
+    async (locale, visible, name) => {
+      act(() => setLocale(locale));
+      route.pathname = "/series/saga";
+      mockApi(() => undefined);
+      renderApp(<MobileHeader />);
+
+      const back = await screen.findByRole("link", { name });
+      expect(back).toHaveAccessibleName(expect.stringContaining(visible));
+      expect(back).not.toHaveAttribute("aria-label");
     },
   );
 });

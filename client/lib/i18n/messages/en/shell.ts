@@ -2,7 +2,7 @@ export const shell = {
   nav: {
     main: "Main",
     library: "Library",
-    backToLibrary: "Back to the library",
+    backTo: "Back to",
     wishlist: "Wishlist",
     addBook: "Add a book",
     account: "Account",

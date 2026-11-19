@@ -5,7 +5,7 @@ export const shell: Localized<typeof en> = {
   nav: {
     main: "Головне меню",
     library: "Бібліотека",
-    backToLibrary: "Назад до бібліотеки",
+    backTo: "Назад:",
     wishlist: "Вішліст",
     addBook: "Додати книгу",
     account: "Акаунт",

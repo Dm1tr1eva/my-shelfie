@@ -17,11 +17,10 @@ export function MobileHeader() {
       {inner ? (
         <Link
           href="/library"
-          aria-label={t("shell.nav.backToLibrary")}
           className="-ml-2.5 inline-flex min-h-11 items-center gap-1 px-2.5 font-semibold focus-visible:outline-page"
         >
           <ArrowLeftIcon />
-          {t("shell.nav.library")}
+          <span className="sr-only">{t("shell.nav.backTo")}</span> {t("shell.nav.library")}
         </Link>
       ) : (
         <>
