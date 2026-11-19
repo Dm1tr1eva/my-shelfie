@@ -21,3 +21,6 @@ my-shelfie-design.zip
 
 # Design v3 handoff, input for implementation only
 design-v3/
+
+# Worktrees of parallel sessions
+.claude/worktrees/
