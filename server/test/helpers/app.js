@@ -29,14 +29,17 @@ function useTestApp() {
     await clearTestDb();
   });
 
-  async function api(path, { method = "GET", body, cookie } = {}) {
-    const headers = { "Content-Type": "application/json" };
+  async function api(
+    path,
+    { method = "GET", body, rawBody, cookie, contentType = "application/json" } = {},
+  ) {
+    const headers = { "Content-Type": contentType };
     if (cookie) headers.Cookie = cookie;
 
     const response = await fetch(`${baseUrl}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: rawBody ?? (body === undefined ? undefined : JSON.stringify(body)),
     });
 
     const text = await response.text();
