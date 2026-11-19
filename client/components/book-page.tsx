@@ -513,11 +513,16 @@ function BookForm({ book }: { book: Book }) {
             <button
               type="button"
               onClick={() => setDraft(draftOf(book))}
-              className="inline-flex min-h-11 items-center rounded-control border border-mist px-4 font-semibold"
+              className="inline-flex min-h-11 items-center rounded-control border border-mist px-4 font-semibold focus-visible:outline-page"
             >
               {t("book.unsaved.discard")}
             </button>
-            <button type="button" onClick={save} disabled={pending} className="btn-beige">
+            <button
+              type="button"
+              onClick={save}
+              disabled={pending}
+              className="btn-beige focus-visible:outline-page"
+            >
               {pending ? t("book.unsaved.saving") : t("book.unsaved.save")}
             </button>
           </div>

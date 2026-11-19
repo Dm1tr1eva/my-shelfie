@@ -29,7 +29,7 @@ export function AppNav() {
                 <Link
                   href={link.href}
                   aria-current={active === link.section ? "page" : undefined}
-                  className={`inline-flex min-h-10 items-center rounded-control px-2.5 text-sm font-medium lg:px-3.5 lg:text-[15px] ${
+                  className={`inline-flex min-h-10 items-center rounded-control px-2.5 focus-visible:outline-page text-sm font-medium lg:px-3.5 lg:text-[15px] ${
                     active === link.section
                       ? "bg-mist/[0.18] text-page"
                       : "text-mist hover:text-page"
@@ -43,7 +43,10 @@ export function AppNav() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <Link href="/add" className="btn-beige min-h-10 whitespace-nowrap">
+          <Link
+            href="/add"
+            className="btn-beige min-h-10 whitespace-nowrap focus-visible:outline-page"
+          >
             <PlusIcon />
             {t("shell.nav.addBook")}
           </Link>

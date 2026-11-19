@@ -21,7 +21,7 @@ export function PublicHeader({ showSignIn }: { showSignIn: boolean }) {
           {showSignIn && (
             <Link
               href="/login"
-              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-pill border border-mist px-5 font-semibold hover:bg-mist/20 md:min-h-10"
+              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-pill border border-mist px-5 font-semibold hover:bg-mist/20 focus-visible:outline-page md:min-h-10"
             >
               {t("shell.nav.signIn")}
             </Link>

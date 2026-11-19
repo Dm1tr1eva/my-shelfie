@@ -22,7 +22,7 @@ function SectionTab({
       href={href}
       aria-label={label}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[52px] items-center justify-center rounded-full ${
+      className={`flex h-[52px] items-center justify-center rounded-full focus-visible:outline-page ${
         active ? "text-page [&_svg]:fill-page/[0.22]" : "text-slate hover:text-mist"
       }`}
     >
@@ -49,7 +49,7 @@ export function TabBar() {
         href="/add"
         aria-label={t("shell.nav.addBook")}
         aria-current={pathname === "/add" ? "page" : undefined}
-        className="flex h-[52px] items-center justify-center"
+        className="flex h-[52px] items-center justify-center rounded-full focus-visible:outline-page"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-burgundy text-card">
           <PlusIcon size={26} />

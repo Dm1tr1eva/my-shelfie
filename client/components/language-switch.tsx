@@ -7,6 +7,7 @@ export function LanguageSwitch({ tone = "dark" }: { tone?: "dark" | "light" }) {
   const t = useT();
   const frame = tone === "dark" ? "border-mist text-page" : "border-field text-ink";
   const active = tone === "dark" ? "bg-mist/25 font-bold" : "bg-beige font-bold";
+  const focus = tone === "dark" ? "focus-visible:outline-page" : "";
 
   return (
     <div
@@ -22,7 +23,7 @@ export function LanguageSwitch({ tone = "dark" }: { tone?: "dark" | "light" }) {
           title={LOCALE_NAMES[code]}
           aria-pressed={locale === code}
           onClick={() => setLocale(code)}
-          className={`inline-flex min-h-9 min-w-9 items-center justify-center rounded-[6px] px-2 text-sm font-semibold ${
+          className={`inline-flex min-h-9 min-w-9 items-center justify-center rounded-[6px] px-2 text-sm font-semibold ${focus} ${
             locale === code ? active : "hover:bg-mist/20"
           }`}
         >

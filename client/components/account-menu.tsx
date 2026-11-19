@@ -16,7 +16,7 @@ export function AccountMenu() {
     <details className="group relative">
       <summary
         aria-label={t("shell.nav.account")}
-        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full [&::-webkit-details-marker]:hidden"
+        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full focus-visible:outline-page [&::-webkit-details-marker]:hidden"
       >
         <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-slate font-bold text-ink md:h-10 md:w-10">
           {initial}

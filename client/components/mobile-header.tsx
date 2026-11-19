@@ -18,7 +18,7 @@ export function MobileHeader() {
         <Link
           href="/library"
           aria-label={t("shell.nav.backToLibrary")}
-          className="-ml-2.5 inline-flex min-h-11 items-center gap-1 px-2.5 font-semibold"
+          className="-ml-2.5 inline-flex min-h-11 items-center gap-1 px-2.5 font-semibold focus-visible:outline-page"
         >
           <ArrowLeftIcon />
           {t("shell.nav.library")}
