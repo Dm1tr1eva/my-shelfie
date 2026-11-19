@@ -194,7 +194,8 @@ client.
   paper, an e-reader for an e-book and headphones for an audiobook (the `format` prop of
   `BookCover`; the headphones are drawn in `book-cover.tsx` until the icon set is reworked). The
   mark is a `role="img"` labelled "Paper book", "E-book" or "Audiobook", so the format is also in
-  words. It shows in
+  words. A full-width cover narrower than 80 px (the phone library) leaves the mark out, as the
+  v3 375 mockup does, so it cannot cover the `#N` pill. It shows in
   the library tiles and rows, the series page, Next to buy, the book page and the details step;
   not on search results. The format is a two-option radio group, paper or e-book, "Format", on the book page
   (saved through the unsaved-changes bar) and on the details step (sent only when changed) —
