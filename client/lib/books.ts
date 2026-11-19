@@ -5,8 +5,6 @@ import useSWR, { useSWRConfig } from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
 import {
-  FORMAT_LABELS,
-  FORMATS,
   LINK_KINDS,
   LINK_LANGUAGES,
   OWNERSHIP_LABELS,
@@ -20,7 +18,7 @@ import {
 } from "./catalogue-constants";
 import type { Domain } from "./i18n/domain";
 
-export { FORMAT_LABELS, FORMATS, LINK_KINDS, LINK_LANGUAGES, OWNERSHIP_LABELS };
+export { LINK_KINDS, LINK_LANGUAGES, OWNERSHIP_LABELS };
 export type { AgeRating, DesireLevel, Format, LinkKind, LinkLanguage, Ownership, Recommend };
 export type BookStatus = "want" | "reading" | "dropped" | "read";
 

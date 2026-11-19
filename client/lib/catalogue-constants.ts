@@ -13,14 +13,6 @@ export const OWNERSHIP_LABELS: Record<Ownership, string> = {
   wanted: "Wishlist",
 };
 
-export const FORMAT_LABELS: Record<Format, string> = {
-  paper: "Paper",
-  ebook: "E-book",
-  audio: "Audiobook",
-};
-
-export const FORMATS = Object.keys(FORMAT_LABELS) as Format[];
-
 export const LINK_KINDS: { value: LinkKind; label: string; short: string }[] = [
   { value: "paper", label: "Buy paper", short: "Paper" },
   { value: "ebook", label: "Buy e-book", short: "E-book" },
@@ -42,8 +34,3 @@ export const SERIES_STATUS_LABELS: Record<SeriesStatus, string> = {
   complete: "Complete",
   unknown: "Unknown",
 };
-
-export const DESIRE_LEVELS: DesireLevel[] = ["high", "normal", "someday"];
-export const AGE_RATINGS: AgeRating[] = ["none", "12", "16", "18"];
-export const RECOMMEND: Recommend[] = ["yes", "maybe", "no"];
-export const EXPECTED_SOURCES: ExpectedSource[] = ["fantlab", "ai", "manual"];
