@@ -11,8 +11,8 @@ const TITLES: { match: (path: string) => boolean; key: MessageKey }[] = [
   { match: (path) => path === "/next", key: "shell.titles.next" },
   { match: (path) => path === "/add", key: "shell.titles.add" },
   { match: (path) => /^\/add\/[^/]+\/details$/.test(path), key: "shell.titles.details" },
-  { match: (path) => path.startsWith("/books/"), key: "shell.titles.book" },
-  { match: (path) => path.startsWith("/series/"), key: "shell.titles.series" },
+  { match: (path) => /^\/books\/[^/]+$/.test(path), key: "shell.titles.book" },
+  { match: (path) => /^\/series\/[^/]+$/.test(path), key: "shell.titles.series" },
   { match: (path) => path === "/login", key: "shell.titles.login" },
   { match: (path) => path === "/register", key: "shell.titles.register" },
   { match: (path) => path === "/privacy", key: "shell.titles.privacy" },
@@ -29,7 +29,15 @@ export function LocaleEffects() {
 
   useEffect(() => {
     const entry = TITLES.find((item) => item.match(pathname));
-    if (entry) document.title = `${t(entry.key)} · ${APP_NAME}`;
+    if (!entry) return;
+    const title = `${t(entry.key)} · ${APP_NAME}`;
+    const keepTitle = () => {
+      if (document.title !== title) document.title = title;
+    };
+    keepTitle();
+    const observer = new MutationObserver(keepTitle);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
   }, [pathname, t]);
 
   return null;
