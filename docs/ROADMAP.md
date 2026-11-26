@@ -193,8 +193,8 @@ in steps, each on its own branch:
    asks Claude Haiku 5.5 with web search which series a book belongs to, with its number, the
    other books, announced ones, status, confidence and sources; a cache shared by all users
    ([ADR 0001](adr/0001-shared-reference-data.md)), a per-user daily limit, provider and model
-   from env. The real-prompt check after the trial's fixes is still to run (the key in the local
-   `.env` was refused). Next: the client flow (series card, confirm with one tap) —
+   from env. Re-checked on 2026-11-26 with the trial's twelve hardest and control books: series
+   12/12, number 8/9, books listed 10/10, announced 2/4, $0.37. Next: the client flow (series card, confirm with one tap) —
    [designs/series-lookup.md](designs/series-lookup.md),
    [features/series-lookup.md](features/series-lookup.md)
 8. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,

@@ -141,6 +141,14 @@ only with `--run`, `--refs <file>` and `ANTHROPIC_API_KEY`, defaults to ten book
 the cost. The trial's reference list is not in the repository: it is the author's own reading
 list and the repository is public.
 
+Run on 2026-11-26 with this prompt, on the trial's eight failures and four control books (12
+calls, $0.37, 7–15 s each): series 12/12, number 8/9, books listed 10/10, announced 2/4. Fixed
+against the trial: the number when the title is also the series name (Королевство шипов и роз,
+Ковен озера Шамплейн), two standalones no longer turned into series (Ноктикадия, Серпентарий),
+and the long series now lists 13 of 14 books instead of 11. Still wrong: «Академия 505» gets no
+number, and the announced next books of Двор ледяных сердец and Королевская кровь are missed.
+No lookup used more than three of its five searches.
+
 ## Recovery
 
 Delete a wrong answer so the next lookup asks the model again (mongosh, on the production
