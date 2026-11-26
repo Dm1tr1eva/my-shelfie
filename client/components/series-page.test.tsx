@@ -146,7 +146,7 @@ describe("SeriesPage", () => {
     it("counts what you own against every book and missing number, as the library does", async () => {
       await open();
 
-      expect(screen.getByText("of 6 owned")).toBeInTheDocument();
+      expect(screen.getByText("of 6 owned").parentElement).toHaveTextContent(/^3 of 6 owned$/);
       expect(screen.getByRole("img", { name: "Own 3 of 6" })).toBeInTheDocument();
     });
 
@@ -260,6 +260,11 @@ describe("SeriesPage", () => {
       expect(screen.getByText("Book 4 not before 2027.")).toBeInTheDocument();
       await later(60);
       expect(patches(calls)).toEqual([]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      expect(screen.getByRole("textbox", { name: "My note" })).toHaveValue(
+        "Book 4 not before 2027.",
+      );
     });
 
     it("keeps the typed note and offers Retry when saving fails", async () => {
@@ -326,29 +331,34 @@ describe("SeriesPage", () => {
       expect(screen.queryByRole("form")).not.toBeInTheDocument();
     });
 
-    it("sends nothing while the title is blank or the count is not 1 to 200", async () => {
+    it("sends nothing while the title is blank", async () => {
       const calls = await open();
       const form = await startEditing();
 
       fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "  " } });
-      fireEvent.change(within(form).getByLabelText("Books in the series"), {
-        target: { value: "201" },
-      });
       fireEvent.click(within(form).getByRole("button", { name: "Done" }));
 
-      expect(within(form).getByText("The series needs a title.")).toBeInTheDocument();
-      expect(within(form).getByText("A whole number from 1 to 200.")).toBeInTheDocument();
+      expect(within(form).getByRole("alert")).toHaveTextContent("The series needs a title.");
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+    });
+
+    it("sends nothing while the count is not a whole number from 1 to 200, and clears it when empty", async () => {
+      const calls = await open();
+      const form = await startEditing();
+      const count = within(form).getByLabelText("Books in the series");
+
+      for (const wrong of ["0", "201", "2.5"]) {
+        fireEvent.change(count, { target: { value: wrong } });
+        fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+        expect(within(form).getByRole("alert")).toHaveTextContent("A whole number from 1 to 200.");
+      }
       await later(60);
       expect(patches(calls)).toEqual([]);
 
-      fireEvent.change(within(form).getByLabelText("Books in the series"), {
-        target: { value: "" },
-      });
-      fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "Ash" } });
+      fireEvent.change(count, { target: { value: "" } });
       fireEvent.click(within(form).getByRole("button", { name: "Done" }));
-      await waitFor(() =>
-        expect(patches(calls)[0]).toMatchObject({ title: "Ash", totalBooks: null }),
-      );
+      await waitFor(() => expect(patches(calls)[0]).toMatchObject({ totalBooks: null }));
     });
 
     it("keeps the form and says so when the server refuses", async () => {

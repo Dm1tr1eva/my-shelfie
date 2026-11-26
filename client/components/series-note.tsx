@@ -106,7 +106,6 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
-              draft.reset();
               setEditing(false);
               window.setTimeout(() => pencil.current?.focus());
             }
