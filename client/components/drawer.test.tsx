@@ -163,4 +163,33 @@ describe("Drawer", () => {
 
     expect(screen.getByRole("dialog", { name: "Things" })).toHaveFocus();
   });
+
+  it("plays its closing animation before it goes, when the page animates it", () => {
+    const real = window.getComputedStyle;
+    const computed = vi.spyOn(window, "getComputedStyle").mockImplementation(
+      (element, pseudo) =>
+        new Proxy(real(element, pseudo), {
+          get(target, key) {
+            if (key === "animationName") return "panel-in";
+            const value = Reflect.get(target, key);
+            return typeof value === "function" ? value.bind(target) : value;
+          },
+        }),
+    );
+    const onClose = vi.fn();
+    render(<Opener onClose={onClose} />);
+    open();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(onClose).not.toHaveBeenCalled();
+    expect(dialog.className).toContain("animate-sheet-out");
+
+    fireEvent(dialog, new Event("webkitAnimationEnd", { bubbles: true }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    computed.mockRestore();
+  });
 });

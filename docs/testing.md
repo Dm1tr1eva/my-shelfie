@@ -132,3 +132,10 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   only awaited `findByRole("link", { name: "my-shelfie" })` passed on the old code (2026-10-15).
   Before asserting on an element both shells share, wait for something only the state under
   test has — here the Wishlist link of the signed-in nav — and only then look at the shared one.
+
+- **jsdom has no CSS animations.** Nothing loads `globals.css`, so `getComputedStyle` reports no
+  `animationName` and `useExit` closes a drawer, dialog, popover or toast at once: every test
+  that presses × or Escape keeps passing without waiting. To test the animated path, stub
+  `getComputedStyle` to report an animation and finish it by hand. jsdom has no
+  `AnimationEvent` either, so React listens for the prefixed `webkitAnimationEnd`, not
+  `animationend`: `fireEvent.animationEnd` does nothing there (2026-11-26).
