@@ -242,9 +242,10 @@ function DateField({
     setEditing(true);
   }
 
-  function finish(text: string) {
+  function finish(text: string, refocus: boolean) {
+    if (!editing) return;
     setEditing(false);
-    window.setTimeout(() => button.current?.focus());
+    if (refocus) window.setTimeout(() => button.current?.focus());
     if (text === dateValue(value)) return;
     const year = Number(text.slice(0, 4));
     if (text !== "" && (year < 1900 || year > 2100)) return;
@@ -261,11 +262,11 @@ function DateField({
         max="2100-12-31"
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
-        onBlur={(event) => finish(event.target.value)}
+        onBlur={(event) => finish(event.target.value, false)}
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             event.preventDefault();
-            finish(event.currentTarget.value);
+            finish(event.currentTarget.value, true);
           } else if (event.key === "Escape") {
             event.preventDefault();
             setEditing(false);

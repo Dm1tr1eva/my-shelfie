@@ -353,6 +353,41 @@ describe("BookPanel", () => {
       ).toBeInTheDocument();
     });
 
+    it("leaves the focus where it went when the date field is left", async () => {
+      await open(book({ id: "b1", title: "Ash", status: "reading" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "Started: Pick a date" }));
+      const input = screen.getByLabelText("Started");
+      const note = screen.getByRole("textbox", { name: "My note" });
+      note.focus();
+      fireEvent.blur(input, { relatedTarget: note });
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(note).toHaveFocus();
+    });
+
+    it("keeps a number being typed when an earlier save of it comes back", async () => {
+      let release: () => void = () => {};
+      const slow = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      const calls = await open(book({ id: "b1", title: "Ash" }), {
+        onPatch: () => ({ body: book({ id: "b1", title: "Ash", pages: 830 }), wait: slow }),
+      });
+      const pages = screen.getByRole("spinbutton", { name: "Pages" });
+
+      fireEvent.focus(pages);
+      fireEvent.change(pages, { target: { value: "830" } });
+      fireEvent.blur(pages);
+      fireEvent.focus(pages);
+      fireEvent.change(pages, { target: { value: "831" } });
+      release();
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ pages: 830 }]));
+      await screen.findByText("Saved");
+      expect(pages).toHaveValue(831);
+    });
+
     it("never offers to enter progress", async () => {
       await open(book({ id: "b1", title: "Ash", status: "reading" }), { percent: 40 });
 

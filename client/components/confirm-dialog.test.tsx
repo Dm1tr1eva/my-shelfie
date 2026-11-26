@@ -52,6 +52,19 @@ describe("ConfirmDialog", () => {
     expect(opener).toHaveFocus();
   });
 
+  it("marks Escape as handled for listeners on the same root, so a panel under it stays", () => {
+    render(<Harness />);
+    open();
+    const handled: boolean[] = [];
+    const listen = (event: KeyboardEvent) => handled.push(event.defaultPrevented);
+    document.body.addEventListener("keydown", listen);
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Cancel" }), { key: "Escape" });
+    document.body.removeEventListener("keydown", listen);
+
+    expect(handled).toEqual([true]);
+  });
+
   it("keeps Tab between its two buttons", () => {
     render(<Harness />);
     open();
