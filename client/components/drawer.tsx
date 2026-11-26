@@ -43,15 +43,10 @@ export function Drawer({
   const t = useT();
   const panel = useRef<HTMLDivElement>(null);
   const { leaving, leave, onAnimationEnd } = useExit(panel, onClose);
-  const asking = useRef(false);
   const onClient = useOnClient();
 
   async function requestLeave() {
-    if (asking.current) return;
-    asking.current = true;
-    const ready = beforeClose ? await beforeClose() : true;
-    asking.current = false;
-    if (ready) leave();
+    if (!beforeClose || (await beforeClose())) leave();
   }
 
   const requestLater = useRef(requestLeave);
