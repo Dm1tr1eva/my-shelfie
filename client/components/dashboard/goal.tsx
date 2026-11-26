@@ -100,7 +100,7 @@ function GoalEditor({
   }
 
   return (
-    <form onSubmit={save} className="flex flex-col gap-4">
+    <form onSubmit={save} noValidate className="flex flex-col gap-4">
       <div className="flex items-center justify-center gap-3">
         <button
           type="button"
