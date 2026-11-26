@@ -55,7 +55,7 @@ describe("home and sign-in screens in other languages", () => {
     expect(screen.getByRole("heading", { name: "С возвращением" })).toBeInTheDocument();
     expect(screen.getByLabelText("Пароль")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Войти" }));
-    expect(await screen.findByText("Введите email и пароль.")).toBeInTheDocument();
+    expect(await screen.findByText("Введи email и пароль.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Показать пароль" })).toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe("home and sign-in screens in other languages", () => {
     fireEvent.change(screen.getByLabelText("Ім’я"), { target: { value: "Аліса" } });
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "alice@example.com" } });
     fireEvent.change(screen.getByLabelText("Пароль"), { target: { value: "secret123" } });
-    fireEvent.change(screen.getByLabelText("Повторіть пароль"), {
+    fireEvent.change(screen.getByLabelText("Повтори пароль"), {
       target: { value: "secret123" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Створити акаунт" }));
