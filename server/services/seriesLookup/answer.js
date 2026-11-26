@@ -5,8 +5,8 @@ const {
 } = require("../../constants/seriesLookup");
 
 const MAX_SOURCES = 5;
-const MAX_BOOKS = 100;
-const TITLE_MAX = 200;
+const MAX_BOOKS = 60;
+const TITLE_MAX = 150;
 const BOOK_NUMBER_MAX = 1000;
 
 const bookNumber = z.number().positive().max(BOOK_NUMBER_MAX);
@@ -28,7 +28,7 @@ const answerSchema = z
     books: z.array(answerBookSchema).max(MAX_BOOKS),
     status: z.enum(LOOKUP_SERIES_STATUSES),
     confidence: z.enum(LOOKUP_CONFIDENCE_LEVELS),
-    sources: z.array(z.string()).max(20),
+    sources: z.array(z.string()).max(MAX_SOURCES),
   })
   .strict()
   .refine(
@@ -63,7 +63,7 @@ function verifiedSources(sources, searchedUrls) {
       kept.push(source);
     }
   }
-  return kept.slice(0, MAX_SOURCES);
+  return kept;
 }
 
 function readJsonObject(text) {

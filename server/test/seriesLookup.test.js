@@ -9,8 +9,16 @@ const seriesLookupUsageRepository = require("../repositories/seriesLookupUsageRe
 const SeriesLookup = require("../models/seriesLookup");
 const SeriesLookupBook = require("../models/seriesLookupBook");
 const SeriesLookupUsage = require("../models/seriesLookupUsage");
+const { createAnthropicAdapter } = require("../services/seriesLookup/anthropicAdapter");
 const { useTestApp } = require("./helpers/app");
-const { SOURCE, OTHER_SOURCE, SIX_OF_CROWS, STANDALONE } = require("./helpers/seriesLookup");
+const {
+  SOURCE,
+  OTHER_SOURCE,
+  SIX_OF_CROWS,
+  STANDALONE,
+  modelReply,
+  fakeClient,
+} = require("./helpers/seriesLookup");
 
 const { api, signIn, userIdOf } = useTestApp();
 
@@ -191,6 +199,44 @@ describe("POST /api/series/lookup", () => {
     assert.deepEqual(second.body, first.body);
     assert.equal(calls.length, 1);
   });
+
+  for (const [name, reply] of [
+    [
+      "a list of more than sixty books",
+      modelReply({
+        answer: {
+          ...SIX_OF_CROWS,
+          books: Array.from({ length: 61 }, (_, index) => ({
+            number: index + 1,
+            title: `Book ${index + 1}`,
+            released: true,
+            expectedYear: null,
+          })),
+        },
+      }),
+    ],
+    [
+      "a name over 150 characters",
+      modelReply({ answer: { ...SIX_OF_CROWS, series: "x".repeat(151) } }),
+    ],
+    ["prose instead of JSON", modelReply({ text: "Here is a long story about this series." })],
+    ["a reply cut at the token limit", modelReply({ stop: "max_tokens" })],
+  ]) {
+    it(`answers unknown to ${name} from the model, and caches nothing`, async () => {
+      const cookie = await signIn("reader@example.com");
+      const adapter = createAnthropicAdapter({
+        model: "claude-haiku-5-5",
+        client: fakeClient([reply]),
+      });
+      mock.method(seriesLookupProvider, "lookUpSeries", (query) => adapter.lookUp(query));
+
+      const response = await lookUp(cookie, SIX);
+
+      assert.deepEqual(response.body, { result: "unknown" });
+      assert.equal(await SeriesLookup.countDocuments(), 0);
+      assert.equal(await SeriesLookupBook.countDocuments(), 0);
+    });
+  }
 
   it("answers unknown when the model gave no usable answer, and does not cache that", async () => {
     const cookie = await signIn("reader@example.com");

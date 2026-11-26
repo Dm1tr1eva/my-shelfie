@@ -19,9 +19,10 @@ Rules:
 - status is "complete" when the author has finished the series, "ongoing" when more books are planned or being published, otherwise "unknown".
 - confidence is "high" when independent sources agree, "medium" when one reliable source confirms the answer, otherwise "low".
 - Write titles in the language of the input edition when that edition's title is known, otherwise in the original language. series is the series name in the input edition's language; seriesOriginal is the name in the original language.
+- Titles and names are the title or name only, without subtitles, descriptions or notes.
 - sources lists up to 5 URLs from your search results that you relied on.
 
-Reply with only a JSON object, no prose before or after it and no code fences, in exactly this shape:
+Reply with only a JSON object in exactly this shape, with no explanation, prose or code fences before or after it and no other fields:
 ${ANSWER_SHAPE}
 For a standalone book, series, seriesOriginal and number are null and books is [].`;
 }

@@ -3,7 +3,7 @@ const { HttpError } = require("../../errors/httpError");
 const { buildSystemPrompt, buildUserMessage } = require("./prompt");
 const { parseAnswer } = require("./answer");
 
-const MAX_TOKENS = 8000;
+const MAX_TOKENS = 4000;
 const MAX_SEARCHES = 5;
 const MAX_CONTINUATIONS = 1;
 const TIMEOUT_MS = 45000;

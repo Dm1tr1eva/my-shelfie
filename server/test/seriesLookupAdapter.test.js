@@ -45,6 +45,7 @@ describe("the Anthropic series lookup adapter", () => {
         allowed_callers: ["direct"],
       },
     ]);
+    assert.equal(params.max_tokens, 4000);
     assert.deepEqual(params.output_config, { effort: "medium" });
     assert.equal(params.output_config.format, undefined);
     assert.match(params.system, /The current date is 2026-11-26\./);
@@ -272,23 +273,23 @@ describe("the Anthropic series lookup adapter", () => {
     assert.deepEqual(outcome.answer.sources, ["http://en.wikipedia.org/wiki/Six_of_Crows/#Plot"]);
   });
 
-  it("keeps at most five sources", async () => {
-    const urls = Array.from({ length: 7 }, (_, index) => `https://example.org/page-${index}`);
+  it("gives no answer that lists more than five sources", async () => {
+    const urls = Array.from({ length: 6 }, (_, index) => `https://example.org/page-${index}`);
     const { adapter } = adapterWith([
       modelReply({ answer: { ...SIX_OF_CROWS, sources: urls }, urls }),
     ]);
 
     const outcome = await adapter.lookUp(QUERY, TODAY);
 
-    assert.deepEqual(outcome.answer.sources, urls.slice(0, 5));
+    assert.equal(outcome.reason, "invalid_answer");
   });
 
   for (const [name, answer] of [
     [
-      "more than a hundred books",
+      "more than sixty books",
       {
         ...SIX_OF_CROWS,
-        books: Array.from({ length: 101 }, (_, index) => ({
+        books: Array.from({ length: 61 }, (_, index) => ({
           number: index + 1,
           title: `Book ${index + 1}`,
           released: true,
@@ -297,13 +298,14 @@ describe("the Anthropic series lookup adapter", () => {
       },
     ],
     [
-      "a title over 200 characters",
+      "a title over 150 characters",
       {
         ...SIX_OF_CROWS,
-        books: [{ number: 1, title: "x".repeat(201), released: true, expectedYear: null }],
+        books: [{ number: 1, title: "x".repeat(151), released: true, expectedYear: null }],
       },
     ],
-    ["a series name over 200 characters", { ...SIX_OF_CROWS, series: "x".repeat(201) }],
+    ["a series name over 150 characters", { ...SIX_OF_CROWS, series: "x".repeat(151) }],
+    ["an original name over 150 characters", { ...SIX_OF_CROWS, seriesOriginal: "x".repeat(151) }],
   ]) {
     it(`gives no answer for ${name}, so the endpoint cannot relay long text`, async () => {
       const { adapter } = adapterWith([modelReply({ answer })]);
