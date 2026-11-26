@@ -59,9 +59,9 @@ absent until set.
 - **Changing a book's `pages` does not recompute old entries.** The latest entry is what shows,
   and the next one uses the new count.
 - **A progress entry does not change the reading status.** "Finished" on Home sends the 100%
-  entry and then `PATCH`es the book to `read` with `finishedAt` as the reader's local
-  `YYYY-MM-DD` — decided in [../designs/v3-home-stats-api.md](../designs/v3-home-stats-api.md):
-  the client knows the reader's day, the server would stamp a UTC one. If the `PATCH` fails
+  entry and then `PATCH`es the book to `read`; the server sets `finishedAt` to today (UTC) when
+  the book has none, or keeps the reader's local `YYYY-MM-DD` if the client sends it —
+  [../designs/auto-reading-dates.md](../designs/auto-reading-dates.md). If the `PATCH` fails
   after the entry, the book shows 100% and stays `reading` until the client retries.
 - **One goal, no history.** Nothing in the design shows past goals; a map of year → books can
   replace the field if that changes.

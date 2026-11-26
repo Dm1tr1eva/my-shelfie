@@ -197,7 +197,12 @@ in steps, each on its own branch:
    12/12, number 8/9, books listed 10/10, announced 2/4, $0.37. Next: the client flow (series card, confirm with one tap) —
    [designs/series-lookup.md](designs/series-lookup.md),
    [features/series-lookup.md](features/series-lookup.md)
-8. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
+8. ✅ **Reading dates set by the status, 2026-11-26** — a book that enters `reading` gets
+   `startedAt` and one that enters `read` gets `finishedAt`, today in UTC, when neither the
+   request nor the book has one; a sent date or `null` wins, stored dates are kept. Home's
+   "Read in YEAR" now counts books marked read from the client as it is —
+   [designs/auto-reading-dates.md](designs/auto-reading-dates.md)
+9. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
    the Home screen
 
 ## Course submission MVP — done 2026-10-09

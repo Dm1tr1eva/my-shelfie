@@ -25,6 +25,13 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
   returns an old `review` as `notes` when `notes` is empty and never returns `review`, and any
   `PATCH` of `notes` (`null` included) also clears the stored `review`, so clearing the note
   cannot bring the review back. Design: [../designs/v3-data-model.md](../designs/v3-data-model.md).
+- A book that **enters** `reading` gets `startedAt`, and one that enters `read` gets
+  `finishedAt`, set to today (the current UTC date at midnight) when the request sends no such
+  date and the book has none. It enters a status when it is created with it or when a `PATCH`
+  sets a status different from the stored one; sending the stored status again sets nothing. A
+  date in the request, or `null`, always wins; a stored date is never overwritten; leaving a
+  status never clears a date; `read` does not set `startedAt`; `dropped` and `want` set nothing.
+  Design: [../designs/auto-reading-dates.md](../designs/auto-reading-dates.md).
 - A caller can only see, change or delete their own books. A book that exists but belongs to
   someone else is indistinguishable, from the outside, from a book that does not exist.
 
@@ -32,8 +39,8 @@ list per user, matching the Stage 0 scope decision in [../ROADMAP.md](../ROADMAP
 
 Three layers, per `CLAUDE.md`: `controllers/bookController.js` (parses and validates the
 request with Zod, calls the service, maps the result through a DTO) →
-`services/bookService.js` (a thin pass-through today — no cross-field invariant exists yet
-that would live here) → `repositories/bookRepository.js` (every `Book` Mongoose call,
+`services/bookService.js` (the series rules and the reading dates set by the status; a
+`PATCH` that sets a status or touches the series reads the book once first) → `repositories/bookRepository.js` (every `Book` Mongoose call,
 `userId` as the required first parameter of each method, folded into the query itself rather
 than checked afterwards — so another user's book is indistinguishable from a missing one).
 The repository also absorbs Mongoose's `CastError`: a malformed id returns `null`, the same
@@ -73,7 +80,9 @@ body with none of the schema's fields present answers `400` ("No updatable field
 `finishedAt`; `null` for `title`, `author`, `status`, `desire`, `ageRating`, `moods` or `quotes`
 answers `400`. Mongoose stores `null`, and the DTO omits it, so a
 cleared field is absent from the response exactly like one that was never set. A cleared date
-stays cleared — `null` is not coerced into 1970; a test pins that.
+stays cleared — `null` is not coerced into 1970; a test pins that. `status: read` with
+`finishedAt: null` stores the book as read with no date (and `reading` with `startedAt: null`
+likewise), which is how a client says "finished long ago, date unknown".
 
 **Response shape:** `id` (string), `userId` (string — not secret; the caller already knows it
 is their own book), `title`, `author`, `status`, `format`, `desire`, `ageRating`, `moods`,
@@ -288,9 +297,13 @@ both the filter every query uses and the sort `GET /` applies.
 - **Offset pagination, not cursor.** `CLAUDE.md` asks for cursor pagination on time-ordered
   lists; this project's own applicability note exempts it at this scale. Revisit if a list
   can exceed a few thousand rows or gains inserts while a page is being read.
-- **The service layer has no logic of its own yet.** It exists because the three-layer shape
-  is required outright, not because a use case needs it today. Revisit once a real invariant
-  (e.g. `finishedAt >= startedAt`) shows up — it belongs here, not in the controller.
+- **Reading dates are UTC days and one pair per book.** A book finished between midnight and
+  01:00 or 02:00 in Germany gets yesterday's date unless the client sends its own; adding an
+  old book as read dates it today (and counts it in this year's stats) unless the client sends
+  a date or `null`; a re-read keeps the first dates. Books marked read before 2026-11-26 stay
+  undated — the query under Recovery lists them.
+- **`finishedAt >= startedAt` is not enforced.** Neither the rule above nor the client produces
+  the opposite order today.
 - **`review` stays in the database.** The DTO hides it behind `notes`; moving the text is a
   one-off query under Recovery, not code.
 - **Nothing ties `durationMinutes` to an audiobook or `pages` to print.** A book switched to
@@ -320,6 +333,14 @@ orphaned book is a direct Mongo query:
 
 ```js
 db.books.deleteMany({ userId: { $nin: db.users.distinct("_id") } })
+```
+
+Read books with no finish date (marked read before the dates were set by the status), to date
+by hand with `updateOne({ _id }, { $set: { finishedAt: ISODate("…") } })`. `finishedAt: null`
+matches a missing field and a cleared one alike:
+
+```js
+db.books.find({ status: "read", finishedAt: null }, { title: 1, updatedAt: 1 })
 ```
 
 To move old reviews into empty notes for good (the DTO already shows them there), once. A

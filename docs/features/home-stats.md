@@ -60,7 +60,8 @@ every list may be empty.
 ## Definitions
 
 - **readCount** — books with `status: read` and `finishedAt` within the year, any format
-  (audiobooks count) and any ownership. A read book without `finishedAt` is not counted.
+  (audiobooks count) and any ownership. A read book without `finishedAt` is not counted; since
+  2026-11-26 the server sets it when a book enters `read` ([books.md](books.md)).
 - **pagesRead** — for each book that has `pages` and is not an audiobook, its entries in date
   order (ties by insertion): every entry dated within the year adds `max(0, page − previous
   page)`. The previous page is the book's previous entry, even from an earlier year; the first
@@ -115,9 +116,10 @@ every list may be empty.
 - **newOnShelf** — the six most recently added owned books.
 
 "Finished" on Home is two calls the API already has: `POST /api/progress` with `percent: 100`,
-then `PATCH /api/books/:id` with `status: read` and `finishedAt` as the reader's local date
-(`YYYY-MM-DD`). A date-only value is stored as UTC midnight of that day, so it lands in the
-right month whatever the reader's timezone.
+then `PATCH /api/books/:id` with `status: read`. The server dates the book today (UTC) when it
+has no `finishedAt` ([../designs/auto-reading-dates.md](../designs/auto-reading-dates.md)); a
+client that sends the reader's local date as `YYYY-MM-DD` gets that day instead, stored as UTC
+midnight, so it lands in the right month whatever the reader's timezone.
 
 ## Shape
 
@@ -142,9 +144,9 @@ No new index: every query is one user's documents, a few hundred rows.
   A server timestamp (a progress entry) written between midnight and 01:00 or 02:00 in Germany
   lands in the previous day, month or year; the quote and "weeks left" turn over at 01:00 or
   02:00 local time. A `tz` parameter would need DST-aware boundaries without a date library.
-- **Books marked read before v3 have no `finishedAt`** and are not counted: the current client
-  never writes it. Falling back to `updatedAt` was rejected: any later edit would move the book
-  into the year of the edit.
+- **Books marked read before 2026-11-26 have no `finishedAt`** and are not counted: until then
+  nothing wrote it. Falling back to `updatedAt` was rejected: any later edit would move the book
+  into the year of the edit. They can be dated by hand (Recovery).
 - **A book marked read without a 100% entry** adds only the pages its entries reached.
 - **The first entry of a book counts from page 0**, so logging a book already half read counts
   its first half once, this year.
@@ -169,7 +171,7 @@ Nothing to repair: nothing is stored. A book that shows as read but is missing f
 needs a `finishedAt`; to find them:
 
 ```js
-db.books.find({ status: "read", finishedAt: { $exists: false } }, { title: 1 })
+db.books.find({ status: "read", finishedAt: null }, { title: 1 })
 ```
 
 ## ADRs

@@ -74,5 +74,6 @@ wishlist), the percent fallback (`pages` can arrive after entries). Shapes and t
 
 ## Open questions
 
-- Should `PATCH status: read` set `finishedAt` when the client sends none?
+- Should `PATCH status: read` date the book itself? *Resolved: yes,*
+  [auto-reading-dates.md](auto-reading-dates.md).
 - Should "Series complete" count series without an owned book?
