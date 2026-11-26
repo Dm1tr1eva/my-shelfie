@@ -11,6 +11,7 @@ import { TagInput } from "@/components/tag-input";
 import { ApiError } from "@/lib/api";
 import { useBooks } from "@/lib/books";
 import type { AgeRating } from "@/lib/catalogue-constants";
+import { tropeSuggestions } from "@/lib/genres";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { translateServerError } from "@/lib/i18n/server-errors";
@@ -113,11 +114,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
   const titleMissing = title.trim() === "";
   const totalWrong = total.trim() !== "" && !isWholeIn(total, 1, TOTAL_MAX);
 
-  const counts = new Map<string, number>();
-  for (const book of books) {
-    for (const trope of book.tropes) counts.set(trope, (counts.get(trope) ?? 0) + 1);
-  }
-  const suggestions = [...counts].map(([name, count]) => ({ name, count }));
+  const suggestions = tropeSuggestions(books);
 
   function failure(err: unknown, fallback: string) {
     return err instanceof ApiError && err.status < 500

@@ -19,3 +19,11 @@ export function knownGenres(books: Book[], series: Series[], chosen: Genre[]): G
 
   return [...DEFAULT_GENRES, ...own.sort((a, b) => a.localeCompare(b))];
 }
+
+export function tropeSuggestions(books: Book[]) {
+  const counts = new Map<string, number>();
+  for (const book of books) {
+    for (const trope of book.tropes) counts.set(trope, (counts.get(trope) ?? 0) + 1);
+  }
+  return [...counts].map(([name, count]) => ({ name, count }));
+}

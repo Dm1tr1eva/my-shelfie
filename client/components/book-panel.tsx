@@ -19,6 +19,7 @@ import { TagInput } from "@/components/tag-input";
 import { Toast } from "@/components/toast";
 import { ApiError } from "@/lib/api";
 import { useBook, useBookActions, useBooks, type Book } from "@/lib/books";
+import { tropeSuggestions } from "@/lib/genres";
 import { useT } from "@/lib/i18n";
 import { useSeriesList, type Series } from "@/lib/series";
 import {
@@ -292,11 +293,7 @@ function SeriesTags({ book }: { book: Book }) {
 function OwnTags({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const { books } = useBooks();
-  const counts = new Map<string, number>();
-  for (const item of books) {
-    for (const trope of item.tropes) counts.set(trope, (counts.get(trope) ?? 0) + 1);
-  }
-  const suggestions = [...counts].map(([name, count]) => ({ name, count }));
+  const suggestions = tropeSuggestions(books);
 
   return (
     <div className="flex flex-col gap-4">

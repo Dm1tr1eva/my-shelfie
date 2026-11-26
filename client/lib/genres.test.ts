@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { DEFAULT_GENRES, type Book } from "./books";
-import { knownGenres } from "./genres";
+import { knownGenres, tropeSuggestions } from "./genres";
 import type { Series } from "./series";
 
 function bookWith(genres: string[]) {
@@ -44,5 +44,20 @@ describe("knownGenres", () => {
     const result = knownGenres([], [], ["Manga"]);
 
     expect(result.at(-1)).toBe("Manga");
+  });
+});
+
+describe("tropeSuggestions", () => {
+  it("counts in how many books each trope appears", () => {
+    expect(
+      tropeSuggestions([
+        { tropes: ["slow burn", "found family"] } as Book,
+        { tropes: ["slow burn"] } as Book,
+        { tropes: [] as string[] } as Book,
+      ]),
+    ).toEqual([
+      { name: "slow burn", count: 2 },
+      { name: "found family", count: 1 },
+    ]);
   });
 });
