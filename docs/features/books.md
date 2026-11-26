@@ -300,10 +300,13 @@ both the filter every query uses and the sort `GET /` applies.
 - **Reading dates are UTC days and one pair per book.** A book finished between midnight and
   01:00 or 02:00 in Germany gets yesterday's date unless the client sends its own; adding an
   old book as read dates it today (and counts it in this year's stats) unless the client sends
-  a date or `null`; a re-read keeps the first dates. Books marked read before 2026-11-26 stay
-  undated — the query under Recovery lists them.
-- **`finishedAt >= startedAt` is not enforced.** Neither the rule above nor the client produces
-  the opposite order today.
+  a date or `null`; a re-read keeps a stored `finishedAt`, so it counts in the first reading's
+  year. Books marked read before 2026-11-26 stay undated — the query under Recovery lists them.
+- **`finishedAt >= startedAt` is not enforced, and the rule above can break it.** A book created
+  as read with only `finishedAt: "2024-05-01"` and then set to `reading` gets today's
+  `startedAt`, later than its finish. Fixing it means either clearing `finishedAt` on a re-read
+  (a mis-tap would then lose the real date) or keeping a history of readings; neither is built
+  until re-reads are something the screens show.
 - **`review` stays in the database.** The DTO hides it behind `notes`; moving the text is a
   one-off query under Recovery, not code.
 - **Nothing ties `durationMinutes` to an audiobook or `pages` to print.** A book switched to

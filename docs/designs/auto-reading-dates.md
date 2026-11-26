@@ -51,9 +51,9 @@ The alternative, the client sending its local date, needs every client path (add
   flow's second step setting `read`, dates it today and counts it in this year's stats, unless
   the client sends a date or `finishedAt: null`. The add flow should offer that choice.
 - **Books marked read before this change stay undated** and are not counted; see Recovery.
-- **A re-read keeps the first dates.** Read → reading → read keeps the old `startedAt` and
-  `finishedAt`, so the second reading counts in the year of the first unless the client sends
-  new dates. Dates are one pair per book, not a history.
+- **A re-read keeps stored dates and can invert them.** Read → reading → read keeps the old
+  `finishedAt`, counting in the first reading's year. A read book without `startedAt` gets
+  today's on going back to reading, after its `finishedAt`. One pair per book.
 - **`dropped` gets no date.** Nothing shows when a book was dropped.
 
 ## Recovery
@@ -69,7 +69,7 @@ db.books.updateOne({ _id: ObjectId("…") }, { $set: { finishedAt: ISODate("2025
 
 ## Cost
 
-One service function, one more read per status `PATCH`, about 12 integration tests.
+One service function, one more read per status `PATCH`, 11 integration tests.
 
 ## Open questions
 
