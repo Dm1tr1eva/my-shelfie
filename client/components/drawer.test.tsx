@@ -66,6 +66,26 @@ describe("Drawer", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  it("stays open when something inside it has already handled Escape", () => {
+    const onClose = vi.fn();
+    render(
+      <Drawer label="Things" header={<h2>Things</h2>} onClose={onClose}>
+        <input
+          aria-label="Search"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") event.preventDefault();
+          }}
+        />
+      </Drawer>,
+    );
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "Search" }), { key: "Escape" });
+    expect(onClose).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
   it("keeps Tab inside the panel, wrapping from the last control to the first and back", () => {
     render(<Opener />);
     open();

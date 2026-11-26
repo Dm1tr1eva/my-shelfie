@@ -13,6 +13,7 @@ export const shell: Localized<typeof en> = {
   },
   account: { logOut: "Выйти" },
   close: "Закрыть",
+  toast: { undo: "Отменить", retry: "Повторить", dismiss: "Скрыть" },
   labels: { inWishlist: "В вишлисте" },
   install: {
     button: "Установить приложение",

@@ -107,6 +107,17 @@ export function XIcon({ size }: IconProps) {
   );
 }
 
+export function TrashIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M4 7h16" />
+      <path d="M9 7V4.5h6V7" />
+      <path d="M6.5 7l1 13h9l1-13" />
+      <path d="M10 11v5.5M14 11v5.5" />
+    </Svg>
+  );
+}
+
 export function ExternalLinkIcon({ size }: IconProps) {
   return (
     <Svg size={size}>

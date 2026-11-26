@@ -17,6 +17,7 @@
   --color-row-hover: #fbf8f7;
   --color-input-strong: #ffffff;
   --color-scrim: rgb(46 24 25 / 0.45);
+  --color-scrim-light: rgb(46 24 25 / 0.28);
   --color-cover-placeholder: var(--color-mist);
 
   --font-serif: var(--font-playfair), Georgia, serif;

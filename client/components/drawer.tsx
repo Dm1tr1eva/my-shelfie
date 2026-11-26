@@ -25,6 +25,8 @@ export function Drawer({
   children,
   onClose,
   className = "md:w-[420px]",
+  tall = false,
+  lightScrim = false,
 }: {
   label: string;
   header: React.ReactNode;
@@ -32,6 +34,8 @@ export function Drawer({
   children: React.ReactNode;
   onClose: () => void;
   className?: string;
+  tall?: boolean;
+  lightScrim?: boolean;
 }) {
   const t = useT();
   const panel = useRef<HTMLDivElement>(null);
@@ -51,7 +55,7 @@ export function Drawer({
     panel.current?.focus();
 
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") close.current();
+      if (event.key === "Escape" && !event.defaultPrevented) close.current();
     }
     document.addEventListener("keydown", onKey);
 
@@ -85,7 +89,11 @@ export function Drawer({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end md:items-stretch md:justify-end">
-      <div aria-hidden="true" onClick={onClose} className="absolute inset-0 bg-scrim" />
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className={`absolute inset-0 ${lightScrim ? "bg-scrim-light" : "bg-scrim"}`}
+      />
       <div
         ref={panel}
         role="dialog"
@@ -93,7 +101,7 @@ export function Drawer({
         aria-label={label}
         tabIndex={-1}
         onKeyDown={trapTab}
-        className={`relative flex max-h-[92dvh] w-full flex-col rounded-t-modal bg-card shadow-modal outline-none md:h-full md:max-h-none md:rounded-none ${className}`}
+        className={`relative flex w-full flex-col rounded-t-modal bg-card shadow-modal outline-none md:h-full md:max-h-none md:rounded-none ${tall ? "h-[calc(100dvh-2rem)]" : "max-h-[92dvh]"} ${className}`}
       >
         <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-mist md:hidden" />
         <div className="flex items-center justify-between gap-3 px-5 pt-3 md:px-6 md:pt-6">

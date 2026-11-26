@@ -10,6 +10,7 @@ export const shell = {
   },
   account: { logOut: "Log out" },
   close: "Close",
+  toast: { undo: "Undo", retry: "Retry", dismiss: "Dismiss" },
   labels: { inWishlist: "In wishlist" },
   install: {
     button: "Install app",
