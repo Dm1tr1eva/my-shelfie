@@ -1,10 +1,10 @@
-const bcrypt = require("bcrypt");
-const User = require("../models/user");
-const jwt = require("jsonwebtoken");
+const authService = require("../services/authService");
 const { registerSchema, loginSchema } = require("../validation/authSchemas");
 const { validate } = require("../validation/validate");
+const { toUserDto } = require("../dto/userDto");
 
 const ROOT_LABEL = "";
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function sessionCookieOptions() {
   return {
@@ -15,43 +15,32 @@ function sessionCookieOptions() {
 }
 
 async function register(req, res) {
-  const { email, password, name } = validate(registerSchema, req.body, ROOT_LABEL);
+  const data = validate(registerSchema, req.body, ROOT_LABEL);
 
-  const existingUser = await User.findOne({ email });
+  const user = await authService.register(data);
 
-  if (existingUser) {
+  if (!user) {
     return res.status(409).json({ error: "User already exists" });
   }
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ email, passwordHash, name });
-
-  res.status(201).json({ id: user._id, email: user.email, name: user.name });
+  res.status(201).json(toUserDto(user));
 }
 
 async function login(req, res) {
-  const { email, password } = validate(loginSchema, req.body, ROOT_LABEL);
+  const credentials = validate(loginSchema, req.body, ROOT_LABEL);
 
-  const user = await User.findOne({ email });
-  if (!user) {
+  const session = await authService.logIn(credentials);
+
+  if (!session) {
     return res.status(401).json({ error: "Invalid email or password" });
   }
 
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
-  if (!isMatch) {
-    return res.status(401).json({ error: "Invalid email or password" });
-  }
-
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-
-  res.cookie("token", token, {
+  res.cookie("token", session.token, {
     ...sessionCookieOptions(),
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: SESSION_MAX_AGE_MS,
   });
 
-  res.json({ id: user._id, email: user.email, name: user.name });
+  res.json(toUserDto(session.user));
 }
 
 function logout(req, res) {
@@ -64,13 +53,9 @@ async function getMe(req, res) {
     return res.json(null);
   }
 
-  const user = await User.findById(req.userId);
+  const user = await authService.getUser(req.userId);
 
-  if (!user) {
-    return res.json(null);
-  }
-
-  res.json({ id: user._id, email: user.email, name: user.name });
+  res.json(user ? toUserDto(user) : null);
 }
 
 module.exports = { register, login, logout, getMe };
