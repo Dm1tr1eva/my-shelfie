@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { AutoTextarea } from "@/components/auto-textarea";
 import { BookCover } from "@/components/book-cover";
 import { CoverPicker } from "@/components/book-cover-picker";
@@ -104,13 +104,13 @@ function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
   const title = useDraft("title", book.title, commitTitle);
   const author = useDraft("author", book.author, commitAuthor);
 
-  async function finishRenaming() {
+  async function finishRenaming(refocus: boolean) {
     const done = await Promise.all([title.flush(), author.flush()]);
     if (!done.every(Boolean)) return;
     title.setEditing(false);
     author.setEditing(false);
     setRenaming(false);
-    window.setTimeout(() => pencil.current?.focus());
+    if (refocus) window.setTimeout(() => pencil.current?.focus());
   }
 
   function cancelRenaming() {
@@ -123,7 +123,7 @@ function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
   function onRenameKey(event: React.KeyboardEvent) {
     if (event.key === "Enter") {
       event.preventDefault();
-      void finishRenaming();
+      void finishRenaming(true);
     } else if (event.key === "Escape") {
       event.preventDefault();
       cancelRenaming();
@@ -138,7 +138,15 @@ function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-2 md:pt-4">
           {renaming ? (
-            <div className="flex flex-col gap-2" onKeyDown={onRenameKey}>
+            <div
+              className="flex flex-col gap-2"
+              onKeyDown={onRenameKey}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  void finishRenaming(false);
+                }
+              }}
+            >
               <label htmlFor={titleId} className="sr-only">
                 {t("book.panel.title")}
               </label>
@@ -162,7 +170,7 @@ function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
               />
               <button
                 type="button"
-                onClick={() => void finishRenaming()}
+                onClick={() => void finishRenaming(true)}
                 className="btn-outline self-start"
               >
                 {t("book.panel.renameDone")}
@@ -415,7 +423,13 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
     else closing.current = false;
   }, [close, flushAll]);
 
-  if (status !== "authenticated" || !user || pathname !== `/books/${id}`) return null;
+  const here = pathname === `/books/${id}`;
+
+  useEffect(() => {
+    if (!here) closing.current = false;
+  }, [here]);
+
+  if (status !== "authenticated" || !user || !here) return null;
 
   const notFound = error instanceof ApiError && error.status === 404;
   const series = book?.seriesId ? seriesList.find((item) => item.id === book.seriesId) : undefined;
@@ -440,14 +454,16 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
             </button>
           </div>
         )}
-        {error && !notFound && (
+        {error && !notFound && !book && (
           <ErrorState
             title={t("book.loadFailed.title")}
             text={t("book.loadFailed.text")}
             onRetry={reload}
           />
         )}
-        {book && <PanelContent key={book.id} book={book} series={series} onDeleted={close} />}
+        {book && !notFound && (
+          <PanelContent key={book.id} book={book} series={series} onDeleted={close} />
+        )}
       </FlushContext.Provider>
     </Drawer>
   );
