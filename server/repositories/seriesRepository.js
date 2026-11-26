@@ -26,9 +26,9 @@ async function updateOneForUser(userId, id, updates) {
   });
 }
 
-async function deleteOneForUser(userId, id) {
+async function deleteOneForUser(userId, id, session) {
   if (!isValidId(id)) return null;
-  return Series.findOneAndDelete({ _id: id, userId });
+  return Series.findOneAndDelete({ _id: id, userId }, { session });
 }
 
 module.exports = {

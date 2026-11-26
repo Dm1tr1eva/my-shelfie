@@ -1,5 +1,7 @@
 const bookRepository = require("../repositories/bookRepository");
 const seriesRepository = require("../repositories/seriesRepository");
+const { inTransaction } = require("../repositories/transaction");
+const { GENRES_MAX, TROPES_MAX } = require("../constants/library");
 const { HttpError } = require("../errors/httpError");
 
 const NO_COUNTS = { owned: 0, wanted: 0 };
@@ -81,12 +83,35 @@ async function updateSeries(userId, id, updates) {
   return seriesRepository.updateOneForUser(userId, id, updates);
 }
 
-async function deleteSeries(userId, id) {
-  const series = await seriesRepository.deleteOneForUser(userId, id);
-  if (series) {
-    await bookRepository.unlinkSeries(userId, id);
+function mergeTags(first, second, max) {
+  const seen = new Set();
+  const merged = [];
+
+  for (const tag of [...first, ...second]) {
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(tag);
   }
-  return series;
+
+  return merged.slice(0, max);
+}
+
+async function deleteSeries(userId, id) {
+  return inTransaction(async (session) => {
+    const series = await seriesRepository.deleteOneForUser(userId, id, session);
+    if (!series) return null;
+
+    const books = await bookRepository.findTagsBySeries(userId, id, session);
+    const tagsByBook = books.map((book) => ({
+      id: book._id,
+      genres: mergeTags(series.genres ?? [], book.genres ?? [], GENRES_MAX),
+      tropes: mergeTags(series.tropes ?? [], book.tropes ?? [], TROPES_MAX),
+    }));
+
+    await bookRepository.leaveSeries(userId, id, tagsByBook, session);
+    return series;
+  });
 }
 
 async function assertSeriesExists(userId, id) {

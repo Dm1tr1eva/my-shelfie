@@ -4,6 +4,7 @@ const {
   DESIRE_LEVELS,
   AGE_RATINGS,
   EXPECTED_SOURCES,
+  TROPES_MAX,
 } = require("../constants/library");
 const { genreList } = require("./genre");
 
@@ -30,7 +31,7 @@ const baseSeriesSchema = z
     note: z.string().max(2000).optional(),
     totalBooks: z.number().int().min(1).max(200).optional(),
     genres: genreList.optional(),
-    tropes: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
+    tropes: z.array(z.string().trim().min(1).max(60)).max(TROPES_MAX).optional(),
     annotation: z.string().max(5000).optional(),
     ageRating: z.enum(AGE_RATINGS).optional(),
     desire: z.enum(DESIRE_LEVELS).optional(),

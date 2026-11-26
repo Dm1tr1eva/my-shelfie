@@ -109,9 +109,22 @@ async function countBySeries(userId, seriesIds) {
   return counts;
 }
 
-async function unlinkSeries(userId, seriesId) {
-  if (!isValidId(seriesId)) return;
-  await Book.updateMany({ userId, seriesId }, { $unset: { seriesId: "", seriesNumber: "" } });
+async function findTagsBySeries(userId, seriesId, session) {
+  if (!isValidId(seriesId)) return [];
+  return Book.find({ userId, seriesId }, { genres: 1, tropes: 1 }, { session });
+}
+
+async function leaveSeries(userId, seriesId, tagsByBook, session) {
+  if (tagsByBook.length === 0) return;
+  await Book.bulkWrite(
+    tagsByBook.map(({ id, genres, tropes }) => ({
+      updateOne: {
+        filter: { _id: id, userId, seriesId },
+        update: { $set: { genres, tropes }, $unset: { seriesId: "", seriesNumber: "" } },
+      },
+    })),
+    { session },
+  );
 }
 
 async function findTropesForUser(userId) {
@@ -128,6 +141,7 @@ module.exports = {
   findForWishlist,
   findBySeries,
   countBySeries,
-  unlinkSeries,
+  findTagsBySeries,
+  leaveSeries,
   findTropesForUser,
 };

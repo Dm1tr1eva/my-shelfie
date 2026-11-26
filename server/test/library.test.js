@@ -262,6 +262,117 @@ describe("series API", () => {
   });
 });
 
+describe("deleting a series", () => {
+  async function storeOwnTags(bookId, genres, tropes) {
+    await Book.updateOne({ _id: bookId }, { $set: { genres, tropes } });
+  }
+
+  async function rejectUnlinking(title) {
+    await Book.db.db.command({
+      collMod: "books",
+      validator: { $or: [{ title: { $ne: title } }, { seriesId: { $exists: true } }] },
+      validationLevel: "strict",
+      validationAction: "error",
+    });
+  }
+
+  async function acceptEverything() {
+    await Book.db.db.command({ collMod: "books", validator: {}, validationLevel: "off" });
+  }
+
+  it("hands the series' genres and tropes to its books, followed by each book's own", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice, {
+      genres: ["Romantasy", "Fantasy"],
+      tropes: ["slow burn"],
+      annotation: "About the whole series.",
+    });
+    const tagged = await addBook(alice, { title: "Tagged", seriesId: series.id, seriesNumber: 1 });
+    const bare = await addBook(alice, { title: "Bare", seriesId: series.id, seriesNumber: 2 });
+    await storeOwnTags(tagged.id, ["Horror", "fantasy"], ["own trope", "Slow burn"]);
+
+    const removed = await api(`/api/series/${series.id}`, { method: "DELETE", cookie: alice });
+    const taggedAfter = await api(`/api/books/${tagged.id}`, { cookie: alice });
+    const bareAfter = await api(`/api/books/${bare.id}`, { cookie: alice });
+
+    assert.equal(removed.status, 204);
+    assert.equal(taggedAfter.body.seriesId, undefined);
+    assert.equal(taggedAfter.body.seriesNumber, undefined);
+    assert.deepEqual(taggedAfter.body.genres, ["Romantasy", "Fantasy", "Horror"]);
+    assert.deepEqual(taggedAfter.body.tropes, ["slow burn", "own trope"]);
+    assert.deepEqual(bareAfter.body.genres, ["Romantasy", "Fantasy"]);
+    assert.deepEqual(bareAfter.body.tropes, ["slow burn"]);
+    assert.equal(bareAfter.body.annotation, undefined);
+  });
+
+  it("cuts the handed-over tags to what a book may hold, dropping the book's own first", async () => {
+    const alice = await signIn("alice@example.com");
+    const genres = Array.from({ length: 12 }, (_, index) => `Genre ${index + 1}`);
+    const tropes = Array.from({ length: 29 }, (_, index) => `trope ${index + 1}`);
+    const series = await addSeries(alice, { genres, tropes });
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1 });
+    await storeOwnTags(book.id, ["Own genre"], ["own first", "own second"]);
+
+    await api(`/api/series/${series.id}`, { method: "DELETE", cookie: alice });
+    const after = await api(`/api/books/${book.id}`, { cookie: alice });
+    const resaved = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { genres: after.body.genres, tropes: after.body.tropes },
+    });
+
+    assert.deepEqual(after.body.genres, genres);
+    assert.deepEqual(after.body.tropes, [...tropes, "own first"]);
+    assert.equal(resaved.status, 200);
+  });
+
+  it("does not let another user delete a series or touch its books", async () => {
+    const alice = await signIn("alice@example.com");
+    const bob = await signIn("bob@example.com");
+    const series = await addSeries(alice, { genres: ["Fantasy"] });
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1 });
+
+    const remove = await api(`/api/series/${series.id}`, { method: "DELETE", cookie: bob });
+    const stored = await Book.findById(book.id);
+
+    assert.equal(remove.status, 404);
+    assert.equal(String(stored.seriesId), series.id);
+    assert.deepEqual([...stored.genres], []);
+  });
+
+  it("loses nothing when a book cannot be written after the series was deleted", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await addSeries(alice, { genres: ["Fantasy"], tropes: ["slow burn"] });
+    const fine = await addBook(alice, { title: "Fine", seriesId: series.id, seriesNumber: 1 });
+    const breaks = await addBook(alice, { title: "Breaks", seriesId: series.id, seriesNumber: 2 });
+    await storeOwnTags(fine.id, ["Horror"], []);
+
+    await rejectUnlinking("Breaks");
+    let removed;
+    try {
+      removed = await api(`/api/series/${series.id}`, { method: "DELETE", cookie: alice });
+    } finally {
+      await acceptEverything();
+    }
+    const stillThere = await api(`/api/series/${series.id}`, { cookie: alice });
+    const books = await Book.find({ _id: { $in: [fine.id, breaks.id] } }).sort({ title: -1 });
+
+    assert.equal(removed.status, 500);
+    assert.equal(stillThere.status, 200);
+    assert.deepEqual(
+      stillThere.body.books.map((item) => item.title),
+      ["Fine", "Breaks"],
+    );
+    assert.deepEqual(
+      books.map((item) => [item.title, String(item.seriesId), [...item.genres]]),
+      [
+        ["Fine", series.id, ["Horror"]],
+        ["Breaks", series.id, []],
+      ],
+    );
+  });
+});
+
 describe("library fields on books", () => {
   it("stores ownership, series, genres, tropes, links, notes and annotation", async () => {
     const alice = await signIn("alice@example.com");
