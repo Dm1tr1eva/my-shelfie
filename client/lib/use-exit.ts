@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 
+export type ExitDone = () => void | boolean;
+
 function animates(node: HTMLElement) {
   const name = getComputedStyle(node).animationName;
   return Boolean(name) && name !== "none";
 }
 
-export function useExit<T extends HTMLElement>(node: RefObject<T | null>, onDone: () => void) {
+export function useExit<T extends HTMLElement>(node: RefObject<T | null>, onDone: ExitDone) {
   const done = useRef(onDone);
   const [leaving, setLeaving] = useState(false);
 
@@ -15,14 +17,17 @@ export function useExit<T extends HTMLElement>(node: RefObject<T | null>, onDone
     done.current = onDone;
   }, [onDone]);
 
+  function finish() {
+    if (done.current() !== true) setLeaving(false);
+  }
+
   function leave() {
-    if (leaving) return;
     if (node.current && animates(node.current)) setLeaving(true);
     else done.current();
   }
 
   function onAnimationEnd(event: React.AnimationEvent<T>) {
-    if (leaving && event.target === event.currentTarget) done.current();
+    if (leaving && event.target === event.currentTarget) finish();
   }
 
   return { leaving, leave, onAnimationEnd };

@@ -106,3 +106,21 @@ export function series(overrides: Partial<Series> = {}): Series {
 export function booksResponse(books: Book[]) {
   return { body: { books, total: books.length, page: 1, limit: 500 } };
 }
+
+export function pretendAnimations() {
+  const real = window.getComputedStyle;
+  return vi.spyOn(window, "getComputedStyle").mockImplementation(
+    (element, pseudo) =>
+      new Proxy(real(element, pseudo), {
+        get(target, key) {
+          if (key === "animationName") return "panel-in";
+          const value = Reflect.get(target, key);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      }),
+  );
+}
+
+export function finishAnimation(element: Element) {
+  fireEvent(element, new Event("webkitAnimationEnd", { bubbles: true }));
+}

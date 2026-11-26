@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { XIcon } from "@/components/icons";
 import { FOCUSABLE } from "@/lib/focusable";
 import { useT } from "@/lib/i18n";
-import { useExit } from "@/lib/use-exit";
+import { useExit, type ExitDone } from "@/lib/use-exit";
 
 function subscribeToNothing() {
   return () => {};
@@ -25,6 +25,7 @@ export function Drawer({
   footer,
   children,
   onClose,
+  beforeClose,
   className = "md:w-[420px]",
   tall = false,
   lightScrim = false,
@@ -33,7 +34,8 @@ export function Drawer({
   header: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
-  onClose: () => void;
+  onClose: ExitDone;
+  beforeClose?: () => boolean | Promise<boolean>;
   className?: string;
   tall?: boolean;
   lightScrim?: boolean;
@@ -41,11 +43,21 @@ export function Drawer({
   const t = useT();
   const panel = useRef<HTMLDivElement>(null);
   const { leaving, leave, onAnimationEnd } = useExit(panel, onClose);
-  const leaveLater = useRef(leave);
+  const asking = useRef(false);
   const onClient = useOnClient();
 
+  async function requestLeave() {
+    if (asking.current) return;
+    asking.current = true;
+    const ready = beforeClose ? await beforeClose() : true;
+    asking.current = false;
+    if (ready) leave();
+  }
+
+  const requestLater = useRef(requestLeave);
+
   useEffect(() => {
-    leaveLater.current = leave;
+    requestLater.current = requestLeave;
   });
 
   useEffect(() => {
@@ -57,7 +69,7 @@ export function Drawer({
     panel.current?.focus();
 
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && !event.defaultPrevented) leaveLater.current();
+      if (event.key === "Escape" && !event.defaultPrevented) void requestLater.current();
     }
     document.addEventListener("keydown", onKey);
 
@@ -101,7 +113,7 @@ export function Drawer({
     <div className="fixed inset-0 z-50 flex items-end md:items-stretch md:justify-end">
       <div
         aria-hidden="true"
-        onClick={leave}
+        onClick={() => void requestLeave()}
         className={`absolute inset-0 ${lightScrim ? "bg-scrim-light" : "bg-scrim"} ${leaving ? "animate-fade-out" : "animate-fade-in"}`}
       />
       <div
@@ -120,7 +132,7 @@ export function Drawer({
           <button
             type="button"
             aria-label={t("shell.close")}
-            onClick={leave}
+            onClick={() => void requestLeave()}
             className="btn-round shrink-0"
           >
             <XIcon size={18} />

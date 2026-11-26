@@ -3,7 +3,17 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
 import { resetLocale, setLocale } from "@/lib/i18n";
-import { book, booksResponse, choose, mockApi, renderApp, series, type Call } from "@/test/helpers";
+import {
+  book,
+  booksResponse,
+  choose,
+  finishAnimation,
+  mockApi,
+  pretendAnimations,
+  renderApp,
+  series,
+  type Call,
+} from "@/test/helpers";
 import { useBooks, type Book } from "@/lib/books";
 import { BookPanel } from "./book-panel";
 
@@ -361,6 +371,44 @@ describe("BookPanel", () => {
       expect(await screen.findByRole("alert")).toBeInTheDocument();
       expect(router.back).not.toHaveBeenCalled();
       expect(note).toHaveValue("Half way");
+    });
+
+    it("slides away and goes back without sliding in again when the note is saved", async () => {
+      const animations = pretendAnimations();
+      await open(book({ id: "b1", title: "Ash" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      const dialog = screen.getByRole("dialog");
+
+      fireEvent.focus(note);
+      fireEvent.change(note, { target: { value: "Half way" } });
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
+      await waitFor(() => expect(dialog.className).toContain("animate-panel-out"));
+      expect(router.back).not.toHaveBeenCalled();
+      finishAnimation(dialog);
+
+      expect(router.back).toHaveBeenCalledOnce();
+      expect(dialog.className).toContain("animate-panel-out");
+      animations.mockRestore();
+    });
+
+    it("stays open and usable when the unsaved note cannot be saved, even with animations", async () => {
+      const animations = pretendAnimations();
+      await open(book({ id: "b1", title: "Ash" }), {
+        onPatch: () => ({ status: 500, body: { error: "Failed to update book" } }),
+      });
+      const note = screen.getByRole("textbox", { name: "My note" });
+      const dialog = screen.getByRole("dialog");
+
+      fireEvent.focus(note);
+      fireEvent.change(note, { target: { value: "Half way" } });
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      finishAnimation(dialog);
+
+      expect(router.back).not.toHaveBeenCalled();
+      expect(dialog.className).not.toContain("-out");
+      expect(dialog).toBeVisible();
+      animations.mockRestore();
     });
 
     it("renames the book in place", async () => {

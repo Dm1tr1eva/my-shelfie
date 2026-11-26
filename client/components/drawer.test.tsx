@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { renderToString } from "react-dom/server";
+import { finishAnimation, pretendAnimations } from "@/test/helpers";
 import { Drawer } from "./drawer";
 
 function Opener({ onClose = () => {} }: { onClose?: () => void }) {
@@ -165,17 +166,7 @@ describe("Drawer", () => {
   });
 
   it("plays its closing animation before it goes, when the page animates it", () => {
-    const real = window.getComputedStyle;
-    const computed = vi.spyOn(window, "getComputedStyle").mockImplementation(
-      (element, pseudo) =>
-        new Proxy(real(element, pseudo), {
-          get(target, key) {
-            if (key === "animationName") return "panel-in";
-            const value = Reflect.get(target, key);
-            return typeof value === "function" ? value.bind(target) : value;
-          },
-        }),
-    );
+    const animations = pretendAnimations();
     const onClose = vi.fn();
     render(<Opener onClose={onClose} />);
     open();
@@ -186,10 +177,10 @@ describe("Drawer", () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(dialog.className).toContain("animate-sheet-out");
 
-    fireEvent(dialog, new Event("webkitAnimationEnd", { bubbles: true }));
+    finishAnimation(dialog);
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    computed.mockRestore();
+    animations.mockRestore();
   });
 });

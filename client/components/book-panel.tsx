@@ -406,25 +406,16 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
   const { book, error, isLoading, reload } = useBook(id);
   const { series: seriesList } = useSeriesList();
   const { register, flushAll } = useFlushRegistry();
-  const closing = useRef(false);
 
   const close = useCallback(() => {
     if (closeBy === "back") router.back();
     else router.replace("/library");
   }, [closeBy, router]);
 
-  const requestClose = useCallback(async () => {
-    if (closing.current) return;
-    closing.current = true;
-    if (await flushAll()) close();
-    else closing.current = false;
-  }, [close, flushAll]);
-
   const here = pathname === `/books/${id}`;
 
   useEffect(() => {
     if (here) void reload();
-    else closing.current = false;
   }, [here, reload]);
 
   if (status !== "authenticated" || !user || !here) return null;
@@ -436,7 +427,11 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
     <Drawer
       label={book?.title ?? t("shell.titles.book")}
       header={<PanelHeader book={book} series={series} />}
-      onClose={() => void requestClose()}
+      beforeClose={flushAll}
+      onClose={() => {
+        close();
+        return true;
+      }}
       tall
       lightScrim
       className="md:w-[460px] lg:w-[500px]"
