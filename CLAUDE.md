@@ -162,13 +162,16 @@ adding them later means finding every copy. So they ship with the component.
 - **Things that appear or disappear move smoothly**: panels, sheets, dialogs, popovers, toasts,
   expanding sections, switched tabs. Use the motion tokens in `client/app/globals.css`
   (`--duration-*`, `--ease-*`, `animate-*`). `app/motion-rules.test.ts` fails on a Tailwind
-  duration, delay or easing that is not a token (`duration-[173ms]`, `duration-300`,
-  `ease-in-out`), a transition or animation in an inline `style`, a time or curve in
-  `globals.css` outside `@theme`, and an `animate-*` that is not defined. Closing animates too
+  duration, delay, easing or animation that is not a token (`duration-[173ms]`, `duration-300`,
+  `ease-in-out`, `[transition-duration:300ms]`, `animate-[spin_3s]`, an undefined `animate-*`),
+  a transition or animation in a JSX `style={{…}}` attribute, and a time or curve in
+  `globals.css` outside `@theme`. A style object built elsewhere is not checked: do not write
+  one for motion. Closing animates too
   (`useExit`), except a close caused by the action itself (Apply, Save, Delete), where the
   result is what the reader looks at; a close that may be refused asks first (`beforeClose`).
 - **`prefers-reduced-motion` turns movement off**: changes become instant. The base styles do
-  this for every element (`*`, `::before`, `::after`), and the same test checks that.
+  this for every element (`*`, `::before`, `::after`) with `1ms`, and the same test checks the
+  selector and that no other time appears in that block.
 - Details and what is in place: `docs/features/interaction-states.md`.
 
 ---

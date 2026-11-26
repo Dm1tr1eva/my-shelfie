@@ -17,11 +17,14 @@ rule is in `CLAUDE.md` ("UI states and motion"); this page is what is in place.
   `6rem` of scroll padding above the floating tab bar so a focused element is never under it.
 - Durations and easings come only from the motion tokens. `app/motion-rules.test.ts` fails on
   an arbitrary or numeric Tailwind duration, delay or easing (`duration-[…]`, `duration-300`,
-  `delay-75`, `ease-in-out`, `ease-linear`), on `transition…` or `animation…` in an inline
-  `style`, on a time or a `cubic-bezier` in `globals.css` outside `@theme` (the reduced-motion
-  block excepted), on an `animate-*` that is not a token (Tailwind's own `spin`, `ping`,
-  `pulse`, `bounce` are allowed), and when the reduced-motion block stops applying to `*`,
-  `::before` and `::after`.
+  `delay-75`, `ease-in-out`, `ease-linear`), on an arbitrary property `[transition…:…]` or
+  `[animation…:…]`, on `animate-[…]`, on `transition…` or `animation…` in a JSX
+  `style={{…}}` attribute, on a time or a `cubic-bezier` in `globals.css` outside `@theme`, on
+  an `animate-*` that is not a token (Tailwind's own `spin`, `ping`, `pulse`, `bounce` are
+  allowed), when the reduced-motion block stops applying to `*`, `::before` and `::after`, and
+  on any time in that block other than `1ms` or `0ms`. A style object built outside a JSX
+  attribute is not checked: reading every object literal for motion keys would flag data, not
+  styles.
 - A panel, dialog, popover or toast never stays half-gone: if its parent keeps it after the
   closing animation, it comes back and can be closed again.
 - With `prefers-reduced-motion: reduce` every transition and animation lasts 1ms: changes are

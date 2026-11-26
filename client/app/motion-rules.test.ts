@@ -53,17 +53,19 @@ describe("motion rules", () => {
     expect(selector).toBe("*, ::before, ::after");
     expect(body).toMatch(/transition-duration:\s*1ms !important/);
     expect(body).toMatch(/animation-duration:\s*1ms !important/);
+    const times = body.match(/\b\d+(?:\.\d+)?m?s\b/g) ?? [];
+    expect(times.filter((time) => !["1ms", "0ms"].includes(time))).toEqual([]);
   });
 
-  it("uses no Tailwind duration, delay or easing that is not a motion token", () => {
+  it("uses no Tailwind duration, delay, easing or animation that is not a motion token", () => {
     expect(
       hits(
-        /(?<![\w-])(?:duration|ease|delay)-\[[^\]]*\]|(?<![\w-])(?:duration|delay)-\d+|(?<![\w-])ease-(?:in-out|in|out|linear)(?![\w-])|transition-\[[^\]]*\d+m?s[^\]]*\]/g,
+        /(?<![\w-])(?:duration|ease|delay)-\[[^\]]*\]|(?<![\w-])(?:duration|delay)-\d+|(?<![\w-])ease-(?:in-out|in|out|linear)(?![\w-])|transition-\[[^\]]*\d+m?s[^\]]*\]|\[(?:transition|animation)[\w-]*:[^\]]*\]|(?<![\w-])animate-\[[^\]]*\]/g,
       ),
     ).toEqual([]);
   });
 
-  it("sets no transition or animation in an inline style", () => {
+  it("sets no transition or animation in a JSX style attribute", () => {
     expect(hits(/style=\{\{[^}]*\b(?:transition|animation)\w*\s*:/g)).toEqual([]);
   });
 
