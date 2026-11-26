@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { mockApi, renderApp, type Call } from "@/test/helpers";
+import { booksResponse, mockApi, renderApp, type Call } from "@/test/helpers";
+import { useBooks } from "@/lib/books";
 import { resetLocale, setLocale } from "@/lib/i18n";
 import { localDate, type HomeStats } from "@/lib/stats";
 import { Dashboard } from "./dashboard";
@@ -342,11 +343,14 @@ describe("Home after sign-in", () => {
       },
     ]);
     await waitFor(() => expect(statsLoads(calls)).toBe(2));
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: "Currently reading" })).toHaveFocus(),
+    );
   });
 
   it("says what went wrong when finishing fails, translated", async () => {
     act(() => setLocale("ru"));
-    serve(fullStats(), (call) => {
+    const calls = serve(fullStats(), (call) => {
       if (call.method === "POST") return { status: 201, body: {} };
       if (call.method === "PATCH") return { status: 500, body: { error: "Failed to update book" } };
     });
@@ -357,6 +361,7 @@ describe("Home after sign-in", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Не удалось обновить книгу");
     expect(screen.getByRole("button", { name: "Дочитано" })).toBeEnabled();
+    await waitFor(() => expect(statsLoads(calls)).toBe(2));
   });
 
   it("closes Where are you now on Escape or a click outside, and gives focus back to its button", async () => {
@@ -676,5 +681,192 @@ describe("Home after sign-in", () => {
     expect(screen.getByText("38% · до конца года 6 недель")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Сентябрь, 2 книги" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Апрель, 1 книга" })).toBeInTheDocument();
+  });
+
+  it("lets the goal field be cleared and typed again, and rounds the pace up", async () => {
+    const calls = serve(fullStats(), (call) =>
+      call.method === "PUT" ? { body: { yearGoal: { year: 2026, books: 40 } } } : undefined,
+    );
+    await renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: "Change goal" }));
+    const dialog = screen.getByRole("dialog", { name: "2026 goal" });
+    const field = within(dialog).getByLabelText("Books in 2026");
+
+    fireEvent.change(field, { target: { value: "" } });
+    expect(field).toHaveValue(null);
+    expect(within(dialog).getByRole("button", { name: "Save" })).toBeDisabled();
+
+    fireEvent.change(field, { target: { value: "4" } });
+    fireEvent.change(field, { target: { value: "40" } });
+    expect(field).toHaveValue(40);
+    expect(
+      within(dialog).getByText("31 books left in 6 weeks, about 6 a week"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+    await waitFor(() =>
+      expect(calls).toContainEqual({
+        method: "PUT",
+        path: "/api/year-goal",
+        body: { year: 2026, books: 40 },
+      }),
+    );
+  });
+
+  it("saves a goal above 1,000 as 1,000 and one below 1 as 1", async () => {
+    const calls = serve(fullStats(), (call) =>
+      call.method === "PUT" ? { body: { yearGoal: { year: 2026, books: 1 } } } : undefined,
+    );
+    await renderHome();
+
+    for (const [typed, saved] of [
+      ["2000", 1000],
+      ["0", 1],
+    ] as const) {
+      fireEvent.click(screen.getByRole("button", { name: "Change goal" }));
+      const dialog = screen.getByRole("dialog", { name: "2026 goal" });
+      fireEvent.change(within(dialog).getByLabelText("Books in 2026"), {
+        target: { value: typed },
+      });
+      fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+      await waitFor(() =>
+        expect(calls).toContainEqual({
+          method: "PUT",
+          path: "/api/year-goal",
+          body: { year: 2026, books: saved },
+        }),
+      );
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    }
+  });
+
+  it("names a one-book goal in the singular", async () => {
+    serve(fullStats({ yearGoal: { year: 2026, target: 1, done: 1, percent: 100, weeksLeft: 6 } }));
+    await renderHome();
+
+    expect(screen.getByRole("img", { name: "2026 goal: 1 of 1 book, 100%" })).toBeInTheDocument();
+  });
+
+  it("holds Save while the goal and the page are being saved", async () => {
+    let release = () => {};
+    const wait = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    serve(fullStats(), (call) => {
+      if (call.method === "PUT") return { body: { yearGoal: { year: 2026, books: 24 } }, wait };
+      if (call.method === "POST") return { status: 201, body: {}, wait };
+    });
+    await renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: "Change goal" }));
+    const goal = screen.getByRole("dialog", { name: "2026 goal" });
+    fireEvent.click(within(goal).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(within(goal).getByRole("button", { name: "Save" })).toBeDisabled());
+    fireEvent.click(within(goal).getByRole("button", { name: "Cancel" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark page" }));
+    const where = screen.getByRole("dialog", { name: "Where are you now?" });
+    fireEvent.click(within(where).getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(within(where).getByRole("button", { name: "Save" })).toBeDisabled());
+    expect(within(where).getByRole("button", { name: "Finished" })).toBeDisabled();
+
+    release();
+  });
+
+  it("finishes a book once, holding both of its buttons until the first finish is done", async () => {
+    let release = () => {};
+    const wait = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const calls = serve(fullStats(), (call) => {
+      if (call.method === "POST") return { status: 201, body: {}, wait };
+      if (call.method === "PATCH") return { body: {} };
+    });
+    await renderHome();
+    const finished = screen.getByRole("button", { name: "Finished" });
+    const markPage = screen.getByRole("button", { name: "Mark page" });
+
+    fireEvent.click(finished);
+    await waitFor(() => expect(finished).toBeDisabled());
+    expect(markPage).toBeDisabled();
+    fireEvent.click(finished);
+    fireEvent.click(markPage);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    release();
+    await waitFor(() => expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(1));
+    expect(calls.filter((call) => call.method === "POST")).toHaveLength(1);
+  });
+
+  it("reloads the library after progress is saved, so its lists agree with Home", async () => {
+    const calls = serve(fullStats(), (call) => {
+      if (call.path.startsWith("/api/books?")) return booksResponse([]);
+      if (call.method === "POST") return { status: 201, body: {} };
+    });
+    function LibraryUser() {
+      useBooks();
+      return null;
+    }
+    renderApp(
+      <>
+        <Dashboard />
+        <LibraryUser />
+      </>,
+    );
+    await screen.findByRole("heading", { name: "Currently reading" });
+    const libraryLoads = () => calls.filter((call) => call.path.startsWith("/api/books?")).length;
+    await waitFor(() => expect(libraryLoads()).toBe(1));
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark page" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Where are you now?" })).getByRole("button", {
+        name: "Save",
+      }),
+    );
+
+    await waitFor(() => expect(libraryLoads()).toBe(2));
+  });
+
+  it("points the phone sheet's button at the sheet's content", async () => {
+    serve(fullStats());
+    await renderHome();
+    const trigger = screen.getByRole("button", { name: "Mark page" });
+
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Where are you now?" });
+    const controlled = document.getElementById(trigger.getAttribute("aria-controls") ?? "");
+
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(controlled).not.toBeNull();
+    expect(dialog).toContainElement(controlled);
+  });
+
+  it("draws owned books first in a very much series", async () => {
+    serve(fullStats());
+    await renderHome();
+    const bar = screen.getByRole("img", { name: "Own 2 of 6" });
+    const states = [...bar.querySelectorAll("[data-state]")].map((segment) =>
+      segment.getAttribute("data-state"),
+    );
+
+    expect(states).toEqual(["owned", "owned", "missing", "missing", "missing", "missing"]);
+  });
+
+  it("keeps the fifth and sixth new covers for screens from 768 px", async () => {
+    serve(fullStats());
+    await renderHome();
+    const covers = within(screen.getByRole("region", { name: "New on the shelf" })).getAllByRole(
+      "listitem",
+    );
+
+    expect(covers.map((cover) => cover.classList.contains("hidden"))).toEqual([
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+    ]);
   });
 });
