@@ -964,7 +964,7 @@ describe("tags and description on the series", () => {
     assert.deepEqual(fetched.body.genres, ["Litrpg", "Fantasy"]);
   });
 
-  it("shows a book of a series the tags and description of the series wherever a book is returned", async () => {
+  it("shows a book of a series the tags of the series and its own annotation wherever a book is returned", async () => {
     const alice = await signIn("alice@example.com");
     const series = await setUpSeries(alice, {
       genres: ["Romantasy"],
@@ -987,8 +987,33 @@ describe("tags and description on the series", () => {
     for (const shown of [single.body, list.body.books[0], inSeries.body.books[0]]) {
       assert.deepEqual(shown.genres, ["Romantasy", "Horror"]);
       assert.deepEqual(shown.tropes, ["slow burn", "own trope"]);
-      assert.equal(shown.annotation, "About the series.");
+      assert.equal(shown.annotation, "own words");
     }
+    assert.equal(inSeries.body.series.annotation, "About the series.");
+  });
+
+  it("saves the annotation of a book in a series on the book, leaving the series description", async () => {
+    const alice = await signIn("alice@example.com");
+    const series = await setUpSeries(alice, { annotation: "About the series." });
+    const book = await addBook(alice, { seriesId: series.id, seriesNumber: 1 });
+
+    const edited = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { annotation: "This one is about the dragon." },
+    });
+    const inSeries = await api(`/api/series/${series.id}`, { cookie: alice });
+
+    assert.equal(edited.body.annotation, "This one is about the dragon.");
+    assert.equal(inSeries.body.books[0].annotation, "This one is about the dragon.");
+    assert.equal(inSeries.body.series.annotation, "About the series.");
+
+    const cleared = await api(`/api/books/${book.id}`, {
+      method: "PATCH",
+      cookie: alice,
+      body: { annotation: null },
+    });
+    assert.equal(cleared.body.annotation, undefined);
   });
 
   it("gives a book its own tags back when it leaves the series", async () => {

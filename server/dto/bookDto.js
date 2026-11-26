@@ -22,8 +22,7 @@ function languagesOf(link) {
   return link.language ? [link.language] : [];
 }
 
-function sourceOf(field, book, shared) {
-  if (field === "annotation" && shared) return shared.annotation;
+function sourceOf(field, book) {
   if (field === "notes" && !isSet(book.notes)) return book.review;
   return book[field];
 }
@@ -62,7 +61,7 @@ function toBookDto(book, series) {
   }
 
   for (const field of OPTIONAL_FIELDS) {
-    const value = sourceOf(field, book, shared);
+    const value = sourceOf(field, book);
     if (isSet(value)) {
       dto[field] = value;
     }

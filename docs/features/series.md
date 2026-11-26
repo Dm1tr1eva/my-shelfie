@@ -112,11 +112,14 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
 - **The wanted-books query is capped at 1,000.** A personal wishlist is far below that.
 - **No uniqueness on series titles.** Two series may share a title; the author tells them
   apart by author and notes.
-- **Genres, tropes and the description live on the series.** A book with a `seriesId` is
-  returned with the series' values in `genres`, `tropes` and `annotation` (the overlay is
+- **Genres and tropes live on the series; the annotation stays the book's.** A book with a
+  `seriesId` is returned with the series' values in `genres` and `tropes` (the overlay is
   `toBookDto(book, series)`); the values stored on the book are kept and come back if it leaves
-  the series. Putting a book into a series adds its genres and tropes to the series and gives
-  the series the book's description if it has none. A series saved before this took the union
+  the series. Its `annotation` is always its own (v3 decision 21, since 2026-11-26; before
+  that the series' description was returned in its place), and the series' description is the
+  series' `annotation`, shown on the series page. Putting a book into a series adds its genres
+  and tropes to the series and gives the series the book's annotation as a description if it
+  has none. A series saved before this took the union
   of its books' tags the first time it was read and was marked `tagsMerged`; one created
   through the API is born merged, so tags an author removes are not brought back. Design:
   [series-tags.md](../designs/series-tags.md).
