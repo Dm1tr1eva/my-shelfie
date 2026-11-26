@@ -219,8 +219,8 @@ client.
   - Top: the series and `#N` (a link to the series) or "Standalone book"; the cover with
     "Change cover" (covers of the same title and author from the existing Google Books search,
     with the "Powered by Google" mark; a link; a plain cover, which clears `coverUrl`); the
-    title and author with a pencil that turns them into fields (Enter or Done saves, Escape
-    cancels, an empty field keeps the old value).
+    title and author with a pencil that turns them into fields (Enter, Done or leaving both
+    fields saves, Escape cancels, an empty field keeps the old value).
   - Properties: I have it (Yes / Want), Format (Paper, E-book, Audiobook), Pages or, for an
     audiobook, Duration in hours and minutes (stored as `durationMinutes`), then for a book you
     have: Status (an audiobook says Listening and Listened for `reading` and `read`), and by
@@ -245,8 +245,10 @@ client.
     recommend? (Yes / Maybe / No, pressing the chosen one clears it); quotes with an optional
     page, added and removed; My note (the API returns an old `review` here as `notes`).
   - "Delete book" at the end asks in `ConfirmDialog` (Cancel on the left and focused, Delete on
-    the right; the text names the series when there is one); deleting closes the panel and
-    the page underneath reloads its lists.
+    the right; the text names the series when there is one); deleting closes the panel, the
+    page underneath reloads its lists, and the focus goes to the page's heading, since the
+    cover that opened the panel is gone. A book deleted while an old copy is still cached (a
+    way forward to its address) shows only "Book not found", never its fields.
   - **Autosave** (`lib/use-book-autosave.ts`). Choices (toggle, selects, stars, dates, moods,
     recommend, links, quotes, cover) are sent at once and shown at once (the SWR cache is
     updated before the answer). Pages, duration, title and author are sent on leaving the field
@@ -256,7 +258,10 @@ client.
     before that save (a value that was empty is cleared) and says "Change undone". A failed save
     puts a choice back as it was, leaves typed text in its field and shows an error toast that
     stays, with Retry. Closing the panel first sends any field still being edited (an unsaved
-    quote form included) and waits; if that fails the panel stays open with the error. After a
+    quote form included) and waits; if that fails the panel stays open with the error. Leaving
+    it another way (the browser's Back, a link) sends such a field as the panel goes; a
+    cancelled quote form is dropped. A text typed again after an Undo is sent again, even when
+    it equals what was saved before. After a
     save or a delete every library key (`/api/books…`, `/api/series…`, `/api/next-to-buy`,
     `/api/tropes`) is revalidated, so the page underneath shows the change.
   - `components/toast.tsx` and `components/confirm-dialog.tsx` are shared for the series page.
@@ -374,8 +379,9 @@ both the filter every query uses and the sort `GET /` applies.
   audio keeps its pages; the client decides which to show.
 - **The details step still offers two formats.** Its toggle keeps paper and e-book (three
   overflow at 320 px); an audiobook is chosen in the book panel. The add modal replaces it.
-- **Text being typed is saved on leaving the field, not while typing.** Closing the panel saves
-  it, but closing or reloading the tab in the middle of a sentence loses that sentence.
+- **Text being typed is saved on leaving the field, not while typing.** Closing the panel or
+  leaving it by Back or a link saves it, but closing or reloading the tab in the middle of a
+  sentence loses that sentence.
 - **Undo reverts the latest save only.** There is no history of changes.
 - **A series book's genres and tropes, and the series a book is in, are not edited in the
   panel.** They belong to the series; the details step still edits them, and the series page's

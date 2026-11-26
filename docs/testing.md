@@ -98,6 +98,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   Vitest nor `next dev` showed it; `next build` listed a `/[...rest]` route, and `curl` against
   `next start` gave the status. After touching route files, check an unknown address that way.
 
+- **A save can outlive its test.** The panel's tests answer `PATCH` after 30 ms, as a real server
+  would not answer at once; a test that ended right after a click left the answer in flight,
+  and once `fetch` was unstubbed it failed into an unmounted SWR cache (an unhandled
+  `TypeError`, 2026-11-26). Their `afterEach` waits 80 ms before unstubbing.
+
 - **The book panel closes asynchronously.** Closing first waits for unsaved text, so a test that
   presses Escape and asserts at once that `router.back` was *not* called passes even when the
   panel is about to close. Three such tests stayed green under a mutation (2026-11-26); they
