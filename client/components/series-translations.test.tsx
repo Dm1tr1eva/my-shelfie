@@ -104,7 +104,7 @@ describe("the series page in other languages", () => {
     fireEvent.click(screen.getByRole("button", { name: "Видалити серію" }));
 
     expect(confirm).toHaveBeenCalledWith(
-      "Видалити серію «Saga of Ash»? Її книги залишаться на вашій полиці.",
+      "Видалити серію «Saga of Ash»? Її книги залишаться на твоїй полиці.",
     );
     confirm.mockRestore();
   });
@@ -122,13 +122,13 @@ describe("Next to buy in other languages", () => {
     serveNext();
     renderApp(<NextToBuy />);
 
-    expect(await screen.findByRole("heading", { name: "Що купити далі" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Що взяти далі" })).toBeInTheDocument();
     await screen.findByText("Книга 4");
-    expect(screen.getAllByText("Пропуск: у вас є #1 і #3")).toHaveLength(1);
+    expect(screen.getAllByText("Пропуск: у тебе є #1 і #3")).toHaveLength(1);
     expect(screen.getByText("3 книги")).toBeInTheDocument();
     expect(screen.getByText("Книга 4")).toBeInTheDocument();
     expect(screen.getByText("B. Author · окрема книга")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Куплено" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Уже є" })).toHaveLength(2);
   });
 
   it("is in Russian, with the plural for five and for one", async () => {
@@ -136,15 +136,15 @@ describe("Next to buy in other languages", () => {
     serveNext();
     renderApp(<NextToBuy />);
 
-    expect(await screen.findByRole("heading", { name: "Что купить дальше" })).toBeInTheDocument();
-    await screen.findByText("Пропуск: у вас есть #1 и #3");
+    expect(await screen.findByRole("heading", { name: "Что взять дальше" })).toBeInTheDocument();
+    await screen.findByText("Пропуск: у тебя есть #1 и #3");
     expect(screen.getByText("3 книги")).toBeInTheDocument();
-    expect(screen.getByText("Saga of Ash · ещё нет в вашем списке")).toBeInTheDocument();
+    expect(screen.getByText("Saga of Ash · ещё нет в твоём списке")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Добавить эту книгу" })).toBeInTheDocument();
-    expect(screen.getByText("Пропуск: у вас есть #1 и #3")).toBeInTheDocument();
+    expect(screen.getByText("Пропуск: у тебя есть #1 и #3")).toBeInTheDocument();
   });
 
-  it("says that nothing is left to buy in Russian", async () => {
+  it("says that nothing is missing in Russian", async () => {
     act(() => setLocale("ru"));
     mockApi(({ path }) => {
       if (path.startsWith("/api/next-to-buy")) return { body: { items: [] } };
@@ -152,6 +152,6 @@ describe("Next to buy in other languages", () => {
     });
     renderApp(<NextToBuy />);
 
-    expect(await screen.findByText("Покупать нечего")).toBeInTheDocument();
+    expect(await screen.findByText("Всё на месте")).toBeInTheDocument();
   });
 });
