@@ -59,6 +59,10 @@ function Ring({ goal }: { goal: YearGoal }) {
   );
 }
 
+function clampBooks(value: number) {
+  return Math.min(MAX_BOOKS, Math.max(MIN_BOOKS, Math.round(value)));
+}
+
 function GoalEditor({
   year,
   goal,
@@ -72,18 +76,18 @@ function GoalEditor({
 }) {
   const t = useT();
   const { saveGoal } = useHomeActions();
-  const [books, setBooks] = useState(goal?.target ?? DEFAULT_TARGET);
+  const [text, setText] = useState(String(goal?.target ?? DEFAULT_TARGET));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fieldId = useId();
+  const typed = text.trim() === "" ? NaN : Number(text);
+  const entered = Number.isFinite(typed);
+  const books = clampBooks(entered ? typed : MIN_BOOKS);
   const left = Math.max(0, books - done);
-
-  function change(next: number) {
-    if (Number.isFinite(next)) setBooks(Math.min(MAX_BOOKS, Math.max(MIN_BOOKS, Math.round(next))));
-  }
 
   async function save(event: React.FormEvent) {
     event.preventDefault();
+    if (!entered) return;
     setSaving(true);
     setError(null);
     try {
@@ -102,7 +106,7 @@ function GoalEditor({
           type="button"
           aria-label={t("dashboard.goal.fewer")}
           disabled={books <= MIN_BOOKS}
-          onClick={() => change(books - 1)}
+          onClick={() => setText(String(clampBooks(books - 1)))}
           className="btn-round text-xl"
         >
           −
@@ -116,15 +120,15 @@ function GoalEditor({
           inputMode="numeric"
           min={MIN_BOOKS}
           max={MAX_BOOKS}
-          value={books}
-          onChange={(event) => change(Number(event.target.value))}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
           className="field num w-24 bg-input-strong text-center text-2xl"
         />
         <button
           type="button"
           aria-label={t("dashboard.goal.more")}
           disabled={books >= MAX_BOOKS}
-          onClick={() => change(books + 1)}
+          onClick={() => setText(String(clampBooks(books + 1)))}
           className="btn-round"
         >
           <PlusIcon />
@@ -138,10 +142,10 @@ function GoalEditor({
             <button
               key={value}
               type="button"
-              aria-pressed={books === value}
-              onClick={() => setBooks(value)}
+              aria-pressed={entered && books === value}
+              onClick={() => setText(String(value))}
               className={`num min-h-10 flex-1 rounded-pill text-sm ${
-                books === value
+                entered && books === value
                   ? "bg-navy text-page"
                   : "border border-mist text-navy hover:bg-beige"
               }`}
@@ -152,7 +156,7 @@ function GoalEditor({
         </div>
       </div>
 
-      {goal && (
+      {goal && entered && (
         <p className="text-sm text-ink-soft">
           {left === 0
             ? t("dashboard.goal.reached")
@@ -174,7 +178,7 @@ function GoalEditor({
         <button type="button" onClick={onClose} className="btn-outline border-transparent">
           {t("dashboard.goal.cancel")}
         </button>
-        <button type="submit" disabled={saving} className="btn-primary">
+        <button type="submit" disabled={saving || !entered} className="btn-primary">
           {t("dashboard.goal.save")}
         </button>
       </div>
