@@ -207,34 +207,14 @@ describe("series API", () => {
     assert.equal(updated.body.note, undefined);
   });
 
-  it("keeps a series that is still coming out but can be read now, and filters what to buy by it", async () => {
+  it("keeps a series that is still coming out but can be read now", async () => {
     const alice = await signIn("alice@example.com");
     const readable = await addSeries(alice, { title: "Readable", status: "readable" });
-    const ongoing = await addSeries(alice, { title: "Cliffhanger", status: "ongoing" });
-    await addBook(alice, { title: "R1", seriesId: readable.id, seriesNumber: 1 });
-    await addBook(alice, {
-      title: "R2",
-      seriesId: readable.id,
-      seriesNumber: 2,
-      ownership: "wanted",
-    });
-    await addBook(alice, { title: "O1", seriesId: ongoing.id, seriesNumber: 1 });
-    await addBook(alice, {
-      title: "O2",
-      seriesId: ongoing.id,
-      seriesNumber: 2,
-      ownership: "wanted",
-    });
 
     const fetched = await api(`/api/series/${readable.id}`, { cookie: alice });
-    const filtered = await api("/api/next-to-buy?seriesStatus=readable", { cookie: alice });
 
     assert.equal(readable.status, "readable");
     assert.equal(fetched.body.series.status, "readable");
-    assert.deepEqual(
-      filtered.body.items.map((item) => item.book.title),
-      ["R2"],
-    );
   });
 
   it("stores how many books a series has and clears it with null", async () => {
@@ -747,167 +727,6 @@ describe("library fields on books", () => {
   });
 });
 
-describe("next to buy API", () => {
-  it("refuses a request with no session cookie", async () => {
-    const response = await api("/api/next-to-buy");
-
-    assert.equal(response.status, 401);
-  });
-
-  it("offers the missing books of a started series, gaps first, and the standalone wishlist", async () => {
-    const alice = await signIn("alice@example.com");
-    const saga = await addSeries(alice, { title: "Saga" });
-    const unstarted = await addSeries(alice, { title: "Unstarted" });
-    await addBook(alice, {
-      title: "Saga 1",
-      seriesId: saga.id,
-      seriesNumber: 1,
-      ownership: "owned",
-    });
-    await addBook(alice, {
-      title: "Saga 3",
-      seriesId: saga.id,
-      seriesNumber: 3,
-      ownership: "owned",
-    });
-    await addBook(alice, {
-      title: "Saga 2",
-      seriesId: saga.id,
-      seriesNumber: 2,
-      ownership: "wanted",
-    });
-    await addBook(alice, {
-      title: "Saga 4",
-      seriesId: saga.id,
-      seriesNumber: 4,
-      ownership: "wanted",
-    });
-    await addBook(alice, {
-      title: "Unstarted 1",
-      seriesId: unstarted.id,
-      seriesNumber: 1,
-      ownership: "wanted",
-    });
-    await addBook(alice, { title: "Alone", ownership: "wanted" });
-    await addBook(alice, { title: "Not wanted", ownership: "owned" });
-
-    const response = await api("/api/next-to-buy", { cookie: alice });
-
-    assert.equal(response.status, 200);
-    assert.deepEqual(
-      response.body.items.map((item) => item.book.title),
-      ["Saga 2", "Saga 4", "Alone"],
-    );
-    assert.deepEqual(
-      response.body.items.map((item) => item.gap),
-      [true, false, false],
-    );
-    assert.equal(response.body.items[0].series.title, "Saga");
-    assert.equal(response.body.items[2].type, "standalone");
-  });
-
-  it("filters what to buy by a genre the user made up", async () => {
-    const alice = await signIn("alice@example.com");
-    await addBook(alice, { title: "Cosy", ownership: "wanted", genres: ["Cosy mystery"] });
-    await addBook(alice, { title: "Dune", ownership: "wanted", genres: ["Science fiction"] });
-
-    const response = await api("/api/next-to-buy?genre=Cosy%20mystery", { cookie: alice });
-
-    assert.equal(response.status, 200);
-    assert.deepEqual(
-      response.body.items.map((item) => item.book.title),
-      ["Cosy"],
-    );
-  });
-
-  it("lists the numbers of a series of known size that have no book yet", async () => {
-    const alice = await signIn("alice@example.com");
-    const series = await addSeries(alice, { totalBooks: 4 });
-    await addBook(alice, { title: "One", seriesId: series.id, seriesNumber: 1 });
-    await addBook(alice, { title: "Three", seriesId: series.id, seriesNumber: 3 });
-
-    const response = await api("/api/next-to-buy", { cookie: alice });
-
-    assert.equal(response.status, 200);
-    assert.deepEqual(
-      response.body.items.map((item) => [item.type, item.number, item.gap]),
-      [
-        ["missing", 2, true],
-        ["missing", 4, false],
-      ],
-    );
-    assert.equal(response.body.items[0].series.totalBooks, 4);
-    assert.equal(response.body.items[0].book, undefined);
-  });
-
-  it("drops a book from the list once it is marked owned", async () => {
-    const alice = await signIn("alice@example.com");
-    const saga = await addSeries(alice);
-    await addBook(alice, {
-      title: "Owned",
-      seriesId: saga.id,
-      seriesNumber: 1,
-      ownership: "owned",
-    });
-    const wanted = await addBook(alice, {
-      title: "Wanted",
-      seriesId: saga.id,
-      seriesNumber: 2,
-      ownership: "wanted",
-    });
-
-    const before = await api("/api/next-to-buy", { cookie: alice });
-    await api("/api/books/" + wanted.id, {
-      method: "PATCH",
-      cookie: alice,
-      body: { ownership: "owned" },
-    });
-    const after = await api("/api/next-to-buy", { cookie: alice });
-
-    assert.equal(before.body.items.length, 1);
-    assert.equal(after.body.items.length, 0);
-  });
-
-  it("filters by the language of the shop links", async () => {
-    const alice = await signIn("alice@example.com");
-    await addBook(alice, {
-      title: "In Ukrainian",
-      ownership: "wanted",
-      links: [{ languages: ["uk"], url: "https://shop.example/uk" }],
-    });
-    await addBook(alice, {
-      title: "In Russian",
-      ownership: "wanted",
-      links: [{ languages: ["ru"], url: "https://shop.example/ru" }],
-    });
-
-    const response = await api("/api/next-to-buy?language=uk", { cookie: alice });
-
-    assert.deepEqual(
-      response.body.items.map((item) => item.book.title),
-      ["In Ukrainian"],
-    );
-  });
-
-  it("does not offer another user's wanted books", async () => {
-    const alice = await signIn("alice@example.com");
-    const bob = await signIn("bob@example.com");
-    await addBook(bob, { title: "Bob wants this", ownership: "wanted" });
-
-    const response = await api("/api/next-to-buy", { cookie: alice });
-
-    assert.deepEqual(response.body.items, []);
-  });
-
-  it("rejects an unknown filter value", async () => {
-    const alice = await signIn("alice@example.com");
-
-    const response = await api("/api/next-to-buy?language=fr", { cookie: alice });
-
-    assert.equal(response.status, 400);
-  });
-});
-
 describe("tags and description on the series", () => {
   const Series = require("../models/series");
 
@@ -1159,24 +978,5 @@ describe("tags and description on the series", () => {
     const response = await api("/api/tropes", { cookie: alice });
 
     assert.deepEqual(response.body.tropes, ["book trope", "series trope"]);
-  });
-
-  it("filters the shopping list by a trope the series carries", async () => {
-    const alice = await signIn("alice@example.com");
-    const series = await setUpSeries(alice, { tropes: ["slow burn"] });
-    await addBook(alice, { seriesId: series.id, seriesNumber: 1, ownership: "owned" });
-    await addBook(alice, {
-      title: "Two",
-      seriesId: series.id,
-      seriesNumber: 2,
-      ownership: "wanted",
-    });
-
-    const response = await api("/api/next-to-buy?trope=slow%20burn", { cookie: alice });
-
-    assert.deepEqual(
-      response.body.items.map((item) => item.book.title),
-      ["Two"],
-    );
   });
 });

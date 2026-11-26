@@ -6,12 +6,6 @@ const { failsWith } = require("../middleware/errors");
 const router = express.Router();
 
 router.get(
-  "/next-to-buy",
-  requireAuth,
-  failsWith("Failed to build the list"),
-  libraryController.nextToBuy,
-);
-router.get(
   "/wishlist",
   requireAuth,
   failsWith("Failed to build the list"),

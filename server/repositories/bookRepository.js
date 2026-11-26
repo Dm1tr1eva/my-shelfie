@@ -70,7 +70,7 @@ async function findAllForUser(userId) {
     .sort({ createdAt: -1, _id: -1 });
 }
 
-async function findForNextToBuy(userId) {
+async function findForWishlist(userId) {
   return Book.find({
     userId,
     $or: [{ ownership: "wanted" }, { seriesId: { $exists: true } }],
@@ -125,7 +125,7 @@ module.exports = {
   updateOneForUser,
   deleteOneForUser,
   findAllForUser,
-  findForNextToBuy,
+  findForWishlist,
   findBySeries,
   countBySeries,
   unlinkSeries,

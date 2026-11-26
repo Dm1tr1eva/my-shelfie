@@ -119,12 +119,6 @@ const ROUTE_FAILURES = [
   },
   {
     method: "GET",
-    path: "/api/next-to-buy",
-    breaks: [libraryService, "nextToBuy"],
-    error: "Failed to build the list",
-  },
-  {
-    method: "GET",
     path: "/api/wishlist",
     breaks: [libraryService, "wishlist"],
     error: "Failed to build the list",
