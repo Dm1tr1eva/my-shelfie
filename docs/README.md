@@ -98,6 +98,21 @@ Runs `eslint`, a TypeScript check (`tsc --noEmit`), the Prettier check, then the
 database needed — component/hook tests mock `fetch`. What they cannot prove is a real cross-origin cookie round trip; check that by hand
 in a browser after a change to auth or CORS (see `docs/features/auth.md`).
 
+## Dependency advisories
+
+`npm audit` in `server/` was cleared on 2026-11-26 except one finding, kept on purpose:
+
+- **`minimatch` 10.x (moderate, GHSA-g3hv-75wg-m249), through `nodemon`.** The fix npm offers
+  is to move `nodemon` back to 3.1.11, outside its range; the current `nodemon` 3.1.14 asks for
+  `minimatch` ^10.2.1, and every 10.x is in the advisory's range. Not reachable: `nodemon` is a
+  dev dependency that runs only under `npm run dev` on a developer's machine (Render starts
+  `node index.js`), and the globs it matches are its own watch settings, never input from a
+  request. Revisit when `nodemon` moves to `minimatch` 11.
+
+When updating, prefer the smallest fixed version that has been out for a couple of weeks over a
+release from the last few days, and run the whole server suite: `express` 5 and `mongoose` sit
+under every route.
+
 ## Formatting
 
 Prettier, one shared config in the repository root (`.prettierrc.json`), pinned to an exact
