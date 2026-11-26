@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import { TrashIcon } from "@/components/icons";
+import { useExit } from "@/lib/use-exit";
 
 export function ConfirmDialog({
   title,
@@ -25,6 +26,7 @@ export function ConfirmDialog({
   const textId = useId();
   const box = useRef<HTMLDivElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
+  const { leaving, leave, onAnimationEnd } = useExit(box, onCancel);
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -37,7 +39,7 @@ export function ConfirmDialog({
 
     if (event.key === "Escape") {
       event.preventDefault();
-      onCancel();
+      leave();
       return;
     }
 
@@ -59,14 +61,19 @@ export function ConfirmDialog({
       className="fixed inset-0 z-[70] flex items-start justify-center px-4 pt-[18dvh]"
       onKeyDown={onKeyDown}
     >
-      <div aria-hidden="true" onClick={onCancel} className="absolute inset-0 bg-scrim" />
+      <div
+        aria-hidden="true"
+        onClick={leave}
+        className={`absolute inset-0 bg-scrim ${leaving ? "animate-fade-out" : "animate-fade-in"}`}
+      />
       <div
         ref={box}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={textId}
-        className="relative flex w-full max-w-[440px] flex-col gap-3 rounded-modal bg-card p-6 shadow-modal md:p-7"
+        onAnimationEnd={onAnimationEnd}
+        className={`relative flex w-full max-w-[440px] flex-col gap-3 rounded-modal bg-card p-6 shadow-modal md:p-7 ${leaving ? "animate-pop-out" : "animate-pop-in"}`}
       >
         <h2 id={titleId} className="text-[22px] font-semibold leading-tight md:text-2xl">
           {title}
@@ -75,7 +82,7 @@ export function ConfirmDialog({
           {text}
         </p>
         <div className="mt-2 flex items-center justify-between gap-3">
-          <button ref={cancel} type="button" onClick={onCancel} className="btn-outline">
+          <button ref={cancel} type="button" onClick={leave} className="btn-outline">
             {cancelLabel}
           </button>
           <button type="button" onClick={onConfirm} disabled={pending} className="btn-primary">

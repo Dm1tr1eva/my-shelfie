@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { XIcon } from "@/components/icons";
 import { FOCUSABLE } from "@/lib/focusable";
 import { useT } from "@/lib/i18n";
+import { useExit } from "@/lib/use-exit";
 
 function subscribeToNothing() {
   return () => {};
@@ -39,12 +40,13 @@ export function Drawer({
 }) {
   const t = useT();
   const panel = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose);
+  const { leaving, leave, onAnimationEnd } = useExit(panel, onClose);
+  const leaveLater = useRef(leave);
   const onClient = useOnClient();
 
   useEffect(() => {
-    close.current = onClose;
-  }, [onClose]);
+    leaveLater.current = leave;
+  });
 
   useEffect(() => {
     if (!onClient) return;
@@ -55,7 +57,7 @@ export function Drawer({
     panel.current?.focus();
 
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape" && !event.defaultPrevented) close.current();
+      if (event.key === "Escape" && !event.defaultPrevented) leaveLater.current();
     }
     document.addEventListener("keydown", onKey);
 
@@ -99,8 +101,8 @@ export function Drawer({
     <div className="fixed inset-0 z-50 flex items-end md:items-stretch md:justify-end">
       <div
         aria-hidden="true"
-        onClick={onClose}
-        className={`absolute inset-0 ${lightScrim ? "bg-scrim-light" : "bg-scrim"}`}
+        onClick={leave}
+        className={`absolute inset-0 ${lightScrim ? "bg-scrim-light" : "bg-scrim"} ${leaving ? "animate-fade-out" : "animate-fade-in"}`}
       />
       <div
         ref={panel}
@@ -109,7 +111,8 @@ export function Drawer({
         aria-label={label}
         tabIndex={-1}
         onKeyDown={trapTab}
-        className={`relative flex w-full flex-col rounded-t-modal bg-card shadow-modal outline-none md:h-full md:max-h-none md:rounded-none ${tall ? "h-[calc(100dvh-2rem)]" : "max-h-[92dvh]"} ${className}`}
+        onAnimationEnd={onAnimationEnd}
+        className={`relative flex w-full flex-col rounded-t-modal bg-card shadow-modal outline-none md:h-full md:max-h-none md:rounded-none ${tall ? "h-[calc(100dvh-2rem)]" : "max-h-[92dvh]"} ${leaving ? "animate-sheet-out md:animate-panel-out" : "animate-sheet-in md:animate-panel-in"} ${className}`}
       >
         <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-mist md:hidden" />
         <div className="flex items-center justify-between gap-3 px-5 pt-3 md:px-6 md:pt-6">
@@ -117,7 +120,7 @@ export function Drawer({
           <button
             type="button"
             aria-label={t("shell.close")}
-            onClick={onClose}
+            onClick={leave}
             className="btn-round shrink-0"
           >
             <XIcon size={18} />

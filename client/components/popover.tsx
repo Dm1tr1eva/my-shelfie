@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Drawer } from "@/components/drawer";
 import { FOCUSABLE } from "@/lib/focusable";
+import { useExit } from "@/lib/use-exit";
 import { useMediaQuery } from "@/lib/use-media-query";
 
 const WIDE = "(min-width: 48rem)";
@@ -33,11 +34,12 @@ function PopoverCard({
   children: React.ReactNode;
 }) {
   const card = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose);
+  const { leaving, leave, onAnimationEnd } = useExit(card, onClose);
+  const leaveLater = useRef(leave);
 
   useEffect(() => {
-    close.current = onClose;
-  }, [onClose]);
+    leaveLater.current = leave;
+  });
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -45,11 +47,11 @@ function PopoverCard({
     node?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") close.current();
+      if (event.key === "Escape") leaveLater.current();
     }
     function onPointerDown(event: PointerEvent) {
       const wrapper = node?.parentElement;
-      if (wrapper && !wrapper.contains(event.target as Node)) close.current();
+      if (wrapper && !wrapper.contains(event.target as Node)) leaveLater.current();
     }
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointerDown);
@@ -68,7 +70,8 @@ function PopoverCard({
       id={id}
       role="dialog"
       aria-label={label}
-      className={`absolute top-full z-30 mt-2 flex w-[22rem] max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-popover bg-card p-5 text-left shadow-popover ${ALIGN[align]}`}
+      onAnimationEnd={onAnimationEnd}
+      className={`absolute top-full z-30 mt-2 flex w-[22rem] max-w-[calc(100vw-2rem)] origin-top flex-col gap-4 rounded-popover bg-card p-5 text-left shadow-popover ${ALIGN[align]} ${leaving ? "animate-pop-out" : "animate-pop-in"}`}
     >
       <span
         aria-hidden="true"
