@@ -1,227 +1,347 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
-import { book, booksResponse, mockApi, renderApp, series } from "@/test/helpers";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { mockApi, renderApp, type Call } from "@/test/helpers";
+import { resetLocale, setLocale } from "@/lib/i18n";
+import type { WishlistBookRow, WishlistGroup, WishlistSeriesRow } from "@/lib/wishlist";
 import { Wishlist } from "./wishlist";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(window.location.search),
 }));
 
-const saga = series({ id: "saga", title: "Saga of Ash", author: "A. Writer" });
+function seriesRow(overrides: Partial<WishlistSeriesRow> = {}): WishlistSeriesRow {
+  return {
+    type: "series",
+    id: "saga",
+    title: "Saga of Ash",
+    author: "A. Writer",
+    status: "ongoing",
+    desire: "high",
+    segments: [
+      { number: 1, state: "owned" },
+      { number: 2, state: "owned" },
+      { number: 3, state: "wanted" },
+      { number: 4, state: "missing" },
+    ],
+    genres: ["Fantasy"],
+    tropes: [],
+    linkLanguages: ["uk"],
+    linkKinds: ["ebook"],
+    ...overrides,
+  };
+}
 
-const SHELF = [
-  book({ id: "one", title: "Ash One", seriesId: "saga", seriesNumber: 1 }),
-  book({ id: "three", title: "Ash Three", seriesId: "saga", seriesNumber: 3 }),
-  book({
-    id: "two",
-    title: "Ash Two",
-    seriesId: "saga",
-    seriesNumber: 2,
-    ownership: "wanted",
-  }),
-  book({ id: "alone", title: "Stand Alone", author: "Solo Person" }),
-  book({ id: "wish", title: "Wished Alone", ownership: "wanted" }),
-];
+function bookRow(overrides: Partial<WishlistBookRow> = {}): WishlistBookRow {
+  return {
+    type: "book",
+    id: "loose",
+    title: "Loose Leaf",
+    author: "Solo Person",
+    desire: "someday",
+    format: "paper",
+    genres: ["Horror"],
+    tropes: [],
+    linkLanguages: [],
+    linkKinds: [],
+    ...overrides,
+  };
+}
 
-function serve(books = SHELF) {
-  mockApi(({ path }) => {
-    if (path.startsWith("/api/books")) return booksResponse(books);
-    if (path === "/api/series") return { body: { series: [saga] } };
+const NEW_SERIES = seriesRow({
+  id: "fresh",
+  title: "Fresh Start",
+  author: "B. Writer",
+  desire: "normal",
+  status: "complete",
+  segments: [{ number: 1, state: "missing" }],
+  genres: ["Romance"],
+});
+
+function groups(
+  continuing = [seriesRow()],
+  fresh = [NEW_SERIES],
+  standalone = [bookRow()],
+): WishlistGroup[] {
+  return [
+    { key: "continue", count: continuing.length, items: continuing },
+    { key: "newSeries", count: fresh.length, items: fresh },
+    { key: "standalone", count: standalone.length, items: standalone },
+  ];
+}
+
+type Patch = { status?: number; wait?: Promise<unknown> };
+
+function serve(list: WishlistGroup[] = groups(), patch: Patch = {}) {
+  return mockApi((call) => {
+    if (call.path === "/api/wishlist") return { body: { groups: list } };
+    if (call.method === "PATCH") return { status: patch.status ?? 200, body: {}, wait: patch.wait };
+    if (call.method === "GET") return { body: { books: [], series: [] } };
   });
+}
+
+function sectionOf(name: string) {
+  return screen.getByRole("region", { name: new RegExp(`^${name}`) });
+}
+
+function rowTitles(name: string) {
+  return within(sectionOf(name))
+    .getAllByRole("heading", { level: 3 })
+    .map((heading) => heading.textContent);
+}
+
+function patches(calls: Call[]) {
+  return calls.filter((call) => call.method === "PATCH");
+}
+
+function wishlistReads(calls: Call[]) {
+  return calls.filter((call) => call.path === "/api/wishlist").length;
+}
+
+async function settle() {
+  await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
 }
 
 describe("Wishlist", () => {
   beforeEach(() => {
-    localStorage.clear();
+    window.history.replaceState(null, "", "/wishlist");
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    localStorage.clear();
+    act(() => resetLocale());
   });
 
-  it("shows only wanted books", async () => {
+  it("shows the three groups in the server's order, each row with a count, segments and a link", async () => {
+    serve(groups([seriesRow(), seriesRow({ id: "second", title: "Second Saga" })]));
+    renderApp(<Wishlist />);
+
+    await screen.findByRole("heading", { name: "Continue a series" });
+
+    expect(
+      screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(["Continue a series", "New series", "Standalone books"]);
+    expect(within(sectionOf("Continue a series")).getByText("2")).toBeInTheDocument();
+    expect(rowTitles("Continue a series")).toEqual(["Saga of Ash", "Second Saga"]);
+    expect(
+      within(sectionOf("Continue a series")).getAllByRole("img", { name: "Own 2 of 4" }),
+    ).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Saga of Ash, A. Writer" })).toHaveAttribute(
+      "href",
+      "/series/saga",
+    );
+    expect(screen.getByRole("link", { name: "Loose Leaf, Solo Person" })).toHaveAttribute(
+      "href",
+      "/books/loose",
+    );
+    expect(within(sectionOf("Standalone books")).queryByRole("img", { name: /Own/ })).toBeNull();
+  });
+
+  it("names each desire level on its pill", async () => {
     serve();
     renderApp(<Wishlist />);
 
-    expect(await screen.findByText("Wished Alone")).toBeInTheDocument();
-    expect(screen.getByText("Ash Two")).toBeInTheDocument();
-    expect(screen.queryByText("Ash One")).not.toBeInTheDocument();
-    expect(screen.queryByText("Stand Alone")).not.toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Desire: Very much. Tap to change" }),
+    ).toHaveTextContent("Very much");
+    expect(screen.getByRole("button", { name: "Desire: Want. Tap to change" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Desire: Someday. Tap to change" })).toBeVisible();
   });
 
-  it("marks each book as a paper book or an e-book, in the list and in the grid", async () => {
-    serve([
-      book({ id: "p", title: "On Paper", ownership: "wanted" }),
-      book({ id: "e", title: "On a Screen", format: "ebook", ownership: "wanted" }),
-    ]);
+  it("says what lands in a group that is empty while others are not", async () => {
+    serve(groups([seriesRow()], [], [bookRow()]));
     renderApp(<Wishlist />);
-    await screen.findByText("On Paper");
 
-    const marked = () => ({
-      paper: screen.getAllByRole("img", { name: "Paper book" }).length,
-      ebook: screen.getAllByRole("img", { name: "E-book" }).length,
-    });
+    await screen.findByRole("heading", { name: "New series" });
 
-    expect(marked()).toEqual({ paper: 1, ebook: 1 });
-
-    fireEvent.click(screen.getByRole("button", { name: /grid/i }));
-
-    expect(marked()).toEqual({ paper: 1, ebook: 1 });
+    expect(within(sectionOf("New series")).getByText("0")).toBeInTheDocument();
+    expect(
+      within(sectionOf("New series")).getByText("Series you have no books of yet land here."),
+    ).toBeInTheDocument();
   });
 
-  it("announces a rating as an image with its meaning, in the list and in the grid", async () => {
-    serve([book({ id: "r", title: "Rated Book", rating: 4, ownership: "wanted" })]);
-    renderApp(<Wishlist />);
-    await screen.findByText("Rated Book");
-
-    expect(screen.getByRole("img", { name: "Rated 4 out of 5" })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /grid/i }));
-
-    expect(screen.getByRole("img", { name: "Rated 4 out of 5" })).toBeInTheDocument();
-  });
-
-  it("narrows the list by title or author while you type", async () => {
-    serve();
-    renderApp(<Wishlist />);
-    await screen.findByText("Wished Alone");
-
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search my books" }), {
-      target: { value: "wished" },
-    });
-
-    expect(screen.getByText("Wished Alone")).toBeInTheDocument();
-    expect(screen.queryByText("Ash Two")).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search my books" }), {
-      target: { value: "zzzz" },
-    });
-
-    expect(screen.getByText("No books match")).toBeInTheDocument();
-  });
-
-  it("invites you to add a first book when the wishlist is empty", async () => {
-    serve([]);
+  it("shows one empty state with a way to add a book when nothing is wanted", async () => {
+    serve(groups([], [], []));
     renderApp(<Wishlist />);
 
-    expect(await screen.findByText("Your wishlist is empty")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Your wishlist is empty" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Add a book" })).toHaveAttribute("href", "/add");
+    expect(screen.queryByRole("heading", { name: "Continue a series" })).toBeNull();
+    expect(screen.queryByRole("searchbox")).toBeNull();
   });
 
-  it("remembers the list or grid choice", async () => {
+  it("shows a loading state, then an error with a retry that loads the list again", async () => {
+    let fail = true;
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const calls = mockApi((call) => {
+      if (call.path !== "/api/wishlist") return undefined;
+      return fail
+        ? { status: 500, body: { error: "Request failed" }, wait: held }
+        : { body: { groups: groups() } };
+    });
+    renderApp(<Wishlist />);
+
+    expect(await screen.findByText("Loading your wishlist…")).toBeInTheDocument();
+    release();
+    expect(await screen.findByText("Could not load your wishlist")).toBeInTheDocument();
+
+    fail = false;
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByRole("heading", { name: "Saga of Ash" })).toBeInTheDocument();
+    expect(wishlistReads(calls)).toBe(2);
+  });
+
+  it("narrows the rows by title or author, hides groups left empty and says when nothing matches", async () => {
     serve();
     renderApp(<Wishlist />);
-    await screen.findByText("Wished Alone");
+    const search = await screen.findByRole("searchbox", { name: "Title, author or series" });
 
-    fireEvent.click(screen.getByRole("button", { name: /grid/i }));
+    fireEvent.change(search, { target: { value: "solo" } });
+    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Loose Leaf",
+    ]);
+    expect(screen.queryByRole("heading", { name: "Continue a series" })).toBeNull();
+    expect(within(sectionOf("Standalone books")).getByText("1")).toBeInTheDocument();
+    expect(window.location.search).toBe("?q=solo");
 
-    expect(localStorage.getItem("my-shelfie:view")).toBe("grid");
+    fireEvent.change(search, { target: { value: "fresh" } });
+    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Fresh Start",
+    ]);
+
+    fireEvent.change(search, { target: { value: "zzz" } });
+    expect(screen.getByRole("heading", { name: "No books match" })).toBeInTheDocument();
   });
 
-  describe("filters and states", () => {
-    const FANTASY = book({
-      id: "f1",
-      title: "Fantasy One",
-      seriesId: "saga",
-      seriesNumber: 1,
-      genres: ["Fantasy"],
-      ownership: "wanted",
-      links: [{ kind: "paper", languages: ["uk"], url: "https://a.example/1" }],
+  it("filters through the library's panel, counts what will show and keeps the choice in the address", async () => {
+    serve();
+    renderApp(<Wishlist />);
+    fireEvent.click(await screen.findByRole("button", { name: "Filters" }));
+
+    const panel = screen.getByRole("dialog", { name: "Filters" });
+    expect(
+      within(panel)
+        .getAllByRole("heading", { level: 3 })
+        .map((heading) => heading.textContent),
+    ).toEqual(["Genre", "Author", "Series status", "Link language", "Link type"]);
+
+    fireEvent.click(within(panel).getByRole("button", { name: "Fantasy" }));
+    fireEvent.click(within(panel).getByRole("button", { name: "Show 1 result" }));
+
+    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Saga of Ash",
+    ]);
+    expect(window.location.search).toBe("?genre=Fantasy");
+    expect(screen.getByRole("button", { name: "Filters · 1" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove filter Fantasy" }));
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
+    expect(window.location.search).toBe("");
+  });
+
+  it("restores the search and filters from the address and ignores groups the page does not have", async () => {
+    window.history.replaceState(null, "", "/wishlist?status=standalone&format=paper&q=leaf");
+    serve();
+    renderApp(<Wishlist />);
+
+    expect(await screen.findByRole("searchbox", { name: "Title, author or series" })).toHaveValue(
+      "leaf",
+    );
+    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Loose Leaf",
+    ]);
+    expect(screen.getByRole("button", { name: "Filters · 1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove filter Standalone books" })).toBeVisible();
+  });
+
+  it("cycles the desire level at once and saves only the last one after the taps stop, keeping the order", async () => {
+    const calls = serve();
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Very much. Tap to change" });
+
+    fireEvent.click(pill);
+    expect(pill).toHaveAccessibleName("Desire: Want. Tap to change");
+    fireEvent.click(pill);
+    expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
+    expect(patches(calls)).toHaveLength(0);
+
+    await waitFor(() => expect(patches(calls)).toHaveLength(1));
+    expect(patches(calls)[0]).toMatchObject({
+      path: "/api/series/saga",
+      body: { desire: "someday" },
     });
-    const FANTASY_THREE = book({
-      id: "f3",
-      title: "Fantasy Three",
-      seriesId: "saga",
-      seriesNumber: 3,
-      genres: ["Fantasy"],
-      ownership: "wanted",
-    });
-    const ROMANCE = book({
-      id: "r1",
-      title: "Romance Alone",
-      genres: ["Romance"],
-      ownership: "wanted",
-    });
+    await settle();
 
-    function serveFiltered() {
-      mockApi(({ path }) => {
-        if (path.startsWith("/api/books")) return booksResponse([FANTASY, FANTASY_THREE, ROMANCE]);
-        if (path === "/api/series") return { body: { series: [saga] } };
-      });
-    }
+    expect(patches(calls)).toHaveLength(1);
+    expect(wishlistReads(calls)).toBe(1);
+    expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
+    expect(rowTitles("Continue a series")).toEqual(["Saga of Ash"]);
+    expect(screen.getByText("Saga of Ash: Someday")).toBeInTheDocument();
+  });
 
-    it("shows how many books there are in how many groups", async () => {
-      serveFiltered();
-      renderApp(<Wishlist />);
+  it("goes from Someday back to Very much and saves a standalone book through the books endpoint", async () => {
+    const calls = serve();
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Someday. Tap to change" });
 
-      expect(await screen.findByText("3 books in 2 groups")).toBeInTheDocument();
-    });
+    fireEvent.click(pill);
 
-    it("narrows to the chosen genre and counts what is left", async () => {
-      serveFiltered();
-      renderApp(<Wishlist />);
-      await screen.findByText("Romance Alone");
+    expect(pill).toHaveAccessibleName("Desire: Very much. Tap to change");
+    await waitFor(() => expect(patches(calls)).toHaveLength(1));
+    expect(patches(calls)[0]).toMatchObject({ path: "/api/books/loose", body: { desire: "high" } });
+  });
 
-      fireEvent.click(screen.getByRole("button", { name: /^Genre/ }));
-      expect(screen.getByRole("checkbox", { name: /Romance/ })).toBeInTheDocument();
-      fireEvent.click(screen.getByRole("checkbox", { name: /Romance/ }));
-      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+  it("puts the saved level back and says so when saving fails", async () => {
+    serve(groups(), { status: 500 });
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Very much. Tap to change" });
 
-      expect(screen.getByText("Romance Alone")).toBeInTheDocument();
-      expect(screen.queryByText("Fantasy One")).not.toBeInTheDocument();
-      expect(screen.getByText("1 book in 1 group")).toBeInTheDocument();
-    });
+    fireEvent.click(pill);
+    expect(pill).toHaveAccessibleName("Desire: Want. Tap to change");
 
-    it("says nothing matches when search and filters leave no book", async () => {
-      serveFiltered();
-      renderApp(<Wishlist />);
-      await screen.findByText("Romance Alone");
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not change how much you want “Saga of Ash”. Try again.",
+    );
+    expect(pill).toHaveAccessibleName("Desire: Very much. Tap to change");
+  });
 
-      fireEvent.click(screen.getByRole("button", { name: /^Genre/ }));
-      fireEvent.click(screen.getByRole("checkbox", { name: /Romance/ }));
-      fireEvent.click(screen.getByRole("button", { name: "Apply" }));
-      fireEvent.change(screen.getByRole("searchbox", { name: "Search my books" }), {
-        target: { value: "fantasy" },
-      });
+  it("sends a change right away when the page is left before the taps settle", async () => {
+    const calls = serve();
+    const { unmount } = renderApp(<Wishlist />);
+    fireEvent.click(await screen.findByRole("button", { name: "Desire: Want. Tap to change" }));
 
-      expect(await screen.findByText("No books match")).toBeInTheDocument();
-    });
+    unmount();
 
-    it("shows a loading state while the shelves load", async () => {
-      let release: () => void = () => {};
-      const slow = new Promise<void>((resolve) => {
-        release = resolve;
-      });
-      mockApi(({ path }) => {
-        if (path.startsWith("/api/books")) return { ...booksResponse([ROMANCE]), wait: slow };
-        if (path === "/api/series") return { body: { series: [] } };
-      });
-      renderApp(<Wishlist />);
+    expect(patches(calls)).toEqual([
+      { method: "PATCH", path: "/api/series/fresh", body: { desire: "someday" } },
+    ]);
+  });
 
-      const status = await screen.findByText("Loading your shelves…");
-      expect(status.closest("[aria-busy='true']")).not.toBeNull();
+  it("speaks Russian and Ukrainian", async () => {
+    act(() => setLocale("ru"));
+    serve();
+    const { unmount } = renderApp(<Wishlist />);
 
-      release();
-      expect(await screen.findByText("Romance Alone")).toBeInTheDocument();
-      expect(screen.queryByText("Loading your shelves…")).not.toBeInTheDocument();
-    });
+    expect(await screen.findByRole("heading", { name: "Продолжить серию" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Отдельные книги" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Желание: Очень хочу. Нажми, чтобы сменить" }),
+    ).toBeInTheDocument();
+    unmount();
 
-    it("shows a retry card when the shelves cannot be loaded, and loads them on retry", async () => {
-      let attempts = 0;
-      mockApi(({ path }) => {
-        if (path.startsWith("/api/books")) {
-          attempts += 1;
-          if (attempts === 1) return { status: 500, body: { error: "boom" } };
-          return booksResponse([ROMANCE]);
-        }
-        if (path === "/api/series") return { body: { series: [] } };
-      });
-      renderApp(<Wishlist />);
-
-      expect(await screen.findByText("Could not load your books")).toBeInTheDocument();
-      fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-
-      expect(await screen.findByText("Romance Alone")).toBeInTheDocument();
-    });
+    act(() => setLocale("uk"));
+    serve();
+    renderApp(<Wishlist />);
+    expect(await screen.findByRole("heading", { name: "Нові серії" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Бажання: Колись. Натисни, щоб змінити" }),
+    ).toBeInTheDocument();
   });
 });

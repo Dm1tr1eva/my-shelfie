@@ -166,7 +166,7 @@ type BooksResponse = {
 };
 
 const LIST_LIMIT = 500;
-const LIBRARY_KEY = /^\/api\/(books|series|next-to-buy|tropes)(\/|\?|$)/;
+const LIBRARY_KEY = /^\/api\/(books|series|next-to-buy|wishlist|tropes)(\/|\?|$)/;
 
 export function isLibraryKey(key: unknown) {
   return typeof key === "string" && LIBRARY_KEY.test(key);

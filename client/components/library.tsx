@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { FilterPanel } from "@/components/filter-panel";
-import { FilterIcon, SearchIcon, XIcon } from "@/components/icons";
+import { ActiveFilterPills, SearchAndFilter } from "@/components/catalogue-toolbar";
 import {
   LibraryBookTile,
   LibraryGapTile,
@@ -127,75 +127,30 @@ export function Library() {
           </h1>
 
           {loaded && books.books.length > 0 && (
-            <div className="flex items-center gap-2 md:w-[420px]">
-              <label className="relative min-w-0 flex-1">
-                <span className="sr-only">{t("library.searchAll")}</span>
-                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted">
-                  <SearchIcon size={18} />
-                </span>
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => show({ query: event.target.value, filters })}
-                  placeholder={t("library.searchAll")}
-                  className="field pl-10"
-                />
-              </label>
-              <button
-                ref={filterButton}
-                type="button"
-                aria-haspopup="dialog"
-                aria-expanded={panelOpen}
-                aria-label={
-                  active > 0
-                    ? t("library.filters.withCount", { count: active })
-                    : t("library.filters.title")
-                }
-                onClick={() => setPanelOpen(true)}
-                className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-control border border-field bg-card text-navy hover:bg-row-hover"
-              >
-                <FilterIcon size={20} />
-                {active > 0 && (
-                  <span
-                    aria-hidden="true"
-                    className="num absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-burgundy px-1 text-[11px] text-card"
-                  >
-                    {active}
-                  </span>
-                )}
-              </button>
-            </div>
+            <SearchAndFilter
+              query={query}
+              onQuery={(next) => show({ query: next, filters })}
+              active={active}
+              panelOpen={panelOpen}
+              onOpenPanel={() => setPanelOpen(true)}
+              filterButton={filterButton}
+            />
           )}
         </div>
 
-        {pills.length > 0 && (
-          <ul className="flex flex-wrap gap-x-2">
-            {pills.map((pill) => (
-              <li key={`${pill.key}-${pill.value}`}>
-                <button
-                  type="button"
-                  aria-label={t("library.filters.remove", { label: pill.label })}
-                  onClick={() => {
-                    show({
-                      query,
-                      filters: {
-                        ...filters,
-                        [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
-                      },
-                    });
-                    filterButton.current?.focus();
-                  }}
-                  className="inline-flex min-h-11 items-center md:min-h-10"
-                >
-                  <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-navy pl-3 pr-2.5 text-sm font-semibold text-page">
-                    {pill.label}
-                    <XIcon size={14} />
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <ActiveFilterPills
+          pills={pills}
+          onRemove={(pill) => {
+            show({
+              query,
+              filters: {
+                ...filters,
+                [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
+              },
+            });
+            filterButton.current?.focus();
+          }}
+        />
       </div>
 
       {loading && <ShelfSkeleton />}

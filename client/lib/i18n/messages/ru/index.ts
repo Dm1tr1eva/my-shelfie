@@ -9,6 +9,7 @@ import { add } from "./add";
 import { series } from "./series";
 import { privacy } from "./privacy";
 import { errors } from "./errors";
+import { wishlist } from "./wishlist";
 
 export const ru = {
   shell,
@@ -22,4 +23,5 @@ export const ru = {
   series,
   privacy,
   errors,
+  wishlist,
 };

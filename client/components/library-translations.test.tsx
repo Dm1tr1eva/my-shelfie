@@ -6,7 +6,6 @@ import { makeDomain } from "@/lib/i18n/domain";
 import { NO_FILTERS, buildFilterGroups, chipLabel } from "@/lib/filters";
 import { FilterBar } from "./filter-bar";
 import { Library } from "./library";
-import { Wishlist } from "./wishlist";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -78,21 +77,6 @@ describe("Library in Russian and Ukrainian", () => {
     expect(within(panel).getByRole("button", { name: "Сбросить" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "Показать 4 книги" })).toBeInTheDocument();
     expect(within(panel).getByRole("button", { name: "Закрыть" })).toBeInTheDocument();
-  });
-
-  it("shows the wishlist in Russian with the count words in the right form", async () => {
-    act(() => setLocale("ru"));
-    serve();
-    renderApp(<Wishlist />);
-
-    expect(await screen.findByText("Wished Alone")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Вишлист" })).toBeInTheDocument();
-    expect(screen.getByText("Не входят в серию · 1 книга")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Вид" })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Сетка" }));
-
-    expect(screen.getAllByText("Ссылок пока нет").length).toBeGreaterThan(0);
   });
 
   it("says nothing matches and quotes the query in Ukrainian", async () => {

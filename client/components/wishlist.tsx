@@ -1,86 +1,71 @@
 "use client";
 
-import { useState } from "react";
-import { BookRow } from "@/components/book-row";
-import { BookTile } from "@/components/book-tile";
+import { useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
-import { FilterBar } from "@/components/filter-bar";
-import { ShelfSkeleton } from "@/components/skeleton";
-import { SearchIcon } from "@/components/icons";
-import { SeriesHeader } from "@/components/series-header";
-import { Shelf } from "@/components/shelf";
-import { ViewToggle } from "@/components/view-toggle";
-import {
-  buildLibraryView,
-  isInTab,
-  matchesQuery,
-  shelfStats,
-  type SeriesGroup,
-} from "@/lib/catalogue";
-import {
-  NO_FILTERS,
-  activeFilterCount,
-  applyFilters,
-  buildFilterGroups,
-  type Filters,
-  type Subject,
-} from "@/lib/filters";
-import { useBooks, type Book } from "@/lib/books";
+import { FilterPanel } from "@/components/filter-panel";
+import { ActiveFilterPills, SearchAndFilter } from "@/components/catalogue-toolbar";
+import { RowsSkeleton } from "@/components/skeleton";
+import { WishlistRow } from "@/components/wishlist-row";
+import type { DesireLevel } from "@/lib/catalogue-constants";
+import { activeFilterCount, filterPanelGroups, panelChipLabel, type Filters } from "@/lib/filters";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
-import { useSeriesList } from "@/lib/series";
+import { readLibraryParams, writeLibraryParams, type LibraryParams } from "@/lib/library-params";
 import { useRequireAuth } from "@/lib/use-require-auth";
-import { useViewMode } from "@/lib/use-view-mode";
+import {
+  WISHLIST_FILTER_KEYS,
+  narrowGroups,
+  rowsOf,
+  useWishlist,
+  wishlistValuesOf,
+  type WishlistGroup,
+  type WishlistRow as Row,
+} from "@/lib/wishlist";
 
-function GroupShelf({ group, mode }: { group: SeriesGroup; mode: "grid" | "list" }) {
-  const books = group.slots.flatMap((slot) => (slot.kind === "book" ? [slot.book] : []));
-
-  if (mode === "list") {
-    return (
-      <ul>
-        {books.map((book) => (
-          <BookRow key={book.id} book={book} series={group.series} />
-        ))}
-      </ul>
-    );
-  }
-
-  return (
-    <Shelf>
-      {books.map((book) => (
-        <BookTile key={book.id} book={book} showLinks />
-      ))}
-    </Shelf>
-  );
-}
-
-function StandaloneShelf({ books, mode }: { books: Book[]; mode: "grid" | "list" }) {
+function GroupSection({
+  group,
+  narrowing,
+  onChange,
+  onFailure,
+}: {
+  group: WishlistGroup;
+  narrowing: boolean;
+  onChange: (row: Row, desire: DesireLevel) => void;
+  onFailure: (row: Row) => void;
+}) {
   const t = useT();
+  const headingId = `wishlist-${group.key}`;
+
+  if (narrowing && group.items.length === 0) return null;
 
   return (
-    <section aria-labelledby="standalone-heading" className="flex flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h2 id="standalone-heading" className="font-serif text-2xl font-semibold">
-          {t("library.standalone.title")}
+    <section aria-labelledby={headingId} className="flex flex-col gap-2.5">
+      <div className="flex items-center gap-2.5">
+        <h2
+          id={headingId}
+          className="font-serif text-[21px] font-semibold leading-tight md:text-2xl lg:text-[26px]"
+        >
+          {t(`wishlist.groups.${group.key}.title`)}
         </h2>
-        <p className="text-sm text-muted">
-          {t("library.standalone.subtitle", { count: books.length })}
-        </p>
-      </header>
-
-      {mode === "list" ? (
-        <ul>
-          {books.map((book) => (
-            <BookRow key={book.id} book={book} />
+        <span className="num inline-flex h-6 min-w-[26px] items-center justify-center rounded-full bg-beige px-2 text-[13px] text-ink">
+          {group.items.length}
+        </span>
+      </div>
+      {group.items.length === 0 ? (
+        <p className="text-sm text-muted">{t(`wishlist.groups.${group.key}.empty`)}</p>
+      ) : (
+        <ul className="overflow-hidden rounded-[14px] bg-card">
+          {group.items.map((row) => (
+            <WishlistRow
+              key={`${row.type}-${row.id}`}
+              row={row}
+              onChange={onChange}
+              onFailure={onFailure}
+            />
           ))}
         </ul>
-      ) : (
-        <Shelf>
-          {books.map((book) => (
-            <BookTile key={book.id} book={book} showNumber={false} showLinks />
-          ))}
-        </Shelf>
       )}
     </section>
   );
@@ -90,109 +75,123 @@ export function Wishlist() {
   const t = useT();
   const domain = useDomain();
   const { user, status } = useRequireAuth();
-  const { books, isLoading, error, reload } = useBooks();
-  const { series } = useSeriesList();
-  const { mode, changeMode } = useViewMode();
-  const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const wishlist = useWishlist();
+  const searchParams = useSearchParams();
+  const [{ query, filters }, setParams] = useState<LibraryParams>(() =>
+    readLibraryParams(searchParams, WISHLIST_FILTER_KEYS),
+  );
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const filterButton = useRef<HTMLButtonElement>(null);
 
   if (status !== "authenticated" || !user) {
     return null;
   }
 
-  const stats = shelfStats(books);
-  const view = buildLibraryView(books, series, "wishlist", query, filters);
-  const shown =
-    view.standalone.length + view.groups.reduce((count, group) => count + group.slots.length, 0);
-  const loaded = !isLoading && !error;
-  const filtering = activeFilterCount(filters) > 0;
-  const searching = query.trim() !== "" || filtering;
+  const loading = wishlist.isLoading;
+  const failed = Boolean(wishlist.error);
+  const loaded = !loading && !failed;
+  const all = rowsOf(wishlist.groups);
+  const active = activeFilterCount(filters);
+  const narrowing = active > 0 || query.trim() !== "";
+  const groups = narrowGroups(wishlist.groups, query, filters);
+  const shownCount = rowsOf(groups).length;
+  const labels = { t, domain };
+  const panelGroups = filterPanelGroups(WISHLIST_FILTER_KEYS, all, wishlistValuesOf, labels);
+  const pills = WISHLIST_FILTER_KEYS.flatMap((key) =>
+    filters[key].map((value) => ({ key, value, label: panelChipLabel(key, value, labels) })),
+  );
 
-  const seriesById = new Map(series.map((item) => [item.id, item]));
-  const scope = books.filter((book) => isInTab(book, "wishlist") && matchesQuery(book, query));
-  const subjectOf = (book: (typeof books)[number]): Subject => ({
-    book,
-    series: book.seriesId ? seriesById.get(book.seriesId) : undefined,
-  });
-  const filterGroups = buildFilterGroups(scope, subjectOf, filters, { t, domain });
-  const countWith = (draft: Filters) => applyFilters(scope, subjectOf, draft).length;
-  const bookCount =
-    view.standalone.length +
-    view.groups.reduce(
-      (count, group) => count + group.slots.filter((slot) => slot.kind === "book").length,
-      0,
+  function show(next: LibraryParams) {
+    setParams(next);
+    const search = writeLibraryParams(next.query, next.filters);
+    window.history.replaceState(
+      null,
+      "",
+      search ? `${window.location.pathname}?${search}` : window.location.pathname,
     );
-  const groupCount = view.groups.length + (view.standalone.length > 0 ? 1 : 0);
-  const booksText = t("library.summary.books", { count: bookCount });
-  const summary =
-    groupCount > 0
-      ? t("library.summary.withGroups", {
-          books: booksText,
-          groups: t("library.summary.inGroups", { count: groupCount }),
-        })
-      : booksText;
-  const statsText = t("library.stats", {
-    owned: stats.owned,
-    wishlist: stats.wishlist,
-    read: stats.read,
-  });
+  }
+
+  function changed(row: Row, desire: DesireLevel) {
+    setFailure(null);
+    setAnnouncement(
+      t("wishlist.desire.changed", { title: row.title, level: t(`wishlist.desire.${desire}`) }),
+    );
+  }
+
+  function failedFor(row: Row) {
+    setFailure(t("wishlist.desire.failed", { title: row.title }));
+  }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">
-          {t("shell.nav.wishlist")}
-        </h1>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8 md:gap-7">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
+          <h1 className="text-[32px] font-semibold leading-tight md:text-[38px] lg:text-[44px]">
+            {t("wishlist.title")}
+          </h1>
 
-        <label className="relative w-full sm:w-72">
-          <span className="sr-only">{t("library.search")}</span>
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
-            <SearchIcon size={18} />
-          </span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("library.search")}
-            className="field pl-10"
-          />
-        </label>
+          {loaded && all.length > 0 && (
+            <SearchAndFilter
+              query={query}
+              onQuery={(next) => show({ query: next, filters })}
+              active={active}
+              panelOpen={panelOpen}
+              onOpenPanel={() => setPanelOpen(true)}
+              filterButton={filterButton}
+            />
+          )}
+        </div>
+
+        <ActiveFilterPills
+          pills={pills}
+          onRemove={(pill) => {
+            show({
+              query,
+              filters: {
+                ...filters,
+                [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
+              },
+            });
+            filterButton.current?.focus();
+          }}
+        />
+
+        {failure && (
+          <p role="alert" className="font-semibold text-burgundy">
+            {failure}
+          </p>
+        )}
+        <p aria-live="polite" className="sr-only">
+          {announcement}
+        </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">{statsText}</p>
-        <div className="ml-auto">
-          <ViewToggle mode={mode} onChange={changeMode} />
-        </div>
-      </div>
-
-      {loaded && (scope.length > 0 || filtering) && (
-        <div className="card p-4">
-          <FilterBar
-            groups={filterGroups}
-            filters={filters}
-            onChange={setFilters}
-            countWith={countWith}
-            summary={summary}
-          />
-        </div>
-      )}
-
-      {isLoading && <ShelfSkeleton />}
-      {error && (
+      {loading && <RowsSkeleton label={t("wishlist.loading")} />}
+      {failed && (
         <ErrorState
-          title={t("library.loadError.title")}
-          text={t("library.loadError.text")}
-          onRetry={reload}
+          title={t("wishlist.loadError.title")}
+          text={t("wishlist.loadError.text")}
+          onRetry={wishlist.reload}
         />
       )}
 
-      {loaded && shown === 0 && searching && (
+      {loaded && all.length === 0 && (
+        <EmptyState
+          title={t("wishlist.empty.title")}
+          text={t("wishlist.empty.text")}
+          actionLabel={t("shell.nav.addBook")}
+          actionHref="/add"
+        />
+      )}
+
+      {loaded && all.length > 0 && narrowing && shownCount === 0 && (
         <EmptyState
           title={t("library.noMatch.title")}
           text={
             query.trim() !== ""
-              ? t(filtering ? "library.noMatch.queryAndFilters" : "library.noMatch.query", {
+              ? t(active > 0 ? "library.noMatch.queryAndFilters" : "library.noMatch.query", {
                   query: query.trim(),
                 })
               : t("library.noMatch.filters")
@@ -200,30 +199,28 @@ export function Wishlist() {
         />
       )}
 
-      {loaded && shown === 0 && !searching && (
-        <EmptyState
-          title={t("library.emptyWishlist.title")}
-          text={t("library.emptyWishlist.text")}
-          actionLabel={t("shell.nav.addBook")}
-          actionHref="/add"
+      {loaded &&
+        all.length > 0 &&
+        groups.map((group) => (
+          <GroupSection
+            key={group.key}
+            group={group}
+            narrowing={narrowing}
+            onChange={changed}
+            onFailure={failedFor}
+          />
+        ))}
+
+      {panelOpen && (
+        <FilterPanel
+          groups={panelGroups}
+          filters={filters}
+          countWith={(draft: Filters) => rowsOf(narrowGroups(wishlist.groups, query, draft)).length}
+          showLabel={(count) => t("wishlist.show", { count })}
+          onApply={(next) => show({ query, filters: next })}
+          onClose={() => setPanelOpen(false)}
         />
       )}
-
-      {loaded && view.standalone.length > 0 && (
-        <StandaloneShelf books={view.standalone} mode={mode} />
-      )}
-
-      {loaded &&
-        view.groups.map((group) => (
-          <section
-            key={group.series.id}
-            aria-label={group.series.title}
-            className="flex flex-col gap-4"
-          >
-            <SeriesHeader group={group} />
-            <GroupShelf group={group} mode={mode} />
-          </section>
-        ))}
     </main>
   );
 }

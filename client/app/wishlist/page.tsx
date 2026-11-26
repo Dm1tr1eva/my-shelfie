@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Wishlist } from "@/components/wishlist";
 
 export const metadata: Metadata = {
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function WishlistPage() {
-  return <Wishlist />;
+  return (
+    <Suspense>
+      <Wishlist />
+    </Suspense>
+  );
 }

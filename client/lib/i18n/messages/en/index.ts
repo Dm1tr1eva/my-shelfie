@@ -9,6 +9,7 @@ import { add } from "./add";
 import { series } from "./series";
 import { privacy } from "./privacy";
 import { errors } from "./errors";
+import { wishlist } from "./wishlist";
 
 export const en = {
   shell,
@@ -22,4 +23,5 @@ export const en = {
   series,
   privacy,
   errors,
+  wishlist,
 };
