@@ -863,6 +863,30 @@ describe("BookPanel", () => {
       expect(screen.queryByRole("button", { name: "Delete book" })).not.toBeInTheDocument();
     });
 
+    it("asks for the book again when the panel comes back to it, and shows a deletion", async () => {
+      let gone = false;
+      mockApi(({ path }) => {
+        if (path === "/api/books/b1") {
+          return gone
+            ? { status: 404, body: { error: "Book not found" } }
+            : { body: book({ id: "b1", title: "Ash" }) };
+        }
+        if (path === "/api/series") return { body: { series: [] } };
+        if (path === "/api/progress") return { body: { entries: [] } };
+      });
+      const { rerender } = render(panelTree());
+      await screen.findByRole("heading", { name: "Ash" });
+
+      location.pathname = "/library";
+      rerender(panelTree());
+      gone = true;
+      location.pathname = "/books/b1";
+      rerender(panelTree());
+
+      expect(await screen.findByRole("heading", { name: "Book not found" })).toBeInTheDocument();
+      expect(screen.queryByRole("textbox", { name: "My note" })).not.toBeInTheDocument();
+    });
+
     it("renames on leaving the fields and cancels with Escape", async () => {
       const calls = await open(book({ id: "b1", title: "Ash", author: "A. Writer" }));
 

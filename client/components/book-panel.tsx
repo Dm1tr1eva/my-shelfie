@@ -426,8 +426,9 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
   const here = pathname === `/books/${id}`;
 
   useEffect(() => {
-    if (!here) closing.current = false;
-  }, [here]);
+    if (here) void reload();
+    else closing.current = false;
+  }, [here, reload]);
 
   if (status !== "authenticated" || !user || !here) return null;
 

@@ -200,8 +200,9 @@ export function useBook(id: string) {
     authStatus === "authenticated" ? bookKey(id) : null,
     (path: string) => apiFetch<Book>(path),
   );
+  const reload = useCallback(() => mutate(), [mutate]);
 
-  return { book: data, error, isLoading, reload: () => mutate() };
+  return { book: data, error, isLoading, reload };
 }
 
 export function useBookActions() {
