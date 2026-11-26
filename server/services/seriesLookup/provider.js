@@ -1,12 +1,22 @@
 const { readSeriesLookupConfig } = require("../../config/seriesLookup");
-const { createAnthropicLookup } = require("./anthropicAdapter");
+const { assertAnthropicConfigured, createAnthropicLookup } = require("./anthropicAdapter");
 
-const ADAPTERS = new Map([["anthropic", createAnthropicLookup]]);
+const ADAPTERS = new Map([
+  ["anthropic", { assertConfigured: assertAnthropicConfigured, create: createAnthropicLookup }],
+]);
 
-function lookUpSeries(query) {
+function adapterInUse() {
   const { provider, model } = readSeriesLookupConfig();
-  const createLookup = ADAPTERS.get(provider);
-  return createLookup({ model }).lookUp(query);
+  return { adapter: ADAPTERS.get(provider), model };
 }
 
-module.exports = { lookUpSeries };
+function assertConfigured() {
+  adapterInUse().adapter.assertConfigured();
+}
+
+function lookUpSeries(query) {
+  const { adapter, model } = adapterInUse();
+  return adapter.create({ model }).lookUp(query);
+}
+
+module.exports = { assertConfigured, lookUpSeries };

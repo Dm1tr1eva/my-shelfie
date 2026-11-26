@@ -11,6 +11,14 @@ const lookupBookSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const titleNumberSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    number: { type: Number, required: true },
+  },
+  { _id: false },
+);
+
 const seriesLookupSchema = new mongoose.Schema(
   {
     seriesKey: { type: String, required: true },
@@ -21,6 +29,7 @@ const seriesLookupSchema = new mongoose.Schema(
     confidence: { type: String, enum: LOOKUP_CONFIDENCE_LEVELS, required: true },
     sources: { type: [String], default: [] },
     titleKeys: { type: [String], default: [] },
+    titleNumbers: { type: [titleNumberSchema], default: [] },
     authorKeys: { type: [String], default: [] },
     expiresAt: { type: Date, required: true },
   },

@@ -19,12 +19,20 @@ async function findSeriesByTitle(titleKey, authorKeys, now) {
     .lean();
 }
 
-async function saveSeries(seriesKey, data) {
-  return SeriesLookup.findOneAndUpdate(
-    { seriesKey },
-    { $set: { ...data, seriesKey } },
-    { upsert: true, returnDocument: "after", runValidators: true },
-  ).lean();
+const DUPLICATE_KEY = 11000;
+
+async function saveSeriesUnlessFresh(seriesKey, data, now) {
+  try {
+    return await SeriesLookup.findOneAndUpdate(
+      { seriesKey, expiresAt: { $lte: now } },
+      { $set: { ...data, seriesKey } },
+      { upsert: true, returnDocument: "after", runValidators: true },
+    ).lean();
+  } catch (err) {
+    if (err.code !== DUPLICATE_KEY) throw err;
+  }
+
+  return SeriesLookup.findOne({ seriesKey }).lean();
 }
 
 async function saveBook(bookKey, data) {
@@ -35,4 +43,10 @@ async function saveBook(bookKey, data) {
   );
 }
 
-module.exports = { findBook, findSeriesById, findSeriesByTitle, saveSeries, saveBook };
+module.exports = {
+  findBook,
+  findSeriesById,
+  findSeriesByTitle,
+  saveSeriesUnlessFresh,
+  saveBook,
+};

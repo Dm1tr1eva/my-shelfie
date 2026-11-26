@@ -25,11 +25,15 @@ class SeriesLookupUnavailableError extends HttpError {
   }
 }
 
-function createDefaultClient() {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+function assertAnthropicConfigured() {
+  if (!process.env.ANTHROPIC_API_KEY) {
     throw new HttpError(503, "Series lookup is not configured");
   }
+}
+
+function createDefaultClient() {
+  assertAnthropicConfigured();
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   return new Anthropic({ apiKey, baseURL: ANTHROPIC_API_URL, maxRetries: 0, timeout: TIMEOUT_MS });
 }
 
@@ -142,6 +146,7 @@ function createAnthropicLookup({ model }) {
 }
 
 module.exports = {
+  assertAnthropicConfigured,
   createAnthropicAdapter,
   createAnthropicLookup,
   SeriesLookupUnavailableError,

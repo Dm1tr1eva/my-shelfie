@@ -7,6 +7,7 @@ const { readSeriesLookupConfig } = require("../config/seriesLookup");
 const { HttpError } = require("../errors/httpError");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const LOW_CONFIDENCE_TTL_DAYS = 7;
 const UNSETTLED_TTL_DAYS = 30;
 const SETTLED_TTL_DAYS = 180;
 const USAGE_TTL_DAYS = 2;
@@ -46,6 +47,18 @@ function isSettled(answer) {
   return answer.status === "complete" && answer.books.every((book) => book.released);
 }
 
+function ttlDaysOf(answer) {
+  if (answer.confidence === "low") return LOW_CONFIDENCE_TTL_DAYS;
+  return answer.series !== null && isSettled(answer) ? SETTLED_TTL_DAYS : UNSETTLED_TTL_DAYS;
+}
+
+function titleNumbersOf(query, answer) {
+  const numbers = new Map(answer.books.map((book) => [normalizeText(book.title), book.number]));
+  const titleKey = normalizeText(query.title);
+  if (answer.number !== null && !numbers.has(titleKey)) numbers.set(titleKey, answer.number);
+  return [...numbers].map(([title, number]) => ({ title, number }));
+}
+
 function seriesResult(series, number, confidence) {
   return { result: "series", series, number, confidence, sources: series.sources };
 }
@@ -70,7 +83,7 @@ async function fromCache(bookKey, query, now) {
   );
   if (!series) return null;
 
-  const listed = series.books.find((entry) => normalizeText(entry.title) === titleKey);
+  const listed = series.titleNumbers.find((entry) => entry.title === titleKey);
   return seriesResult(series, listed?.number ?? null, series.confidence);
 }
 
@@ -82,8 +95,9 @@ async function store(bookKey, query, answer, now) {
     sources: answer.sources,
   };
 
+  const expiresAt = daysFrom(now, ttlDaysOf(answer));
+
   if (answer.series === null) {
-    const expiresAt = daysFrom(now, UNSETTLED_TTL_DAYS);
     await seriesLookupRepository.saveBook(bookKey, {
       ...bookFields,
       seriesLookupId: null,
@@ -100,25 +114,33 @@ async function store(bookKey, query, answer, now) {
       [query.title, ...names, ...answer.books.map((book) => book.title)].map(normalizeText),
     ),
   ];
-  const expiresAt = daysFrom(now, isSettled(answer) ? SETTLED_TTL_DAYS : UNSETTLED_TTL_DAYS);
-  const seriesKey = `${normalizeText(answer.seriesOriginal ?? answer.series)}|${authorKeys.join(",")}`;
+  const seriesKey = [
+    normalizeText(answer.seriesOriginal ?? answer.series),
+    normalizeText(answer.series),
+    authorKeys.join(","),
+  ].join("|");
 
-  const series = await seriesLookupRepository.saveSeries(seriesKey, {
-    name: answer.series,
-    originalName: answer.seriesOriginal,
-    status: answer.status,
-    books: answer.books,
-    confidence: answer.confidence,
-    sources: answer.sources,
-    titleKeys,
-    authorKeys,
-    expiresAt,
-  });
+  const series = await seriesLookupRepository.saveSeriesUnlessFresh(
+    seriesKey,
+    {
+      name: answer.series,
+      originalName: answer.seriesOriginal,
+      status: answer.status,
+      books: answer.books,
+      confidence: answer.confidence,
+      sources: answer.sources,
+      titleKeys,
+      titleNumbers: titleNumbersOf(query, answer),
+      authorKeys,
+      expiresAt,
+    },
+    now,
+  );
   await seriesLookupRepository.saveBook(bookKey, {
     ...bookFields,
     seriesLookupId: series._id,
     number: answer.number,
-    expiresAt,
+    expiresAt: series.expiresAt < expiresAt ? series.expiresAt : expiresAt,
   });
 
   return seriesResult(series, answer.number, answer.confidence);
@@ -143,6 +165,7 @@ async function lookUpSeries(userId, query, now = new Date()) {
   if (cached) return cached;
 
   const { provider, model, dailyLimit } = readSeriesLookupConfig();
+  seriesLookupProvider.assertConfigured();
   const day = now.toISOString().slice(0, 10);
   const allowed = await seriesLookupUsageRepository.reserve(
     userId,
