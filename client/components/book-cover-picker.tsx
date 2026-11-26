@@ -43,7 +43,7 @@ export function CoverPicker({
         if (!current) return;
         const covers = [
           ...new Set(body.results.flatMap((result) => (result.coverUrl ? [result.coverUrl] : []))),
-        ].filter((cover) => cover !== book.coverUrl);
+        ];
         setFound({ state: "done", covers });
       })
       .catch(() => {
@@ -53,7 +53,10 @@ export function CoverPicker({
     return () => {
       current = false;
     };
-  }, [book.coverUrl, query]);
+  }, [query]);
+
+  const others =
+    found.state === "done" ? found.covers.filter((cover) => cover !== book.coverUrl) : [];
 
   function applyUrl() {
     if (!isHttpUrl(url)) {
@@ -89,12 +92,12 @@ export function CoverPicker({
         {found.state === "failed" && (
           <p className="text-sm text-muted">{t("book.panel.cover.failed")}</p>
         )}
-        {found.state === "done" && found.covers.length === 0 && (
+        {found.state === "done" && others.length === 0 && (
           <p className="text-sm text-muted">{t("book.panel.cover.none")}</p>
         )}
-        {found.state === "done" && found.covers.length > 0 && (
+        {others.length > 0 && (
           <ul className="flex flex-wrap gap-2">
-            {found.covers.map((cover, index) => (
+            {others.map((cover, index) => (
               <li key={cover}>
                 <button
                   type="button"
