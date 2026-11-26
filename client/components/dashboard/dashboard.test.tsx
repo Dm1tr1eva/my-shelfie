@@ -799,6 +799,35 @@ describe("Home after sign-in", () => {
     expect(calls.filter((call) => call.method === "POST")).toHaveLength(1);
   });
 
+  it("holds the open popover's buttons while the card's Finished runs", async () => {
+    useWideScreen();
+    let release = () => {};
+    const wait = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const calls = serve(fullStats(), (call) => {
+      if (call.method === "POST") return { status: 201, body: {}, wait };
+      if (call.method === "PATCH") return { body: {} };
+    });
+    await renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark page" }));
+    const dialog = screen.getByRole("dialog", { name: "Where are you now?" });
+    const [cardFinished] = screen
+      .getAllByRole("button", { name: "Finished" })
+      .filter((button) => !dialog.contains(button));
+    fireEvent.pointerDown(cardFinished);
+    fireEvent.click(cardFinished);
+
+    await waitFor(() =>
+      expect(within(dialog).getByRole("button", { name: "Finished" })).toBeDisabled(),
+    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Finished" }));
+    release();
+    await waitFor(() => expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(1));
+    expect(calls.filter((call) => call.method === "POST")).toHaveLength(1);
+  });
+
   it("reloads the library after progress is saved, so its lists agree with Home", async () => {
     const calls = serve(fullStats(), (call) => {
       if (call.path.startsWith("/api/books?")) return booksResponse([]);
