@@ -1004,12 +1004,16 @@ describe("BookPanel", () => {
       });
 
       fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
-      fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+      const undo = await screen.findByRole("button", { name: "Undo" });
+      undo.focus();
+      fireEvent.click(undo);
       expect(screen.getByRole("dialog", { name: "Ash" })).toHaveFocus();
 
       failing = true;
       fireEvent.click(screen.getByRole("button", { name: "Rate 2 out of 5" }));
-      fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+      const retry = await screen.findByRole("button", { name: "Retry" });
+      retry.focus();
+      fireEvent.click(retry);
       expect(screen.getByRole("dialog", { name: "Ash" })).toHaveFocus();
     });
 
