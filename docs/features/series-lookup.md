@@ -20,7 +20,12 @@ book and series endpoints. Design: [../designs/series-lookup.md](../designs/seri
 - Every source returned was among the URLs a web search returned in that same lookup. An answer
   left with no source has confidence `low`.
 - The cache holds no user id ([ADR 0001](../adr/0001-shared-reference-data.md)).
-- A user makes at most `SERIES_LOOKUP_DAILY_LIMIT` model calls a UTC day; cache hits are free.
+- A fresh series entry is never overwritten: a later answer for the same series only replaces
+  an entry whose `expiresAt` has passed.
+- An answer is at most 100 books, and every name and title at most 200 characters, so the
+  endpoint cannot relay long text from the model.
+- A user makes at most `SERIES_LOOKUP_DAILY_LIMIT` model calls a UTC day; cache hits are free,
+  and a server without a key answers `503` before anything is counted.
 - The API key is sent only to `https://api.anthropic.com`; `ANTHROPIC_BASE_URL` is ignored. It
   is never logged or returned.
 
@@ -38,7 +43,10 @@ provider; a second adapter reuses them and adds one entry to the provider's map.
 `claude-haiku-5-5`), effort `medium`, `max_tokens` 8000, tool `web_search_20260318` with
 `allowed_callers: ["direct"]` and `max_uses: 5`, no SDK retries, 45 s timeout. The JSON is read
 from the text after the last search block. One `pause_turn` is continued by sending the paused
-content back; a second leaves the answer `unknown`. `refusal`, `max_tokens` and a search error
+content back, with the same tool: the API counts the searches of earlier requests in a continued
+turn against `max_uses`, so a turn makes five searches at most in all (sending the remainder
+instead would count them twice). The continuation sends the first results again, billed once
+more as input tokens. A second pause leaves the answer `unknown`. `refusal`, `max_tokens` and a search error
 (other than `max_uses_exceeded`, which only means the model wanted more searches) make it
 `unknown`. An SDK error (`APIError`, network included) is logged with its class and status and
 answers `502`; a missing key answers `503`.
@@ -86,10 +94,13 @@ not configured`, and `Failed to look up the series` for anything unexpected.
 
 ## Data
 
-- `series_lookups`, one per series: `seriesKey` (normalised original name plus the sorted
-  normalised authors of the input, unique), `name`, `originalName`, `status`, `books`,
-  `confidence`, `sources`, `titleKeys` (normalised input title, series names and book titles,
-  indexed), `authorKeys`, `expiresAt`.
+- `series_lookups`, one per series and edition language: `seriesKey` (normalised original
+  name, normalised name in the edition's language and the sorted normalised authors of the input,
+  unique), `name`, `originalName`, `status`, `books`, `confidence`, `sources`, `titleKeys`
+  (normalised input title, series names and book titles, indexed), `titleNumbers` (normalised
+  title → number, for the book titles and the input title), `authorKeys`, `expiresAt`. The
+  edition name is in the key because a fresh entry is not overwritten: with one entry per
+  series, the Ukrainian edition would be answered with the Russian names.
 - `series_lookup_books`, one per input: `bookKey` (SHA-256 of the normalised title, authors,
   subtitle, ISBN, volume id and language, unique), `title` and `authors` as sent (for the
   operator), `seriesLookupId` (`null` for a standalone), `number`, `confidence`, `sources`,
@@ -100,18 +111,25 @@ not configured`, and `Failed to look up the series` for anything unexpected.
 
 Normalising: Unicode NFKC, lower case, `ё` → `е`, typographic apostrophes → `'`, quotes removed,
 spaces collapsed. Every `expiresAt` has a TTL index, so MongoDB deletes expired entries, and
-reads also skip them. A series that is `complete` with every book out lives 180 days; anything
-else, standalones included, 30. Failures are not cached; they still count toward the limit.
+reads also skip them. An answer with confidence `low` lives 7 days; a series that is
+`complete` with every book out, 180; anything else, standalones included, 30. Failures are not
+cached; they still count toward the limit.
 
 **Lookup order:** the book key; then a fresh series whose `titleKeys` hold the input title and
-whose `authorKeys` share an author (the number comes from the matching book); then a model call.
+whose `authorKeys` share an author (the number comes from `titleNumbers`); then a model call.
+A model answer for a series that already has a fresh entry is not stored; the book key points
+at the existing entry and keeps the number from the answer.
 
 ## Trade-offs accepted
 
-- **A crafted request can put a wrong series into the shared cache.** The title and subtitle are
-  free text in the prompt, and the series answers later lookups of any title it lists by the
-  same author. Others see it only as a suggestion with its sources; Recovery deletes it. A
-  standalone answer is only served for the exact same input.
+- **A crafted request can put a wrong series into the shared cache**, if it is the first to ask
+  about that series. The title and subtitle are free text in the prompt, and the series answers
+  later lookups of any title it lists by the same author. It cannot replace a fresh entry. Others
+  see it only as a suggestion with its sources; Recovery deletes it. A standalone answer is only
+  served for the exact same input.
+- **The endpoint relays model text within the answer's size limits**: up to 100 titles of 200
+  characters, after the prompt asked for book data. Anything longer, or not shaped as an answer,
+  is `unknown`; the daily limit bounds how often.
 - **The per-user limit does not stop many accounts.** The monthly spend limit set in the Claude
   Console is the ceiling; past it the API refuses and lookups answer `502`.
 - **No retry.** The trial saw no transient failure; a retry doubles a wait that is already about
@@ -120,8 +138,9 @@ whose `authorKeys` share an author (the number comes from the matching book); th
   not cover.
 - **Author names in another script make separate cache entries** ("Сара Дж. Маас" and "Sarah
   J. Maas").
-- **Two parallel misses for one book both call the model**; the later write wins.
-- **A low-confidence answer is cached as long as any other.**
+- **Two parallel misses for one series both call the model**; the first write stays.
+- **A fresh entry does not learn new books.** A book announced after the entry was written
+  waits for the entry to expire (30 days for a series still coming out).
 - **Model and price are not checked at start.** A model id the API does not know answers `502`
   on the first lookup and is logged.
 - **The client does not translate the new error texts yet**; the client step adds them.

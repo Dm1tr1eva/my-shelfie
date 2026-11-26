@@ -79,5 +79,4 @@ route, DTO, validation, eval script, ADR, feature doc, ~40 tests. Edited:
 
 ## Open questions
 
-- Cache `low` answers for less time?
-- Should the client draw `unknown` and `standalone` differently?
+Settled in review: `low` answers live 7 days; the client tells `unknown` from `standalone`.
