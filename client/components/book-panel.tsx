@@ -41,7 +41,7 @@ function PanelHeader({ book, series }: { book?: Book; series?: Series }) {
     return (
       <Link
         href={`/series/${series.id}`}
-        className="inline-flex min-h-11 items-center text-[13px] font-semibold text-burgundy"
+        className="inline-flex min-h-11 items-center text-[13px] font-semibold text-burgundy hover:text-navy"
       >
         {book.seriesNumber === undefined
           ? series.title

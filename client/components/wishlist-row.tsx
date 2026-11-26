@@ -59,7 +59,7 @@ export function WishlistRow({
       <Link
         href={hrefOf(row)}
         aria-label={name}
-        className="col-start-3 row-span-2 row-start-1 inline-flex h-9 w-9 items-center justify-center justify-self-end rounded-full border border-mist bg-card text-ink after:absolute after:inset-0 after:content-[''] md:col-start-4 md:row-span-1 md:h-11 md:w-11"
+        className="col-start-3 row-span-2 row-start-1 inline-flex h-9 w-9 items-center justify-center justify-self-end rounded-full border border-mist bg-card text-ink hover:border-slate hover:bg-beige after:absolute after:inset-0 after:content-[''] md:col-start-4 md:row-span-1 md:h-11 md:w-11"
       >
         <ChevronRightIcon size={20} />
       </Link>

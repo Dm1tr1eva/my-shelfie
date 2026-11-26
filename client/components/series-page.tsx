@@ -169,7 +169,7 @@ function SeriesView({ series, books }: { series: Series; books: Book[] }) {
         {!inline && (
           <div
             id={detailsId}
-            className={`min-w-0 md:col-start-1 md:row-start-2 md:block ${more ? "" : "hidden"}`}
+            className={`min-w-0 md:col-start-1 md:row-start-2 md:block ${more ? "animate-fade-in md:animate-none" : "hidden"}`}
           >
             <Details series={series} />
           </div>
@@ -181,9 +181,11 @@ function SeriesView({ series, books }: { series: Series; books: Book[] }) {
             aria-controls={detailsId}
             aria-label={more ? t("series.page.less") : t("series.page.more")}
             onClick={() => setMore((current) => !current)}
-            className="absolute -bottom-4 left-1/2 inline-flex h-8 w-12 -translate-x-1/2 items-center justify-center rounded-pill border border-mist bg-card text-navy md:hidden"
+            className="absolute -bottom-4 left-1/2 inline-flex h-8 w-12 -translate-x-1/2 items-center justify-center rounded-pill border border-mist bg-card text-navy hover:bg-beige md:hidden"
           >
-            <span className={more ? "rotate-180" : ""}>
+            <span
+              className={`transition-transform duration-(--duration-base) ${more ? "rotate-180" : ""}`}
+            >
               <ChevronDownIcon size={18} />
             </span>
           </button>

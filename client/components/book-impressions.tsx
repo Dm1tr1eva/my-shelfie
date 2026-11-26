@@ -22,7 +22,9 @@ const LABEL = "text-xs font-semibold uppercase tracking-[0.06em] text-muted";
 
 function pill(selected: boolean) {
   return `inline-flex min-h-9 items-center rounded-pill border px-3 text-sm font-medium ${
-    selected ? "border-navy bg-navy text-page" : "border-mist bg-card text-ink hover:bg-beige"
+    selected
+      ? "border-navy bg-navy text-page hover:bg-navy/90"
+      : "border-mist bg-card text-ink hover:bg-beige"
   }`;
 }
 

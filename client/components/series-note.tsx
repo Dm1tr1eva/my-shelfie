@@ -116,7 +116,7 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
           ref={opener}
           type="button"
           onClick={open}
-          className="self-start text-sm font-semibold text-navy"
+          className="self-start rounded-control text-sm font-semibold text-navy hover:text-burgundy"
         >
           {t("series.page.note.add")}
         </button>

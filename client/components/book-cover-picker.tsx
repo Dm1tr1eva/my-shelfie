@@ -103,7 +103,7 @@ export function CoverPicker({
                   type="button"
                   aria-label={t("book.panel.cover.use", { number: index + 1 })}
                   onClick={() => onSave({ coverUrl: cover })}
-                  className="block w-14 rounded-cover"
+                  className="block w-14 rounded-cover hover:opacity-80"
                 >
                   <BookCover url={cover} title={book.title} />
                 </button>

@@ -25,7 +25,7 @@ function typeName(domain: Domain, kind: LinkKind) {
 }
 
 export const ADD_PILL =
-  "inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy";
+  "inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy hover:border-navy hover:bg-page";
 
 function LanguagePicker({
   value,
@@ -83,7 +83,7 @@ function LanguagePicker({
               language: domain.language(language),
             })}
             onClick={() => flip(language)}
-            className="inline-flex h-7 w-7 items-center justify-center"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-mist"
           >
             <XIcon size={12} />
           </button>
@@ -98,7 +98,7 @@ function LanguagePicker({
           setSearch("");
           setOpen((current) => !current);
         }}
-        className="inline-flex h-7 items-center gap-1 rounded-pill border border-dashed border-slate px-2.5 text-xs font-semibold text-navy"
+        className="inline-flex h-7 items-center gap-1 rounded-pill border border-dashed border-slate px-2.5 text-xs font-semibold text-navy hover:border-navy hover:bg-page"
       >
         <PlusIcon size={12} />
         {t("book.panel.links.addLanguage")}
