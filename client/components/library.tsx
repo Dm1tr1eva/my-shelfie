@@ -29,7 +29,7 @@ import { useSeriesList } from "@/lib/series";
 import { libraryShelves, rowsOf, shelfRow, type SeriesShelf } from "@/lib/shelves";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
-const WIDE_SHELF = "(min-width: 1024px)";
+const WIDE_SHELF = "(min-width: 64rem)";
 
 function subscribeToWidth(onChange: () => void) {
   const query = window.matchMedia(WIDE_SHELF);

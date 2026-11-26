@@ -35,7 +35,7 @@ function wideScreen() {
   vi.mocked(window.matchMedia).mockImplementation(
     (query: string) =>
       ({
-        matches: query === "(min-width: 1024px)",
+        matches: query === "(min-width: 64rem)",
         media: query,
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
