@@ -164,7 +164,7 @@ describe("GET /api/wishlist", () => {
     assert.deepEqual(titlesIn(response, "continue"), []);
   });
 
-  it("reads books and series saved before desire existed as normal", async () => {
+  it("reads documents saved before desire, ownership and tags existed through the models' defaults", async () => {
     const alice = await signIn("alice@example.com");
     const userId = new Book.base.Types.ObjectId(await userIdOf(alice));
     await addBook(alice, { title: "Keen", ownership: "wanted", desire: "high" });
@@ -176,14 +176,47 @@ describe("GET /api/wishlist", () => {
       ownership: "wanted",
       createdAt: new Date(2020, 0, 1),
     });
-    await Series.collection.insertOne({ userId, title: "Old series", tagsMerged: true });
+    const { insertedId } = await Series.collection.insertOne({
+      userId,
+      title: "Old series",
+      tagsMerged: true,
+    });
+    await Book.collection.insertOne({
+      userId,
+      title: "Old owned",
+      author: "Someone",
+      seriesId: insertedId,
+      seriesNumber: 1,
+    });
+    await addBook(alice, {
+      title: "Old series 2",
+      seriesId: String(insertedId),
+      seriesNumber: 2,
+      ownership: "wanted",
+    });
 
     const response = await wishlistOf(alice);
 
     assert.equal(response.status, 200);
     assert.deepEqual(titlesIn(response, "standalone"), ["Keen", "Old wanted", "Later"]);
     assert.equal(itemsIn(response, "standalone")[1].desire, "normal");
-    assert.equal(itemsIn(response, "newSeries")[0].desire, "normal");
+    assert.deepEqual(itemsIn(response, "continue"), [
+      {
+        type: "series",
+        id: String(insertedId),
+        title: "Old series",
+        status: "unknown",
+        desire: "normal",
+        segments: [
+          { number: 1, state: "owned" },
+          { number: 2, state: "wanted" },
+        ],
+        genres: [],
+        tropes: [],
+        linkLanguages: [],
+        linkKinds: [],
+      },
+    ]);
   });
 
   it("answers a bounded row for a book saved with a number in the millions", async () => {

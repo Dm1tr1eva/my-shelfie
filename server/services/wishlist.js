@@ -7,7 +7,7 @@ const DESIRE_RANK = new Map([
 ]);
 
 function desireRank(desire) {
-  return DESIRE_RANK.get(desire) ?? DESIRE_RANK.get("normal");
+  return DESIRE_RANK.get(desire);
 }
 
 function isOwned(book) {
@@ -19,7 +19,7 @@ function stateOf(book) {
 }
 
 function hasNumber(book) {
-  return book.seriesNumber !== undefined && book.seriesNumber !== null;
+  return book.seriesNumber !== undefined;
 }
 
 function byAge(a, b) {
@@ -35,7 +35,7 @@ function distinct(values) {
 }
 
 function linkFacets(books) {
-  const links = books.flatMap((book) => book.links ?? []);
+  const links = books.flatMap((book) => book.links);
   return {
     linkLanguages: distinct(links.flatMap((link) => link.languages)),
     linkKinds: distinct(links.map((link) => link.kind)),
@@ -50,7 +50,7 @@ function segmentsOf(series, books) {
     }
   }
 
-  const known = [...states.keys(), ...(series.expected ?? []).map((entry) => entry.number)];
+  const known = [...states.keys(), ...series.expected.map((entry) => entry.number)];
   const last = Math.min(Math.max(series.totalBooks ?? 0, ...known), SERIES_NUMBER_MAX);
   const numbers = new Set(known);
   for (let number = 1; number <= last; number += 1) {
@@ -77,11 +77,11 @@ function seriesRow(series, books) {
     title: series.title,
     ...(series.author && { author: series.author }),
     status: series.status,
-    desire: series.desire ?? "normal",
+    desire: series.desire,
     ...(cover && { coverUrl: cover.coverUrl }),
     segments: segmentsOf(series, books),
-    genres: series.genres ?? [],
-    tropes: series.tropes ?? [],
+    genres: series.genres,
+    tropes: series.tropes,
     ...linkFacets(books.filter((book) => !isOwned(book))),
   };
 }
@@ -92,11 +92,11 @@ function bookRow(book) {
     id: book.id,
     title: book.title,
     author: book.author,
-    desire: book.desire ?? "normal",
+    desire: book.desire,
     ...(book.coverUrl && { coverUrl: book.coverUrl }),
     format: book.format,
-    genres: book.genres ?? [],
-    tropes: book.tropes ?? [],
+    genres: book.genres,
+    tropes: book.tropes,
     ...linkFacets([book]),
   };
 }

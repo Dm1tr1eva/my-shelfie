@@ -147,17 +147,6 @@ describe("wishlist groups", () => {
     assert.deepEqual(titlesIn(groups, "continue"), []);
   });
 
-  it("treats a book stored without ownership as owned", () => {
-    const saga = series({ title: "Saga" });
-    const legacy = owned(saga, 1);
-    delete legacy.ownership;
-
-    const groups = buildWishlist({ series: [saga], books: [legacy, wanted(saga, 2)] });
-
-    assert.deepEqual(titlesIn(groups, "continue"), ["Saga"]);
-    assert.deepEqual(statesOf(rowOf(groups, saga.id))[0], [1, "owned"]);
-  });
-
   it("lists wanted books without a series, or whose series is gone, as standalone", () => {
     const loose = book({ title: "Loose" });
     const orphan = book({ title: "Orphan", seriesId: "series-gone", seriesNumber: 2 });
@@ -233,18 +222,6 @@ describe("wishlist order", () => {
       "Old",
       "Later",
     ]);
-  });
-
-  it("ranks a row with no desire, or a name the object prototype knows, as normal", () => {
-    const keen = book({ title: "Keen", desire: "high" });
-    const unset = book({ title: "Unset", desire: undefined, createdAt: new Date(2026, 0, 2) });
-    const odd = book({ title: "Odd", desire: "constructor", createdAt: new Date(2026, 0, 1) });
-    const later = book({ title: "Later", desire: "someday" });
-
-    const groups = buildWishlist({ series: [], books: [later, odd, unset, keen] });
-
-    assert.deepEqual(titlesIn(groups, "standalone"), ["Keen", "Unset", "Odd", "Later"]);
-    assert.equal(rowOf(groups, unset.id).desire, "normal");
   });
 });
 
