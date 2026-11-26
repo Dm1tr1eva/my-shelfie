@@ -23,13 +23,11 @@ describe("home and sign-in screens in other languages", () => {
     renderApp(<Home />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: /Ваші книги, розставлені за серіями\./ }),
+      screen.getByRole("heading", { level: 1, name: /Твої книги, розставлені за серіями\./ }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 3, name: "Знаходьте пропуски" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: "Знаходь пропуски" })).toBeInTheDocument();
     expect(screen.getByText("Є 2 з 4")).toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: /Заведіть свою полицю/ })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /Заведи свою полицю/ })).toHaveAttribute(
       "href",
       "/register",
     );
