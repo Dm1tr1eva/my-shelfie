@@ -28,7 +28,7 @@ function Ring({ goal }: { goal: YearGoal }) {
       aria-label={t("dashboard.goal.ring", {
         year: goal.year,
         done: goal.done,
-        target: goal.target,
+        count: goal.target,
         percent: goal.percent,
       })}
     >

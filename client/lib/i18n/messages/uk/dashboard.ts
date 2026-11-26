@@ -45,7 +45,12 @@ export const dashboard: Localized<typeof en> = {
       many: "з {count} книг",
       other: "з {count} книги",
     },
-    ring: "Ціль на {year}: {done} з {target}, {percent}%",
+    ring: {
+      one: "Ціль на {year}: {done} з {count} книги, {percent}%",
+      few: "Ціль на {year}: {done} з {count} книг, {percent}%",
+      many: "Ціль на {year}: {done} з {count} книг, {percent}%",
+      other: "Ціль на {year}: {done} з {count} книги, {percent}%",
+    },
     weeksLeft: {
       one: "до кінця року {count} тиждень",
       few: "до кінця року {count} тижні",

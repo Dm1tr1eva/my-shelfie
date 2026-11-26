@@ -37,7 +37,10 @@ export const dashboard = {
   goal: {
     title: "{year} goal",
     of: { one: "of {count} book", other: "of {count} books" },
-    ring: "{year} goal: {done} of {target} books, {percent}%",
+    ring: {
+      one: "{year} goal: {done} of {count} book, {percent}%",
+      other: "{year} goal: {done} of {count} books, {percent}%",
+    },
     weeksLeft: { one: "{count} week left in the year", other: "{count} weeks left in the year" },
     change: "Change goal",
     set: "Set a goal",
