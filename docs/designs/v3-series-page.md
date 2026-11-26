@@ -20,13 +20,12 @@ One series, tens of books.
 
 ## Approach
 
-**Header, read-only.** Title (Playfair) with the age chip glued to its last word in one
-`nowrap` span, so it wraps with that word; a round pencil; author and the outline status chip;
-Genre and Tropes rows (labels in their own column, pills wrapping); the series annotation. A
-right column holds the navy card "2 of 6 owned" with `SeriesSegments` in a new `card` variant
-(on navy, stretched, still at most ten) and **My note**. Below 768px the card shrinks to a
-strip, and genre, tropes and annotation fold behind a round "more" button on the card's bottom
-edge.
+**Header, read-only.** Title (Playfair) with the age chip glued to its last word by a no-break
+space, so it wraps with that word; a round pencil; author and the outline status chip; Genre
+and Tropes rows (labels in their own column, pills wrapping); the series annotation. A right
+column holds the navy card "2 of 6 owned" with `SeriesSegments` in a new `card` variant (on
+navy, stretched, still at most ten) and **My note**. Below 768px the card shrinks to a strip,
+and genre, tropes and annotation fold behind a round "more" button on the card's bottom edge.
 
 **My note** is edited in place: its pencil turns the text into an `AutoTextarea`; leaving it
 saves with the panel's `Toast` and Undo; Escape cancels; a failure keeps the text, with Retry.

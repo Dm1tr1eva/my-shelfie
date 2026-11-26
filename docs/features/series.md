@@ -57,7 +57,7 @@ or wanted, is missing, and each run of them is one dashed gap tile, which shows 
 ([../designs/v3-series-page.md](../designs/v3-series-page.md)), reading `GET /api/series/:id`.
 
 - **Header, read-only.** The title in Playfair with the age (`AgeChip`, "16+", named "Age 16+")
-  kept on one line with the title's last word, so the two wrap together; the author and the
+  glued to the title's last word by a no-break space, so the two wrap together while a long word can still break; the author and the
   outline status chip; Genre and Tropes rows; the series annotation. A navy card says how many
   are owned ("2 of 6 owned") with `SeriesSegments` stretched across it; the count is the
   library's: every book of the series, unnumbered ones included, and every missing number.
@@ -65,14 +65,13 @@ or wanted, is missing, and each run of them is one dashed gap tile, which shows 
   "Show more" button on the card's bottom edge.
 - **My note** (`series-note.tsx`) is edited in place: its pencil, or "Add a note", turns it into
   a field; leaving the field saves it (`PATCH` of `note`, `null` when emptied) with a "Saved"
-  toast and Undo; Escape drops the change; a failure keeps the typed text and shows an error
+  toast and Undo; Escape drops the change, and nothing is sent later when the page goes away, and the focus goes back to the pencil or to "Add a note"; a failure keeps the typed text and shows an error
   toast with Retry.
 - **Edit mode** (`series-edit.tsx`), behind the pencil next to the title: Title, Author, Status
-  (four segments), Books in the series (1–200, or empty to clear it), Age (Not set, 12+, 16+,
+  (four segments), Books in the series (a whole number from 1 to 200 typed as text, so "1e" or "-" is refused instead of read as empty; empty clears it), Age (Not set, 12+, 16+,
   18+), Genre, Tropes and Annotation, then "Delete series" on the left and Cancel and Done on
   the right. Done checks the title (not blank) and the count, then sends every field in one
-  `PATCH` and closes; a refused save stays in the form with the reason. Cancel, and Escape on a
-  phone, drop the changes. From 768 px the form replaces the header card and keeps the progress
+  `PATCH` and closes; a refused save stays in the form with the reason, and Done can be pressed again. Cancel is held while a save is on its way; Cancel, and Escape on a phone, drop the changes. From 768 px the focus goes to Title when the form opens, and back to the pencil after Cancel or Done. From 768 px the form replaces the header card and keeps the progress
   card and the note beside it; below, it is a near full-screen sheet (`Drawer`). "Delete series"
   asks in `ConfirmDialog` (its books stay in the library as standalone books, as `DELETE` does)
   and then goes to `/library`. There is no co-author field (the model has one `author`) and no
