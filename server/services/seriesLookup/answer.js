@@ -1,8 +1,10 @@
 const { z } = require("zod");
+const {
+  LOOKUP_SERIES_STATUSES,
+  LOOKUP_CONFIDENCE_LEVELS,
+} = require("../../constants/seriesLookup");
 
 const MAX_SOURCES = 5;
-const ANSWER_STATUSES = ["ongoing", "complete", "unknown"];
-const CONFIDENCE_LEVELS = ["high", "medium", "low"];
 
 const bookNumber = z.number().positive().max(1000);
 
@@ -21,8 +23,8 @@ const answerSchema = z
     seriesOriginal: z.string().trim().min(1).max(200).nullable(),
     number: bookNumber.nullable(),
     books: z.array(answerBookSchema).max(200),
-    status: z.enum(ANSWER_STATUSES),
-    confidence: z.enum(CONFIDENCE_LEVELS),
+    status: z.enum(LOOKUP_SERIES_STATUSES),
+    confidence: z.enum(LOOKUP_CONFIDENCE_LEVELS),
     sources: z.array(z.string()).max(20),
   })
   .strict()
@@ -88,4 +90,4 @@ function parseAnswer(text, searchedUrls) {
   };
 }
 
-module.exports = { parseAnswer, ANSWER_STATUSES, CONFIDENCE_LEVELS };
+module.exports = { parseAnswer };

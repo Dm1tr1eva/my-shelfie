@@ -10,6 +10,7 @@ const googleBooksService = require("../services/googleBooksService");
 const libraryService = require("../services/libraryService");
 const progressService = require("../services/progressService");
 const seriesService = require("../services/seriesService");
+const seriesLookupService = require("../services/seriesLookupService");
 const statsService = require("../services/statsService");
 const yearGoalService = require("../services/yearGoalService");
 const { useTestApp } = require("./helpers/app");
@@ -108,6 +109,13 @@ const ROUTE_FAILURES = [
     path: `/api/series/${SOME_ID}`,
     breaks: [seriesService, "deleteSeries"],
     error: "Failed to delete series",
+  },
+  {
+    method: "POST",
+    path: "/api/series/lookup",
+    body: { title: "A book", authors: ["An author"] },
+    breaks: [seriesLookupService, "lookUpSeries"],
+    error: "Failed to look up the series",
   },
   {
     method: "GET",
