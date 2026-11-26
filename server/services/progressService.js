@@ -1,10 +1,11 @@
 const bookRepository = require("../repositories/bookRepository");
 const progressRepository = require("../repositories/progressRepository");
 const { HttpError } = require("../errors/httpError");
+const { pageAtPercent } = require("./readingPosition");
 
 function positionOf(book, { page, percent }) {
   if (page === undefined) {
-    return book.pages ? { page: Math.round((percent * book.pages) / 100), percent } : { percent };
+    return book.pages ? { page: pageAtPercent(percent, book.pages), percent } : { percent };
   }
 
   if (!book.pages) {

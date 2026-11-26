@@ -1,3 +1,5 @@
+const { pageAtPercent } = require("./readingPosition");
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTHS = 12;
 const VERY_MUCH_LIMIT = 3;
@@ -60,7 +62,7 @@ function readPerMonth(read, seriesById) {
 }
 
 function pageOf(entry, pages) {
-  return entry.page ?? Math.round((entry.percent * pages) / 100);
+  return entry.page ?? pageAtPercent(entry.percent, pages);
 }
 
 function pagesBetween(previous, page, pages) {
