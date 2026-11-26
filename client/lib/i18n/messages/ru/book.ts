@@ -98,9 +98,8 @@ export const book: Localized<typeof en> = {
     pickDate: "Выбрать дату",
     clearDate: "Убрать дату",
     rating: "Оценка",
+    tropes: "Тропы",
     annotation: "Аннотация",
-    seriesAnnotation: "Общая для всех книг серии.",
-    noSeriesAnnotation: "У серии пока нет аннотации.",
     links: {
       heading: "Ссылки",
       add: "ссылка",

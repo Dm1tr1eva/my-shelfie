@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
-import { book, choose, mockApi, renderApp, series, type Call } from "@/test/helpers";
+import { book, booksResponse, choose, mockApi, renderApp, series, type Call } from "@/test/helpers";
 import type { Book } from "@/lib/books";
 import { BookPanel } from "./book-panel";
 
@@ -50,6 +50,7 @@ function serve(
       };
     }
     if (path.startsWith("/api/books/search")) return { body: { results: [] } };
+    if (path.startsWith("/api/books?")) return booksResponse([current]);
   });
   return calls;
 }
@@ -567,6 +568,7 @@ describe("BookPanel", () => {
       fireEvent.keyDown(screen.getByRole("button", { name: "Cancel" }), { key: "Escape" });
 
       expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(screen.getByRole("dialog", { name: "Ash" })).toBeInTheDocument();
       expect(router.back).not.toHaveBeenCalled();
     });
@@ -625,14 +627,16 @@ describe("BookPanel", () => {
       expect(screen.queryByText("Loading the book…")).not.toBeInTheDocument();
     });
 
-    it("names the series and number above the book, linking to the series", async () => {
-      await open(
+    it("names the series above a series book, shows the series' tags and edits the book's own annotation", async () => {
+      const calls = await open(
         book({
           id: "b1",
           title: "Ash",
           seriesId: "saga",
           seriesNumber: 1,
-          annotation: "A series about ash.",
+          genres: ["Fantasy"],
+          tropes: ["dragons"],
+          annotation: "The first book wakes the dragon.",
         }),
       );
 
@@ -640,8 +644,58 @@ describe("BookPanel", () => {
         "href",
         "/series/saga",
       );
-      expect(screen.getByText("A series about ash.")).toBeInTheDocument();
-      expect(screen.queryByRole("textbox", { name: "Annotation" })).not.toBeInTheDocument();
+      expect(screen.getByText("Fantasy")).toBeInTheDocument();
+      expect(screen.getByText("dragons")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /Choose genres|Fantasy/ }),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByRole("textbox", { name: "Tropes" })).not.toBeInTheDocument();
+
+      const area = screen.getByRole("textbox", { name: "Annotation" });
+      expect(area).toHaveValue("The first book wakes the dragon.");
+      fireEvent.focus(area);
+      fireEvent.change(area, { target: { value: "The dragon wakes." } });
+      fireEvent.blur(area);
+      await waitFor(() => expect(patches(calls)).toEqual([{ annotation: "The dragon wakes." }]));
+    });
+
+    it("chooses genres and tropes of a standalone book", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash" }));
+
+      fireEvent.click(screen.getByRole("button", { name: /Choose genres/ }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "Fantasy" }));
+      await waitFor(() => expect(patches(calls)).toEqual([{ genres: ["Fantasy"] }]));
+
+      const tropes = screen.getByRole("textbox", { name: "Tropes" });
+      fireEvent.change(tropes, { target: { value: "found family" } });
+      fireEvent.keyDown(tropes, { key: "Enter" });
+      await waitFor(() => expect(patches(calls).at(-1)).toEqual({ tropes: ["found family"] }));
+    });
+
+    it("closes the trope suggestions with Escape and leaves the panel open", async () => {
+      await open(book({ id: "b1", title: "Ash", tropes: [] }));
+      const tropes = screen.getByRole("textbox", { name: "Tropes" });
+
+      fireEvent.focus(tropes);
+      fireEvent.change(tropes, { target: { value: "road" } });
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+      fireEvent.keyDown(tropes, { key: "Escape" });
+
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(router.back).not.toHaveBeenCalled();
+      expect(screen.getByRole("dialog", { name: "Ash" })).toBeInTheDocument();
+    });
+
+    it("closes the genre list with Escape and leaves the panel open", async () => {
+      await open(book({ id: "b1", title: "Ash" }));
+
+      fireEvent.click(screen.getByRole("button", { name: /Choose genres/ }));
+      fireEvent.keyDown(screen.getByRole("checkbox", { name: "Fantasy" }), { key: "Escape" });
+
+      expect(screen.queryByRole("checkbox", { name: "Fantasy" })).not.toBeInTheDocument();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(router.back).not.toHaveBeenCalled();
     });
 
     it("edits the annotation of a standalone book", async () => {

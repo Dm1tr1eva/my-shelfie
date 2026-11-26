@@ -82,9 +82,8 @@ export const book = {
     pickDate: "Pick a date",
     clearDate: "Clear the date",
     rating: "Rating",
+    tropes: "Tropes",
     annotation: "Annotation",
-    seriesAnnotation: "Shared by every book of the series.",
-    noSeriesAnnotation: "The series has no annotation yet.",
     links: {
       heading: "Links",
       add: "link",

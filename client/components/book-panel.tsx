@@ -12,10 +12,13 @@ import { BookProperties } from "@/components/book-properties";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Drawer } from "@/components/drawer";
 import { ErrorState } from "@/components/error-state";
+import { GenreChip, TropeChip } from "@/components/chips";
+import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { EditIcon, TrashIcon } from "@/components/icons";
+import { TagInput } from "@/components/tag-input";
 import { Toast } from "@/components/toast";
 import { ApiError } from "@/lib/api";
-import { useBook, useBookActions, type Book } from "@/lib/books";
+import { useBook, useBookActions, useBooks, type Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import { useSeriesList, type Series } from "@/lib/series";
 import {
@@ -214,30 +217,14 @@ function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
   );
 }
 
-function Annotation({ book, series, save }: { book: Book; series?: Series; save: SaveBook }) {
+function Annotation({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const areaId = useId();
   const commit = useCallback(
     (text: string) => save({ annotation: text.trim() === "" ? null : text }, { optimistic: false }),
     [save],
   );
-  const draft = useDraft("annotation", series ? "" : (book.annotation ?? ""), commit);
-
-  if (series) {
-    return (
-      <section aria-labelledby={areaId} className="flex flex-col gap-2">
-        <h2 id={areaId} className="text-xl font-semibold">
-          {t("book.panel.annotation")}
-        </h2>
-        {book.annotation ? (
-          <p className="whitespace-pre-line text-sm leading-relaxed">{book.annotation}</p>
-        ) : (
-          <p className="text-sm text-muted">{t("book.panel.noSeriesAnnotation")}</p>
-        )}
-        <p className="text-xs text-muted">{t("book.panel.seriesAnnotation")}</p>
-      </section>
-    );
-  }
+  const draft = useDraft("annotation", book.annotation ?? "", commit);
 
   return (
     <section className="flex flex-col gap-2">
@@ -257,6 +244,62 @@ function Annotation({ book, series, save }: { book: Book; series?: Series; save:
         className="rounded-card border border-mist bg-card px-3 py-2.5 text-sm leading-relaxed"
       />
     </section>
+  );
+}
+
+function SeriesTags({ book }: { book: Book }) {
+  const t = useT();
+  if (book.genres.length + book.tropes.length === 0) return null;
+
+  return (
+    <dl className="flex flex-col gap-2">
+      {book.genres.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <dt className="w-full text-xs font-semibold uppercase tracking-[0.06em] text-muted">
+            {t("book.genres.label")}
+          </dt>
+          {book.genres.map((genre) => (
+            <dd key={genre}>
+              <GenreChip genre={genre} />
+            </dd>
+          ))}
+        </div>
+      )}
+      {book.tropes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <dt className="w-full text-xs font-semibold uppercase tracking-[0.06em] text-muted">
+            {t("book.panel.tropes")}
+          </dt>
+          {book.tropes.map((trope) => (
+            <dd key={trope}>
+              <TropeChip trope={trope} />
+            </dd>
+          ))}
+        </div>
+      )}
+    </dl>
+  );
+}
+
+function OwnTags({ book, save }: { book: Book; save: SaveBook }) {
+  const t = useT();
+  const { books } = useBooks();
+  const counts = new Map<string, number>();
+  for (const item of books) {
+    for (const trope of item.tropes) counts.set(trope, (counts.get(trope) ?? 0) + 1);
+  }
+  const suggestions = [...counts].map(([name, count]) => ({ name, count }));
+
+  return (
+    <div className="flex flex-col gap-4">
+      <GenreMultiSelect value={book.genres} onChange={(genres) => void save({ genres })} />
+      <TagInput
+        label={t("book.panel.tropes")}
+        value={book.tropes}
+        onChange={(tropes) => void save({ tropes })}
+        suggestions={suggestions}
+      />
+    </div>
   );
 }
 
@@ -329,8 +372,9 @@ function PanelContent({
     <div className="flex flex-col gap-6 pb-6">
       <TitleBlock book={book} save={save} />
       <BookProperties book={book} save={save} />
+      {series ? <SeriesTags book={book} /> : <OwnTags book={book} save={save} />}
       <div className="border-t border-mist pt-5">
-        <Annotation book={book} series={series} save={save} />
+        <Annotation book={book} save={save} />
       </div>
       <div className="border-t border-mist pt-5">
         <BookLinks links={book.links} onChange={(links) => void save({ links })} />
