@@ -147,18 +147,24 @@ stays the public page, nothing in the nav is active. Design:
   (Currently reading and "Where are you now?": Pages or Percent — Pages only for a book with
   `pages` that is not an audiobook —, +10 / +25 / +50 capped at the end, Save; an audiobook's
   buttons read "Mark progress" and "Listened"), `goal.tsx` (the ring, "Change goal" / "Set a
-  goal": − / number / +, 1–1,000, quick 12 · 24 · 36 · 52, "N books left in M weeks, about K a
+  goal": − / number / +, the field may be cleared while typing and the value is held to 1–1,000
+  for the hint and on Save, quick 12 · 24 · 36 · 52, "N books left in M weeks, about K a
   week" with K rounded up, "Goal reached" at zero), `months.tsx` (a month with books is a
-  button; hover with a mouse, a click or a tap opens its card, Esc closes it; the card is
-  clamped inside the chart), `lists.tsx` (genres, waiting, very much, quote, new on the shelf;
-  four covers below 768 px, six above) and `section.tsx`.
-- `client/components/popover.tsx`: a non-modal card under its button from 768 px, the same
+  button; hovering with a mouse opens its card, which stays open on the way to its links; a
+  click or a tap pins it, a second click, Esc or a click elsewhere closes it; the card is
+  clamped inside the chart and its arrow points at the month), `lists.tsx` (genres, waiting,
+  very much, quote, new on the shelf; four covers below 768 px, six above) and `section.tsx`.
+- `client/components/popover.tsx`: a non-modal card with an arrow under its button from 768 px,
+  the same
   content in `Drawer` below. First control focused, Esc or a click outside closes, focus back
   to the button, which carries `aria-expanded` and `aria-controls`.
 - Every block has its own empty line; a load shows a skeleton with a status line, a failure
   `ErrorState` with Try again. The `500` texts of stats, progress and the goal are translated
   (`client/lib/i18n/server-errors.ts`); texts live under `dashboard` in en / ru / uk.
 - The Very much bar shows owned numbers first: the API sends counts, not each number's state.
+- While a book is being finished its Mark page and Finished buttons, and an open popover's
+  Finished and Save, are disabled, so it is finished once. The installed app opens on
+  `/dashboard` (`app/manifest.ts`).
 
 ## Data
 

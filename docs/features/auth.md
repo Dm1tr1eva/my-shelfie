@@ -60,7 +60,7 @@ an issue about the whole body (an unknown field) reads `: Unrecognized key: "x"`
 the single source of session state, checks `/me` once on mount). `app/login`,
 `app/register` are thin pages around Client Components (`login-form.tsx`,
 `register-form.tsx`, with show/hide password in `auth-fields.tsx`) — no Server Actions. Both
-send you to `/library` afterwards; `/dashboard` only redirects there. The create-account page
+send you to Home, `/dashboard`, afterwards, as does the logo while signed in ([home-stats.md](home-stats.md)). The create-account page
 validates per field with the same rule as the server and falls back to a banner for an error it
 cannot place. Design: [public-pages.md](../designs/public-pages.md). While `/me` is
 unanswered, `AppFrame` shows `AuthLoading` (a spinner, then after five seconds a note that the

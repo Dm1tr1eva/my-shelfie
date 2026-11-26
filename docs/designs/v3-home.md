@@ -21,28 +21,26 @@ go there; `/` stays public, as the footer's Home link expects. `/` lost: it rend
 session is known, so the public page would flash; `/dashboard` waits for the session like every
 app page. Nothing in the nav is active.
 
-**Data:** one SWR key, `/api/stats`. Saving progress, a goal or "Finished" revalidates it and
-the library keys. `components/dashboard/` holds a file each for tiles, reading, goal, months
-and the small lists, reusing `BookCover` and
-`SeriesSegments`; `lib/stats.ts` the types, the hook and the actions.
+**Data:** one SWR key, `/api/stats`; every save revalidates it and the library keys.
+`components/dashboard/` has a file per block, reusing `BookCover` and `SeriesSegments`;
+`lib/stats.ts` holds the types, the hook and the actions.
 
-**Popover** (`components/popover.tsx`): a non-modal card under its trigger from 768 px; below,
-the same content inside the existing `Drawer` sheet. Its first control takes focus; Esc or a
-click outside closes it and focus returns to the trigger, which carries `aria-expanded`.
-Buttons stay disabled while a request runs.
+**Popover** (`components/popover.tsx`): a non-modal card with an arrow under its trigger from
+768 px, the same content in `Drawer` below. Its first control takes focus; Esc or a click
+outside closes it, focus returns to the trigger (`aria-expanded`). Buttons stay disabled while a
+request runs.
 
 **Where are you now?** Pages or Percent (Pages only for a book with `pages` that is not an
 audiobook), a number, +10 / +25 / +50 added to it and capped at the maximum, Save →
 `POST /api/progress`; progress shows as a percent (decision 25). **Finished** (card and popover)
 sends 100%, then `PATCH` with `status: read` and the local date as `finishedAt`.
 
-**Goal:** a ring (SVG, `role="img"`), "38% · 7 weeks left", "Change goal" → − / number / +,
-quick 12 · 24 · 36 · 52, "N books left in M weeks, about K a week" (K rounded up; "Goal
-reached" at zero), 1 to 1,000, Cancel / Save → `PUT /api/year-goal`. Without a goal for this
-year the block offers "Set a goal".
+**Goal:** a ring (SVG, `role="img"`), "38% · 7 weeks left", "Change goal" → − / number / +
+(held to 1–1,000 on Save), quick 12 · 24 · 36 · 52, "N books left in M weeks, about K a week"
+(K rounded up; "Goal reached" at zero), `PUT /api/year-goal`; without a goal, "Set a goal".
 
-**Months:** twelve bars. A month with books is a button named "September, 2 books": hover,
-click or Enter opens a card with its books; Esc closes it. Empty months are plain bars.
+**Months:** twelve bars. A month with books is a button ("September, 2 books"): hover opens
+its card, a click or Enter pins it, Esc closes it. Empty months are plain bars.
 
 **Audiobooks** (decision 44): the card's buttons read "Mark progress" and "Listened"; tiles and
 headings keep "Read".
@@ -61,12 +59,16 @@ with a status line; a failed load: `ErrorState` with Try again.
   cannot do; the book panel can set the status back.
 - **"Finished" is two requests.** If the `PATCH` fails after the entry, the book stays at 100%
   and reading; the server's error shows and pressing it again finishes it.
-- **"Mark page" does not start a book** that is still To read; the book panel does.
 - **Only this year, in UTC**, as `home-stats.md` records.
 
 ## Cost
 
 About eight client files, three locales, around 30 behaviour tests. No dependency.
+
+## Open questions
+
+- Should "Mark page" move a book that is still To read to Reading? Today the book panel does.
+- Should a signed-in visit to `/` go to Home? Today `/` stays the public page.
 
 ## Review
 
