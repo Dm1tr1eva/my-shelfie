@@ -103,8 +103,10 @@ Code: `services/wishlist.js` (a pure function over the book and series DTOs),
   Below 768px the pill goes under the segments.
 - The desire pill cycles Very much → Want → Someday on each tap and shows the new level at
   once. One `PATCH` (`/api/series/:id` or `/api/books/:id`, `{ desire }`) goes out 400 ms after
-  the last tap, or at once with `keepalive` when the page is left; only the newest answer
-  counts. A failure restores the saved level and shows an alert. The wishlist cache is updated
+  the last tap, or at once with `keepalive` when the page is left. Every success writes its
+  level to the cache unless a newer request was confirmed first, so the cache holds what the
+  server last confirmed. A failure of the newest request restores that level and shows an
+  alert, unless another tap is still waiting to be sent: its request decides. The wishlist cache is updated
   in place and the other library keys refetched, so rows keep their order until the next load
   (SWR does not refetch on focus here). A live region announces each change.
 - Search (title or author) and the library's filter panel: Genre, Tropes, Author, Series status

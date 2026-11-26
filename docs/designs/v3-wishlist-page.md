@@ -36,10 +36,10 @@ HTML). From 768px the pill sits between text and arrow; below, under the segment
 "tap to change", and a live region announces each
 change. The level shows at once and beats the cache while
 pending. The `PATCH` goes out once taps stop for 400 ms, so a double
-tap is one request; leaving the page sends it at once with `keepalive`. Only the newest
-answer counts. A failure restores the saved level and shows an alert naming the
-row. The pill calls `apiFetch` itself, not `updateBook`/`updateSeries`: those refetch every
-library key, and the wishlist would re-sort under the pointer between two taps. It updates the
+tap is one request; leaving the page sends it at once with `keepalive`. The newest
+confirmed level goes to the cache; a failure of the newest request, with no tap waiting,
+restores it and shows an alert. The pill calls `apiFetch` itself: `updateBook`/`updateSeries` refetch every library key,
+and the wishlist would re-sort between two taps. It updates the
 wishlist cache in place and refreshes the rest, so **rows keep their order until the next
 load**.
 
