@@ -312,6 +312,35 @@ describe("Wishlist", () => {
     expect(pill).toHaveAccessibleName("Desire: Very much. Tap to change");
   });
 
+  it("ignores a late failure of an older save once a newer one has succeeded", async () => {
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let saves = 0;
+    const calls = mockApi((call) => {
+      if (call.path === "/api/wishlist") return { body: { groups: groups() } };
+      if (call.method === "PATCH") {
+        saves += 1;
+        return saves === 1 ? { status: 500, body: {}, wait: held } : { body: {} };
+      }
+      if (call.method === "GET") return { body: { books: [], series: [] } };
+    });
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Very much. Tap to change" });
+
+    fireEvent.click(pill);
+    await waitFor(() => expect(patches(calls)).toHaveLength(1));
+    fireEvent.click(pill);
+    await waitFor(() => expect(patches(calls)).toHaveLength(2));
+    await settle();
+    release();
+    await settle();
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
+  });
+
   it("sends a change right away when the page is left before the taps settle", async () => {
     const calls = serve();
     const { unmount } = renderApp(<Wishlist />);
