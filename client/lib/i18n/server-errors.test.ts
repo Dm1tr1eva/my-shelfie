@@ -14,7 +14,7 @@ describe("translateServerError", () => {
 
   it("translates a known server message into Russian", () => {
     expect(translateServerError("Not authenticated", translator("ru"))).toBe(
-      "Вы не вошли в аккаунт",
+      "Вход в аккаунт не выполнен",
     );
   });
 
