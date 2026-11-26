@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: APP_NAME,
     short_name: APP_NAME,
     description: "A home library and a wishlist for people who collect books in series.",
-    start_url: "/library",
+    start_url: "/dashboard",
     scope: "/",
     display: "standalone",
     background_color: "#ece4e5",

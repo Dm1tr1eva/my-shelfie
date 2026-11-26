@@ -22,7 +22,7 @@ One manifest, a few static icons, one small component. No server change.
 ## Approach
 
 **Manifest.** `app/manifest.ts` (a Next.js file convention): name and short name
-"my-shelfie", `display: standalone`, `start_url: /library`, `scope: /`, background the page
+"my-shelfie", `display: standalone`, `start_url: /dashboard` (Home; `/library` until 2026-11-26), `scope: /`, background the page
 colour, theme colour the navy of the bars. Icons: 192 and 512 px for ordinary use and a 512 px
 maskable one with the artwork inside the safe circle, all rendered from `app/icon.svg` and
 committed under `public/` (the SVG stays the source). A service worker is not needed for the
@@ -51,7 +51,7 @@ dependency and caching rules to solve offline use, which is out of scope.
 - The install button appears only after Chromium decides the site is installable, so it can be
   absent on first visit; the browser's own menu entry still works.
 - Rendered PNG icons must be regenerated when the artwork changes.
-- The start page is `/library`; a signed-out user who installs lands on the sign-in page.
+- The start page is Home, `/dashboard`; a signed-out user who installs lands on the sign-in page.
 
 ## Cost
 
