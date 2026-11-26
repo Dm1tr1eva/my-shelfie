@@ -340,36 +340,58 @@ describe("deleting a series", () => {
     assert.deepEqual([...stored.genres], []);
   });
 
-  it("loses nothing when a book cannot be written after the series was deleted", async () => {
+  it("loses nothing when a book cannot be written after the series was deleted, in either order", async () => {
     const alice = await signIn("alice@example.com");
-    const series = await addSeries(alice, { genres: ["Fantasy"], tropes: ["slow burn"] });
-    const fine = await addBook(alice, { title: "Fine", seriesId: series.id, seriesNumber: 1 });
-    const breaks = await addBook(alice, { title: "Breaks", seriesId: series.id, seriesNumber: 2 });
-    await storeOwnTags(fine.id, ["Horror"], []);
+    const cases = [];
+    for (const order of [
+      ["Fine", "Breaks"],
+      ["Breaks", "Fine"],
+    ]) {
+      const series = await addSeries(alice, {
+        title: order.join(" then "),
+        genres: ["Fantasy"],
+        tropes: ["slow burn"],
+      });
+      const ids = {};
+      for (const [index, title] of order.entries()) {
+        const book = await addBook(alice, { title, seriesId: series.id, seriesNumber: index + 1 });
+        ids[title] = book.id;
+      }
+      await storeOwnTags(ids.Fine, ["Horror"], []);
+      cases.push({ series, ids, order });
+    }
 
     await rejectUnlinking("Breaks");
-    let removed;
+    const statuses = [];
     try {
-      removed = await api(`/api/series/${series.id}`, { method: "DELETE", cookie: alice });
+      for (const { series } of cases) {
+        const removed = await api(`/api/series/${series.id}`, { method: "DELETE", cookie: alice });
+        statuses.push(removed.status);
+      }
     } finally {
       await acceptEverything();
     }
-    const stillThere = await api(`/api/series/${series.id}`, { cookie: alice });
-    const books = await Book.find({ _id: { $in: [fine.id, breaks.id] } }).sort({ title: -1 });
 
-    assert.equal(removed.status, 500);
-    assert.equal(stillThere.status, 200);
-    assert.deepEqual(
-      stillThere.body.books.map((item) => item.title),
-      ["Fine", "Breaks"],
-    );
-    assert.deepEqual(
-      books.map((item) => [item.title, String(item.seriesId), [...item.genres]]),
-      [
-        ["Fine", series.id, ["Horror"]],
-        ["Breaks", series.id, []],
-      ],
-    );
+    assert.deepEqual(statuses, [500, 500]);
+    for (const { series, ids, order } of cases) {
+      const stillThere = await api(`/api/series/${series.id}`, { cookie: alice });
+      const fine = await Book.findById(ids.Fine);
+      const breaks = await Book.findById(ids.Breaks);
+
+      assert.equal(stillThere.status, 200, series.title);
+      assert.deepEqual(
+        stillThere.body.books.map((item) => item.title),
+        order,
+      );
+      assert.deepEqual(
+        [fine, breaks].map((item) => [String(item.seriesId), [...item.genres]]),
+        [
+          [series.id, ["Horror"]],
+          [series.id, []],
+        ],
+        series.title,
+      );
+    }
   });
 });
 

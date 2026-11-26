@@ -35,7 +35,7 @@ rarely. One replica of the API; MongoDB Atlas, a replica set, so transactions ar
    transaction start lives in `repositories/transaction.js`, so the service does not import
    Mongoose; repository methods keep `userId` first and take the session last.
 4. **Client.** The confirmation says the books stay and receive the series' genres and tropes.
-   RU and UK use the polite form, as the author decided on 2026-11-26.
+   The new RU and UK sentences are impersonal, with no «ты» (author's decision, 2026-11-26).
 
 The alternative, an aggregation-pipeline `updateMany` with `$setUnion`, lost: it does not keep
 order, compares case-sensitively and cannot apply the limits.
@@ -55,12 +55,11 @@ order, compares case-sensitively and cannot apply the limits.
 
 ## Cost
 
-- Server: `seriesService.deleteSeries`, one new repository method for books
-  (`handOverSeriesTags`), a session option on the series delete, and
-  `repositories/transaction.js`.
+- Server: `seriesService.deleteSeries`; for books, `findTagsBySeries` and `leaveSeries` in place
+  of `unlinkSeries`; a session option on the series delete; `repositories/transaction.js`.
 - Integration tests in `test/library.test.js`. Failure midway is tested without driver mocks:
-  a collection validator on the test database rejects one book's write after the series is
-  deleted, and the test checks that the series and the books are unchanged.
+  a collection validator rejects one book's write after the series is deleted, with that book
+  first and last, and the test checks that nothing changed.
 - Client: the delete text in en, ru and uk, plus one test.
 - Docs: `features/series.md` (invariant, endpoint, recovery) and ROADMAP.
 - About 150 lines; no dependency, no migration.
