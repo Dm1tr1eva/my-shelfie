@@ -98,6 +98,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   Vitest nor `next dev` showed it; `next build` listed a `/[...rest]` route, and `curl` against
   `next start` gave the status. After touching route files, check an unknown address that way.
 
+- **The book panel closes asynchronously.** Closing first waits for unsaved text, so a test that
+  presses Escape and asserts at once that `router.back` was *not* called passes even when the
+  panel is about to close. Three such tests stayed green under a mutation (2026-11-26); they
+  now wait a few milliseconds before that assertion.
+
 - **A loading state can be gone before the assertion.** `findByText("Loading the book…")`
   resolved with the skeleton, and by the next line the mocked `fetch` had answered and the
   skeleton was detached, so `toBeInTheDocument()` failed (2026-11-26). Hold the response with the

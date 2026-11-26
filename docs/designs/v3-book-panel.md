@@ -10,8 +10,8 @@ confirmation dialog.
 
 ## Out of scope
 
-Series page, add modal, Home and entering progress, AI buttons, desire, server changes.
-Changing a book's series, genres or tropes (not drawn in the panel).
+Series page, add modal, Home and entering progress, AI buttons, desire, other server changes.
+Changing a book's series; a series book's genres and tropes (series edit mode, step 5).
 
 ## Scale assumptions
 
@@ -27,8 +27,9 @@ it (the guide's catch-all slot turned every unknown address's `404` into `200`).
 to `/books/[id]` renders the library with the panel open; closing replaces the address with
 `/library`.
 
-**Drawer** gains `tall` (a sheet from 32px with the grab handle) and `lightScrim` (0.28); width stays `className` (460px, 500px from 1024px). Escape already
-handled (`defaultPrevented`) by an open form, list or dialog closes only that.
+**Drawer** gains `tall` (a sheet from 32px with the grab handle) and `lightScrim` (0.28); width
+stays `className` (460px, 500px from 1024px). Escape already handled (`defaultPrevented`) by an
+open form, list or dialog closes only that.
 
 **Content** (decisions 19–24): "Change cover" (Google Books, a URL, the placeholder), title and
 author renamed in place, property rows: Have/Want, Format (three options), Pages or Duration
@@ -37,14 +38,17 @@ by status — Reading: progress, Started, Finished; Dropped: grey progress, Rati
 Rating, dates. Progress: the latest `GET /api/progress` entry, shown only (0% without one).
 Annotation, Links (rows; "+ link" form with Type, URL and a searchable multi-select of the four
 API languages), Impressions (six preset moods stored in English like default genres, own moods,
-recommend, quotes with page, my note), "Delete book" → `ConfirmDialog`. A series book shows the
-series' annotation read-only, as the API returns it.
+recommend, quotes with page, my note), "Delete book" → `ConfirmDialog`. Annotation is the
+book's own, series book included (decision 21; the DTO returned the series' until 2026-11-26).
+A standalone book gets Genre and Tropes (existing controls); a series
+book shows its series' read-only: one place edits them.
 
-**Autosave.** `lib/use-book-autosave.ts` sends `PATCH`es one at a time, in order. Choices (toggles, selects, stars, pills, dates, links, quotes, cover) save at once
-and update the cache optimistically; numbers and renames on blur or Enter; text areas on blur
-and before the panel closes — closing waits, and a failed save keeps the panel open. Each save
-shows a "Saved" toast whose Undo sends the values the book had before it. A failure rolls the
-cache back, keeps typed text in its field and shows an error toast that stays, with Retry.
+**Autosave.** `lib/use-book-autosave.ts` sends `PATCH`es one at a time, in order. Choices
+(toggles, selects, stars, pills, dates, links, quotes, cover) save at once and update the cache
+optimistically; numbers and renames on blur or Enter; text areas on blur and before the panel
+closes — closing waits, and a failed save keeps the panel open. Each save shows a "Saved" toast
+whose Undo sends the values the book had before it. A failure rolls the cache back, keeps typed
+text in its field and shows an error toast that stays, with Retry.
 
 **Shared** with the series page next: `toast.tsx` (navy, bottom centre, Undo, hides after five
 seconds; an error stays, with Retry) and `confirm-dialog.tsx` (Cancel focused, Escape cancels,
@@ -70,6 +74,4 @@ New: `book-panel.tsx`, `book-links.tsx`, `book-impressions.tsx`, `book-cover-pic
 
 ## Open questions
 
-- A book's own annotation (the mockup's differs from the series') needs the DTO to stop
-  returning the series' annotation for series books.
-- Where should a standalone book's genres and tropes be edited now?
+- None; both answered 2026-11-26.

@@ -230,9 +230,11 @@ client.
     book (0% without one), shown as a bar and a percent and never entered here; entering it is
     Home's job. The rating is five stars; pressing the chosen one again clears it. Dates are
     "Pick a date" until set, a native date field while editing (Enter or leaving it saves,
-    Escape cancels), and have a clear button.
-  - Annotation: an auto-growing field for a standalone book. A series book shows the series'
-    annotation read-only, because the API returns that one as the book's `annotation`.
+    Escape cancels), and have a clear button.  - Genre and Tropes, right under the properties: a standalone book edits them with
+    `GenreMultiSelect` and `TagInput` (saved at once, trope suggestions from the library); a
+    series book shows the series' genres and tropes read-only, edited on the series.
+  - Annotation: an auto-growing field holding the book's own annotation, for a series book too
+    (the series' description stays on the series page).
   - Links: one row per link (kind, domain, every language code, an open button, a remove
     button); "+ link" opens a form with Type, Link and a language picker (search, several
     languages, removable codes). A link needs an `http(s)` address and at least one language;
@@ -375,10 +377,9 @@ both the filter every query uses and the sort `GET /` applies.
 - **Text being typed is saved on leaving the field, not while typing.** Closing the panel saves
   it, but closing or reloading the tab in the middle of a sentence loses that sentence.
 - **Undo reverts the latest save only.** There is no history of changes.
-- **A series book's annotation is the series'.** The panel shows it read-only; a book of its
-  own annotation needs the DTO to stop preferring the series' (open question in the design).
-- **Genres, tropes and the series of a book are not edited in the panel**, as the v3 handoff
-  draws it. The details step still edits them; the series page's edit mode is next.
+- **A series book's genres and tropes, and the series a book is in, are not edited in the
+  panel.** They belong to the series; the details step still edits them, and the series page's
+  edit mode is next.
 - **A direct visit always shows the library underneath**, whatever page the link was copied
   from, and `/books/*` highlights no nav item.
 - **A deploy briefly mixes link shapes.** The API now sends `links[].languages` and no longer
