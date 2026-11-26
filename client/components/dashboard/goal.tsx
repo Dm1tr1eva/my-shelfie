@@ -4,9 +4,8 @@ import { useId, useState } from "react";
 import { Muted, Section } from "@/components/dashboard/section";
 import { PlusIcon } from "@/components/icons";
 import { Popover } from "@/components/popover";
-import { ApiError } from "@/lib/api";
 import { useT } from "@/lib/i18n";
-import { translateServerError } from "@/lib/i18n/server-errors";
+import { translateError } from "@/lib/i18n/server-errors";
 import { useHomeActions, type YearGoal } from "@/lib/stats";
 
 const QUICK = [12, 24, 36, 52];
@@ -91,9 +90,7 @@ function GoalEditor({
       await saveGoal(year, books);
       onClose();
     } catch (failure) {
-      setError(
-        translateServerError(failure instanceof ApiError ? failure.message : "Request failed", t),
-      );
+      setError(translateError(failure, t));
       setSaving(false);
     }
   }

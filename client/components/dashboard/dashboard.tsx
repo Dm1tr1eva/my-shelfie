@@ -12,9 +12,8 @@ import { MonthsChart } from "@/components/dashboard/months";
 import { CurrentlyReading } from "@/components/dashboard/reading";
 import { StatTiles } from "@/components/dashboard/tiles";
 import { ErrorState } from "@/components/error-state";
-import { ApiError } from "@/lib/api";
 import { useT } from "@/lib/i18n";
-import { translateServerError } from "@/lib/i18n/server-errors";
+import { translateError } from "@/lib/i18n/server-errors";
 import { useHomeStats } from "@/lib/stats";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
@@ -60,10 +59,7 @@ export function Dashboard() {
       {error ? (
         <ErrorState
           title={t("dashboard.loadFailed")}
-          text={translateServerError(
-            error instanceof ApiError ? error.message : "Request failed",
-            t,
-          )}
+          text={translateError(error, t)}
           onRetry={reload}
         />
       ) : !stats || auth.status !== "authenticated" ? (

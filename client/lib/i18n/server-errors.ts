@@ -1,3 +1,4 @@
+import { ApiError } from "@/lib/api";
 import type { MessageKey, Translate } from "@/lib/i18n";
 
 const SERVER_MESSAGES: Record<string, MessageKey> = {
@@ -48,4 +49,8 @@ export function translateServerError(message: string, t: Translate): string {
   }
 
   return message;
+}
+
+export function translateError(error: unknown, t: Translate): string {
+  return translateServerError(error instanceof ApiError ? error.message : "Request failed", t);
 }

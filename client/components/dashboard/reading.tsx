@@ -5,20 +5,13 @@ import { useId, useState } from "react";
 import { BookCover } from "@/components/book-cover";
 import { Muted, Section } from "@/components/dashboard/section";
 import { Popover } from "@/components/popover";
-import { ApiError } from "@/lib/api";
 import { useLocale, useT } from "@/lib/i18n";
-import { translateServerError } from "@/lib/i18n/server-errors";
+import { translateError } from "@/lib/i18n/server-errors";
 import { useHomeActions, type ReadingBook } from "@/lib/stats";
 
 const STEPS = [10, 25, 50];
 
 type Unit = "pages" | "percent";
-
-function useErrorText() {
-  const t = useT();
-  return (error: unknown) =>
-    translateServerError(error instanceof ApiError ? error.message : "Request failed", t);
-}
 
 function pageOf(book: ReadingBook) {
   return (
@@ -36,7 +29,6 @@ function WhereAreYou({
   onFinish: () => void;
 }) {
   const t = useT();
-  const errorText = useErrorText();
   const { recordProgress } = useHomeActions();
   const canPages = Boolean(book.pages) && book.format !== "audio";
   const [unit, setUnit] = useState<Unit>(canPages ? "pages" : "percent");
@@ -68,7 +60,7 @@ function WhereAreYou({
       await recordProgress(book.id, unit === "pages" ? { page: number } : { percent: number });
       onClose();
     } catch (failure) {
-      setError(errorText(failure));
+      setError(translateError(failure, t));
       setSaving(false);
     }
   }
@@ -156,7 +148,6 @@ function WhereAreYou({
 function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string }) {
   const t = useT();
   const locale = useLocale();
-  const errorText = useErrorText();
   const { finishBook } = useHomeActions();
   const [open, setOpen] = useState(false);
   const [finishing, setFinishing] = useState(false);
@@ -173,7 +164,7 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
       await finishBook(book.id);
       document.getElementById(headingId)?.focus();
     } catch (failure) {
-      setError(errorText(failure));
+      setError(translateError(failure, t));
       setFinishing(false);
     }
   }
