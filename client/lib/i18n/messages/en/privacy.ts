@@ -9,7 +9,7 @@ export const privacy = {
       "your account: your name, your email address and a hash of your password. The password itself is never stored;",
     books:
       "your books and series: titles, authors, cover addresses, series and numbers, ownership, reading status, ratings and reviews, genres and tropes, and for a book found through search its Google Books id;",
-    written: "what you write: notes, your own annotations and shop links;",
+    written: "what you write: notes, your own annotations and links to books;",
     cookieBefore: "one cookie, ",
     cookieAfter:
       ", that keeps you signed in for seven days. Scripts on the page cannot read it. There are no analytics and no advertising cookies.",
