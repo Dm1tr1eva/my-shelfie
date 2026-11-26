@@ -62,7 +62,15 @@ export function Drawer({
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
-      opener?.focus();
+      if (opener?.isConnected) {
+        opener.focus();
+      } else {
+        const heading = document.querySelector<HTMLElement>("main h1");
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus();
+        }
+      }
     };
   }, [onClient]);
 

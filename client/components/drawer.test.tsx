@@ -66,6 +66,39 @@ describe("Drawer", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  it("gives the focus to the page heading when the opener is gone, as after a delete", () => {
+    function Page() {
+      const [open, setOpen] = useState(false);
+      const [listed, setListed] = useState(true);
+      return (
+        <main>
+          <h1>Library</h1>
+          {listed && (
+            <button type="button" onClick={() => setOpen(true)}>
+              Ash
+            </button>
+          )}
+          {open && (
+            <Drawer label="Ash" header={<h2>Ash</h2>} onClose={() => setOpen(false)}>
+              <button type="button" onClick={() => setListed(false)}>
+                Delete
+              </button>
+            </Drawer>
+          )}
+        </main>
+      );
+    }
+    render(<Page />);
+    const opener = screen.getByRole("button", { name: "Ash" });
+    opener.focus();
+    fireEvent.click(opener);
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(screen.getByRole("heading", { name: "Library" })).toHaveFocus();
+  });
+
   it("stays open when something inside it has already handled Escape", () => {
     const onClose = vi.fn();
     render(
