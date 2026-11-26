@@ -146,7 +146,7 @@ export function TagInput({
             id={listId}
             role="listbox"
             aria-label={t("book.tagInput.suggestions", { label })}
-            className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-card border border-mist bg-card shadow-pop"
+            className="absolute left-0 right-0 top-full z-20 mt-1 origin-top animate-pop-in overflow-hidden rounded-card border border-mist bg-card shadow-pop"
           >
             {options.map((option, index) => (
               <li

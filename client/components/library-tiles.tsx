@@ -25,8 +25,10 @@ export function LibraryBookTile({ book, showNumber = true }: { book: Book; showN
 
   return (
     <li>
-      <Link href={`/books/${book.id}`} className="flex flex-col gap-2">
-        <div className={owned ? undefined : "opacity-50 saturate-[.6]"}>
+      <Link href={`/books/${book.id}`} className="group flex flex-col gap-2">
+        <div
+          className={`transition-transform duration-(--duration-base) group-hover:-translate-y-1 ${owned ? "" : "opacity-50 saturate-[.6]"}`}
+        >
           <BookCover
             url={book.coverUrl}
             title={book.title}
@@ -35,7 +37,7 @@ export function LibraryBookTile({ book, showNumber = true }: { book: Book; showN
           />
         </div>
         <span
-          className={`${TILE_TEXT} md:line-clamp-2 md:h-[2.6em] md:text-sm md:font-semibold md:leading-[1.3]`}
+          className={`${TILE_TEXT} md:line-clamp-2 md:h-[2.6em] md:text-sm md:font-semibold md:leading-[1.3] md:transition-colors md:group-hover:text-burgundy`}
         >
           {book.title}
         </span>{" "}
@@ -76,7 +78,7 @@ export function LibraryGapTile({ series, gap }: { series: Series; gap: GapSlot }
                 year: expectedYear,
               })
         }
-        className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1.5 rounded-cover border-[1.5px] border-dashed border-burgundy bg-burgundy/5 px-1 text-center text-burgundy"
+        className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1.5 rounded-cover border-[1.5px] border-dashed border-burgundy bg-burgundy/5 px-1 text-center text-burgundy hover:bg-burgundy/10"
       >
         <span className="num text-base md:text-xl">{range}</span>
         <span className="hidden text-xs font-semibold md:block">
@@ -106,7 +108,7 @@ export function LibraryMoreTile({ series, count }: { series: Series; count: numb
       <Link
         href={`/series/${series.id}`}
         aria-label={t("library.shelf.moreLabel", { count, series: series.title })}
-        className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1 rounded-cover bg-beige text-navy"
+        className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1 rounded-cover bg-beige text-navy hover:bg-mist"
       >
         <span className="num text-xl md:text-[26px]">+{count}</span>
         <span className="text-xs font-semibold">{t("library.shelf.more")}</span>
@@ -127,12 +129,12 @@ export function SeriesShelfHeader({
   return (
     <Link
       href={`/series/${series.id}`}
-      className="flex items-start justify-between gap-4 rounded-control"
+      className="group flex items-start justify-between gap-4 rounded-control"
     >
       <div className="flex min-w-0 flex-col gap-1">
         <h2
           id={headingId}
-          className="break-words font-serif text-[21px] font-semibold leading-tight md:text-2xl"
+          className="break-words font-serif text-[21px] font-semibold leading-tight transition-colors group-hover:text-burgundy md:text-2xl"
         >
           {series.title}
         </h2>

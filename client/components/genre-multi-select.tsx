@@ -144,7 +144,10 @@ export function GenreMultiSelect({
           </div>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             {options.map((genre) => (
-              <label key={genre} className="flex min-h-11 cursor-pointer items-center gap-3">
+              <label
+                key={genre}
+                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-control px-1 transition-colors hover:bg-page"
+              >
                 <input
                   type="checkbox"
                   checked={value.includes(genre)}

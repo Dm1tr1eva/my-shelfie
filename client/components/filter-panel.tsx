@@ -77,7 +77,7 @@ function PanelGroupView({
           <button
             type="button"
             onClick={() => setExpanded(true)}
-            className={`${PILL} border-dashed border-slate font-semibold text-navy`}
+            className={`${PILL} border-dashed border-slate font-semibold text-navy hover:border-navy hover:bg-page`}
           >
             {t("library.filters.more", { count: matching.length - visible.length })}
           </button>

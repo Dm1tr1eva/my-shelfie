@@ -108,7 +108,7 @@ export function Select({
           role="listbox"
           aria-label={label}
           onMouseDown={(event) => event.preventDefault()}
-          className="absolute left-0 top-full z-30 mt-1 max-h-72 min-w-full overflow-auto rounded-card border border-mist bg-card py-1 shadow-pop"
+          className="absolute left-0 top-full z-30 mt-1 max-h-72 min-w-full origin-top animate-pop-in overflow-auto rounded-card border border-mist bg-card py-1 shadow-pop"
         >
           {options.map((option, index) => (
             <li

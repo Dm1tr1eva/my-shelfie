@@ -28,7 +28,7 @@ export function HeroActions() {
       </Link>
       <Link
         href="/login"
-        className="inline-flex min-h-11 items-center px-3 font-medium underline underline-offset-4"
+        className="inline-flex min-h-11 items-center px-3 font-medium underline underline-offset-4 hover:text-burgundy hover:no-underline"
       >
         {t("home.hero.haveAccount")}
       </Link>

@@ -31,7 +31,7 @@ export function Logo({
   return (
     <Link
       href={href}
-      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 font-serif focus-visible:outline-page text-[21px] font-bold tracking-[-0.01em] text-page md:text-2xl"
+      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 font-serif focus-visible:outline-page text-[21px] font-bold tracking-[-0.01em] text-page hover:opacity-85 md:text-2xl"
     >
       <LogoMark className="h-[30px] w-[30px] shrink-0 md:h-[34px] md:w-[34px]" />
       <span className={narrowMarkOnly ? "max-[419px]:sr-only" : undefined}>{APP_NAME}</span>

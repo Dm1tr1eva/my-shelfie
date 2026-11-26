@@ -49,9 +49,9 @@ export function TabBar() {
         href="/add"
         aria-label={t("shell.nav.addBook")}
         aria-current={pathname === "/add" ? "page" : undefined}
-        className="flex h-[52px] items-center justify-center rounded-full focus-visible:outline-page"
+        className="group flex h-[52px] items-center justify-center rounded-full focus-visible:outline-page"
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-burgundy text-card">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-burgundy text-card transition-opacity group-hover:opacity-90">
           <PlusIcon size={26} />
         </span>
       </Link>

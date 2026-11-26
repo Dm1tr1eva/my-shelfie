@@ -86,9 +86,9 @@ export function ActiveFilterPills({
             type="button"
             aria-label={t("library.filters.remove", { label: pill.label })}
             onClick={() => onRemove(pill)}
-            className="inline-flex min-h-11 items-center md:min-h-10"
+            className="group inline-flex min-h-11 items-center md:min-h-10"
           >
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-navy pl-3 pr-2.5 text-sm font-semibold text-page">
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-navy pl-3 pr-2.5 text-sm font-semibold text-page transition-colors group-hover:bg-navy/85">
               {pill.label}
               <XIcon size={14} />
             </span>

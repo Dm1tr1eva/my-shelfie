@@ -16,13 +16,13 @@ export function AccountMenu() {
     <details className="group relative">
       <summary
         aria-label={t("shell.nav.account")}
-        className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full focus-visible:outline-page [&::-webkit-details-marker]:hidden"
+        className="group/avatar flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-full focus-visible:outline-page [&::-webkit-details-marker]:hidden"
       >
-        <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-slate font-bold text-ink md:h-10 md:w-10">
+        <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-slate font-bold text-ink transition-colors group-hover/avatar:bg-mist md:h-10 md:w-10">
           {initial}
         </span>
       </summary>
-      <div className="absolute right-0 top-full z-30 mt-2 w-56 card p-3 text-ink shadow-pop">
+      <div className="absolute right-0 top-full z-30 mt-2 w-56 origin-top-right card p-3 text-ink shadow-pop animate-pop-in">
         <p className="truncate font-semibold">{user.name}</p>
         <p className="truncate text-sm text-muted">{user.email}</p>
         <button type="button" onClick={() => logout()} className="btn-outline mt-3 w-full">

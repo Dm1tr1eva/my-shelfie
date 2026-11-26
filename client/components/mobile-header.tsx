@@ -17,7 +17,7 @@ export function MobileHeader() {
       {inner ? (
         <Link
           href="/library"
-          className="-ml-2.5 inline-flex min-h-11 items-center gap-1 px-2.5 font-semibold focus-visible:outline-page"
+          className="-ml-2.5 inline-flex min-h-11 items-center gap-1 rounded-control px-2.5 font-semibold hover:bg-page/10 focus-visible:outline-page"
         >
           <ArrowLeftIcon />
           <span className="sr-only">{t("shell.nav.backTo")}</span> {t("shell.nav.library")}
