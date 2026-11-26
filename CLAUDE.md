@@ -26,8 +26,8 @@ Translated, not waived:
   `Book` since 2026-09-14 (`server/models/book.js`).
 - "The database client never appears in a controller" means Mongoose models are reached
   through a repository, not imported into `controllers/`. True for `books` since 2026-09-14
-  (`server/repositories/bookRepository.js`); `auth` still imports its models directly and
-  migrates the same way whenever it is next touched substantially.
+  (`server/repositories/bookRepository.js`); `auth` too, since 2026-11-26
+  (`server/repositories/userRepository.js`, through `server/services/authService.js`).
 - `docs/ROADMAP.md` is the plan that the documentation section calls `docs/plan.md`. It keeps
   its current name.
 
