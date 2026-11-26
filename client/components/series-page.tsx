@@ -32,7 +32,7 @@ function TitleWithAge({ series, id }: { series: Series; id: string }) {
         {last}
         {age !== "none" && (
           <>
-            {" "}
+            {"\u00a0"}
             <AgeChip age={age} />
           </>
         )}
