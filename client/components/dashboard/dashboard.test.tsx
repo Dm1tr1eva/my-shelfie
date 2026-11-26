@@ -439,6 +439,40 @@ describe("Home after sign-in", () => {
     expect(within(dialog).getByRole("button", { name: "One book fewer" })).toBeDisabled();
   });
 
+  it("keeps the goal editor open with the server's error when saving fails", async () => {
+    act(() => setLocale("uk"));
+    serve(fullStats(), (call) =>
+      call.method === "PUT"
+        ? { status: 500, body: { error: "Failed to save the goal" } }
+        : undefined,
+    );
+    renderApp(<Dashboard />);
+    await screen.findByRole("heading", { name: "Зараз читаю" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Змінити ціль" }));
+    const dialog = screen.getByRole("dialog", { name: "Ціль на 2026" });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Зберегти" }));
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Не вдалося зберегти ціль");
+    expect(within(dialog).getByRole("button", { name: "Зберегти" })).toBeEnabled();
+  });
+
+  it("keeps Where are you now open with the server's error when saving fails", async () => {
+    serve(fullStats(), (call) =>
+      call.method === "POST"
+        ? { status: 500, body: { error: "Failed to save progress" } }
+        : undefined,
+    );
+    await renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark page" }));
+    const dialog = screen.getByRole("dialog", { name: "Where are you now?" });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("Failed to save progress");
+    expect(within(dialog).getByRole("button", { name: "Save" })).toBeEnabled();
+  });
+
   it("offers to set a goal when there is none for this year", async () => {
     const calls = serve(fullStats({ yearGoal: null }), (call) =>
       call.method === "PUT" ? { body: { yearGoal: { year: 2026, books: 24 } } } : undefined,
