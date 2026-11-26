@@ -32,8 +32,9 @@ Design and the reasons for an own small layer instead of a library:
 - `lib/i18n/index.ts`: a module-level store read with `useSyncExternalStore`: `useT()`,
   `useLocale()`, `setLocale()`. The server render is English; the stored choice, otherwise the
   browser language (`uk`, `ru`, else English), is applied on the client.
-- `lib/i18n/domain.ts`: `useDomain()` names for reading status, ownership, format, series state,
-  link kind and language, and default genres.
+- `lib/i18n/domain.ts`: `useDomain()` names for reading status (`bookStatus` says Listening /
+  Listened for an audiobook), ownership, format, series state, link kind and language, default
+  genres, the six preset moods (stored in English like default genres) and Would recommend.
 - `lib/i18n/server-errors.ts`: maps the exact English messages of the API that a screen can show
   to translated text; an unknown message is shown as it comes.
 - Areas: `shell`, `domain`, `home`, `auth`, `library`, `book`, `add`, `series` (with Next to buy

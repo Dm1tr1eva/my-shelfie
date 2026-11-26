@@ -7,7 +7,8 @@
 Stores where the reader is in a book, as a log of dated entries, and how many books she means
 to read this year. Both feed the v3 Home page ("Mark page", "Where are you now?", "Finished",
 the goal ring and "Pages this year"); the numbers Home shows are derived by `GET /api/stats`
-([home-stats.md](home-stats.md)). Design:
+([home-stats.md](home-stats.md)). The book panel shows the latest entry of a book as a bar and
+a percent (`lib/progress.ts`, `useBookProgress`) and never writes one. Design:
 [../designs/v3-data-model.md](../designs/v3-data-model.md).
 
 ## Invariants

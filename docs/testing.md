@@ -93,6 +93,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   reads a value from a client module in `lib/`; such shared constants live in
   `lib/catalogue-constants.ts`, which has no directive.
 
+- **A loading state can be gone before the assertion.** `findByText("Loading the book…")`
+  resolved with the skeleton, and by the next line the mocked `fetch` had answered and the
+  skeleton was detached, so `toBeInTheDocument()` failed (2026-11-26). Hold the response with the
+  helper's `wait` promise, assert the loading state, then release it.
+
 - **`findByRole` can match the wrong state.** While the session check runs, `AppFrame` shows
   the public header, and its logo already links to `/`. A test for the signed-in logo that
   only awaited `findByRole("link", { name: "my-shelfie" })` passed on the old code (2026-10-15).

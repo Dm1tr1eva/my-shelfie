@@ -199,9 +199,63 @@ client.
   2026-11-19 it has no My library / Wishlist tabs; its heading is "Wishlist". The `"library"`
   tab of `buildLibraryView` (and its gap slots) is no longer used by any screen, only by
   `lib/catalogue.test.ts`; the Wishlist step removes it with the v2 shelves.
-- `/books/[id]` — `components/book-page.tsx`: edits are a local draft, saved together from a
-  "You have unsaved changes" bar that sends only the fields that changed; deleting asks
-  `window.confirm`
+- `/books/[id]` — the v3 book panel, `components/book-panel.tsx`
+  ([../designs/v3-book-panel.md](../designs/v3-book-panel.md)). A cover, a tile or a row link
+  anywhere in the app is a soft navigation that the root `@panel` slot intercepts
+  (`app/@panel/(.)books/[id]`): the panel opens over the page it came from, the address becomes
+  `/books/<id>`, and closing (×, Escape, a click on the scrim) is `router.back()`, so the page
+  underneath, its scroll, search and library filters stay as they were and the focus goes back
+  to the cover that opened it. `@panel/default`, `@panel/page` and `@panel/[...rest]` render
+  nothing, so following a link out of the panel (the series name in its header) closes it. A
+  direct visit or a reload of `/books/<id>` renders the library with the panel open
+  (`app/books/[id]/page.tsx`); closing it replaces the address with `/library`. The panel is
+  the `Drawer` at 460 px from 768 px and 500 px from 1024 px over a lighter scrim
+  (`scrim-light`, 0.28), and a sheet from 32 px below the top with a grab handle on phones.
+  Inside, while loading: a skeleton; a `404` (another user's, deleted or malformed id): "Book
+  not found" and Close; any other failure: "Could not load this book" and Try again.
+  - Top: the series and `#N` (a link to the series) or "Standalone book"; the cover with
+    "Change cover" (covers of the same title and author from the existing Google Books search,
+    with the "Powered by Google" mark; a link; a plain cover, which clears `coverUrl`); the
+    title and author with a pencil that turns them into fields (Enter or Done saves, Escape
+    cancels, an empty field keeps the old value).
+  - Properties: I have it (Yes / Want), Format (Paper, E-book, Audiobook), Pages or, for an
+    audiobook, Duration in hours and minutes (stored as `durationMinutes`), then for a book you
+    have: Status (an audiobook says Listening and Listened for `reading` and `read`), and by
+    status — Reading: Progress, Started, Finished; To read: nothing more; Dropped: Progress in
+    grey, Rating, Started, Finished; Read: Rating, Started, Finished. A wanted book shows no
+    status and none of those. Progress is the latest entry of `GET /api/progress` for the
+    book (0% without one), shown as a bar and a percent and never entered here; entering it is
+    Home's job. Dates are "Pick a date" until set, a native date field while editing, and
+    have a clear button.
+  - Annotation: an auto-growing field for a standalone book. A series book shows the series'
+    annotation read-only, because the API returns that one as the book's `annotation`.
+  - Links: one row per link (kind, domain, every language code, an open button, a remove
+    button); "+ link" opens a form with Type, Link and a language picker (search, several
+    languages, removable codes). A link needs an `http(s)` address and at least one language;
+    a new link is outlined for a moment. No more than ten, the API's limit.
+  - Impressions: six preset moods stored in English (Gripping, Cozy, Tense, Funny, Sad,
+    Inspiring) and shown translated, plus moods of your own ("+ own"; one that matches a mood
+    already there, in any of the three languages, is refused), twelve at most; Would
+    recommend? (Yes / Maybe / No, pressing the chosen one clears it); quotes with an optional
+    page, added and removed; My note (the API returns an old `review` here as `notes`).
+  - "Delete book" at the end asks in `ConfirmDialog` (Cancel on the left and focused, Delete on
+    the right; the text names the series when there is one); deleting closes the panel and
+    the page underneath reloads its lists.
+  - **Autosave** (`lib/use-book-autosave.ts`). Choices (toggle, selects, stars, dates, moods,
+    recommend, links, quotes, cover) are sent at once and shown at once (the SWR cache is
+    updated before the answer). Pages, duration, title and author are sent on leaving the field
+    or Enter; the annotation and the note on leaving the field. Saves go one at a time in the
+    order they were made, so two quick clicks never land the wrong way round. Every save shows
+    a navy toast "Saved" with Undo for five seconds; Undo sends back the values the book had
+    before that save (a value that was empty is cleared) and says "Change undone". A failed save
+    puts a choice back as it was, leaves typed text in its field and shows an error toast that
+    stays, with Retry. Closing the panel first sends any field still being edited (an unsaved
+    quote form included) and waits; if that fails the panel stays open with the error. After a
+    save or a delete every library key (`/api/books…`, `/api/series…`, `/api/next-to-buy`,
+    `/api/tropes`) is revalidated, so the page underneath shows the change.
+  - `components/toast.tsx` and `components/confirm-dialog.tsx` are shared for the series page.
+    Escape inside the panel closes only the innermost thing that handles it (a list, a form,
+    the dialog): `Drawer` ignores an Escape whose default was prevented.
 - `/add` and `/add/[id]/details` — `components/add-book.tsx`, `components/add-details.tsx`:
   step 1 finds a book and adds it in one click and goes straight to step 2 (opened from a
   series, the book arrives with that series and number); step 2 adds series, genres, tropes,
@@ -219,18 +273,18 @@ client.
   (Paper, E-book, Audio, Free e-book download, Read online — no "buy", as in the v3
   handoff), each with a badge per language of the link, and the same five kinds as a chip on every link in Next to buy and as a "Link type" filter —
   [../designs/link-kinds.md](../designs/link-kinds.md). A link carries `languages`, an array;
-  the pickers on the book page and the details step still choose one language and write a
-  one-element array, and changing the language of a link with several on the details step
-  replaces them with the one chosen. Filters and badges read every language of a link.
+  the book panel picks several; the details step still chooses one language and writes a
+  one-element array, and changing the language of a link with several there replaces them with
+  the one chosen. Filters and badges read every language of a link.
 - Every cover of a saved book carries a round mark in its top-right corner, an open book for
   paper, an e-reader for an e-book and headphones for an audiobook (the `format` prop of
   `BookCover`; the headphones are drawn in `book-cover.tsx` until the icon set is reworked). The
   mark is a `role="img"` labelled "Paper book", "E-book" or "Audiobook", so the format is also in
   words. A full-width cover narrower than 80 px (the phone library) leaves the mark out, as the
   v3 375 mockup does, so it cannot cover the `#N` pill. It shows in
-  the library tiles and rows, the series page, Next to buy, the book page and the details step;
-  not on search results. The format is a two-option radio group, paper or e-book, "Format", on the book page
-  (saved through the unsaved-changes bar) and on the details step (sent only when changed) —
+  the library tiles and rows, the series page, Next to buy, the book panel and the details step;
+  not on search results. The format is a three-option select in the book panel and a two-option
+  radio group, paper or e-book, "Format", on the details step (sent only when changed) —
   [../designs/book-format.md](../designs/book-format.md). The details step also asks for the
   reading status and the rating of a book that is in the library (not of a wishlist book), and
   sends each only when it changed.
@@ -275,8 +329,9 @@ previous request; Enter and the button search at once. While a new search runs t
 stays, dimmed, and is replaced when the answer arrives. A result
 already on the shelf shows "Already in your library", or "Already on your wishlist" with a
 "Move to library" action, instead of a second add. The "Powered by Google" mark
-(`client/public/powered-by-google.png`, unaltered) shows beside any results, each result links
-to Google, and a failed search says so and leaves adding by hand working. Covers are drawn
+(`client/public/powered-by-google.png`, unaltered) shows beside the covers in the book panel's
+cover picker; the add search stopped showing it in `786bd7c` (found 2026-11-26, not restored
+here). Each result links to Google, and a failed search says so and leaves adding by hand working. Covers are drawn
 through a plain `<img>` (`components/book-cover.tsx`); `next/image` would copy them into
 Vercel's optimizer. A book with no cover gets a generated one instead of an empty box: a
 palette colour picked from a hash of its title, so it never changes between renders, with the
@@ -311,9 +366,17 @@ both the filter every query uses and the sort `GET /` applies.
   one-off query under Recovery, not code.
 - **Nothing ties `durationMinutes` to an audiobook or `pages` to print.** A book switched to
   audio keeps its pages; the client decides which to show.
-- **The current client cannot make a book an audiobook.** The format toggle keeps two options
-  (three overflow at 320 px) until the v3 book panel replaces it; an audiobook made through the
-  API shows the toggle with nothing selected and a headphones mark on its cover.
+- **The details step still offers two formats.** Its toggle keeps paper and e-book (three
+  overflow at 320 px); an audiobook is chosen in the book panel. The add modal replaces it.
+- **Text being typed is saved on leaving the field, not while typing.** Closing the panel saves
+  it, but closing or reloading the tab in the middle of a sentence loses that sentence.
+- **Undo reverts the latest save only.** There is no history of changes.
+- **A series book's annotation is the series'.** The panel shows it read-only; a book of its
+  own annotation needs the DTO to stop preferring the series' (open question in the design).
+- **Genres, tropes and the series of a book are not edited in the panel**, as the v3 handoff
+  draws it. The details step still edits them; the series page's edit mode is next.
+- **A direct visit always shows the library underneath**, whatever page the link was copied
+  from, and `/books/*` highlights no nav item.
 - **A deploy briefly mixes link shapes.** The API now sends `links[].languages` and no longer
   `links[].language`. Vercel and Render finish deploying at different times, so for a few
   minutes an open tab running the old client can meet the new server (or the new client the old

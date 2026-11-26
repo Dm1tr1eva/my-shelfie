@@ -214,7 +214,14 @@ in steps, each on its own branch:
    continuation, very much, the quote of the day and new on the shelf, each with an empty state.
    Login, registration and the signed-in logo go there; `/` stays public —
    [designs/v3-home.md](designs/v3-home.md), [features/home-stats.md](features/home-stats.md)
-11. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page
+11. ✅ **Book panel, 2026-11-26** — `/books/[id]` opens as a side panel (sheet on phones) over the
+   page it was opened from through an intercepting `@panel` route, and over the library on a
+   direct visit; cover with "Change cover", rename in place, Have/Want, three formats with
+   duration for audiobooks, status-dependent rows with progress shown from the log, links with
+   several languages, moods, recommend, quotes, my note; autosave with an Undo toast, a shared
+   `Toast` and `ConfirmDialog`; the book page and its Save bar are gone —
+   [designs/v3-book-panel.md](designs/v3-book-panel.md)
+12. ⬜ The following steps: the series page, the add modal, the wishlist page
 
 ## Course submission MVP — done 2026-10-09
 
