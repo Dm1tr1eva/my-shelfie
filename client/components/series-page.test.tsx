@@ -130,11 +130,12 @@ describe("SeriesPage", () => {
     it("glues the age to the last word of the title", async () => {
       await open();
 
-      const glued = within(screen.getByRole("heading", { level: 1 })).getByText("Ash", {
-        exact: false,
-        selector: ".whitespace-nowrap",
-      });
-      expect(within(glued).getByText("Age 16+")).toBeInTheDocument();
+      const title = screen.getByRole("heading", { level: 1 });
+      const glued = within(title).getByText("Age 16+").closest("span[title]")?.parentElement;
+
+      expect(glued?.textContent).toBe("Ash\u00a016+Age 16+");
+      expect(title.firstChild?.textContent).toBe("Roots of ");
+      expect(glued).not.toHaveClass("whitespace-nowrap");
     });
 
     it("leaves the age out when the series has none", async () => {
@@ -204,6 +205,25 @@ describe("SeriesPage", () => {
       ).toBeNull();
     });
 
+    it("says Listening for an audiobook being read", async () => {
+      await open(SAGA, {
+        books: [
+          book({
+            id: "audio",
+            title: "Ash Heard",
+            seriesId: "saga",
+            seriesNumber: 1,
+            format: "audio",
+            status: "reading",
+          }),
+        ],
+      });
+
+      const row = screen.getByRole("link", { name: /Ash Heard/ });
+      expect(within(row).getByText("Listening")).toBeInTheDocument();
+      expect(within(row).getByText("Audiobook")).toBeInTheDocument();
+    });
+
     it("says when missing numbers are expected and leads to adding them", async () => {
       await open();
 
@@ -267,6 +287,38 @@ describe("SeriesPage", () => {
       );
     });
 
+    it("does not save a note cancelled with Escape when the page goes away", async () => {
+      const calls = serve();
+      const { unmount } = renderApp(<SeriesPage id="saga" />);
+      await screen.findByRole("heading", { level: 1 });
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "My note" }), {
+        target: { value: "Dropped" },
+      });
+      fireEvent.keyDown(screen.getByRole("textbox", { name: "My note" }), { key: "Escape" });
+      unmount();
+
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+    });
+
+    it("does not save a note cancelled with Escape when the series is then edited from 768px", async () => {
+      wide(true);
+      const calls = await open();
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "My note" }), {
+        target: { value: "Dropped" },
+      });
+      fireEvent.keyDown(screen.getByRole("textbox", { name: "My note" }), { key: "Escape" });
+      fireEvent.click(screen.getByRole("button", { name: "Edit the series" }));
+
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+      expect(screen.getByText("Book 4 not before 2027.")).toBeInTheDocument();
+    });
+
     it("keeps the typed note and offers Retry when saving fails", async () => {
       await open(SAGA, { onPatch: () => ({ status: 500, body: { error: "Failed" } }) });
 
@@ -278,6 +330,45 @@ describe("SeriesPage", () => {
       expect(await screen.findByRole("alert")).toHaveTextContent("Could not save the note");
       expect(screen.getByRole("textbox", { name: "My note" })).toHaveValue("Lent to Olena");
       expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+    });
+
+    it("sends an emptied note as cleared", async () => {
+      const calls = await open();
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      fireEvent.change(note, { target: { value: "   " } });
+      fireEvent.blur(note);
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ note: null }]));
+    });
+
+    it("sends the typed note again with Retry", async () => {
+      let refuse = true;
+      const calls = await open(SAGA, {
+        onPatch: () => (refuse ? { status: 500, body: { error: "Failed" } } : undefined),
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      fireEvent.change(note, { target: { value: "Lent to Olena" } });
+      fireEvent.blur(note);
+      await screen.findByRole("alert");
+      refuse = false;
+      fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+      await waitFor(() =>
+        expect(patches(calls)).toEqual([{ note: "Lent to Olena" }, { note: "Lent to Olena" }]),
+      );
+    });
+
+    it("gives the focus back to Add a note after Escape on an empty note", async () => {
+      await open({ ...SAGA, note: undefined });
+
+      fireEvent.click(screen.getByRole("button", { name: "Add a note" }));
+      fireEvent.keyDown(screen.getByRole("textbox", { name: "My note" }), { key: "Escape" });
+
+      await waitFor(() => expect(screen.getByRole("button", { name: "Add a note" })).toHaveFocus());
     });
 
     it("offers to add a note when there is none", async () => {
@@ -308,6 +399,12 @@ describe("SeriesPage", () => {
         target: { value: "6" },
       });
       fireEvent.click(within(form).getByRole("radio", { name: "12+" }));
+      fireEvent.click(within(form).getByRole("button", { name: /Fantasy/, expanded: false }));
+      fireEvent.click(within(form).getByRole("checkbox", { name: "Romance" }));
+      fireEvent.click(within(form).getByRole("button", { name: /Fantasy/, expanded: true }));
+      const tropes = within(form).getByRole("textbox", { name: "Tropes" });
+      fireEvent.change(tropes, { target: { value: "found family" } });
+      fireEvent.keyDown(tropes, { key: "Enter" });
       fireEvent.change(within(form).getByLabelText("Annotation"), { target: { value: " " } });
       fireEvent.click(within(form).getByRole("button", { name: "Done" }));
 
@@ -319,8 +416,8 @@ describe("SeriesPage", () => {
             status: "complete",
             totalBooks: 6,
             ageRating: "12",
-            genres: ["Fantasy"],
-            tropes: ["dragons", "slow burn"],
+            genres: ["Fantasy", "Romance"],
+            tropes: ["dragons", "slow burn", "found family"],
             annotation: null,
           },
         ]),
@@ -369,6 +466,74 @@ describe("SeriesPage", () => {
 
       expect(await within(form).findByRole("alert")).toHaveTextContent("Could not save the series");
       expect(screen.getByRole("form", { name: "Editing the series" })).toBeInTheDocument();
+    });
+
+    it("can be sent again after a refused save", async () => {
+      let refuse = true;
+      const calls = await open(SAGA, {
+        onPatch: () => (refuse ? { status: 500, body: { error: "Failed" } } : undefined),
+      });
+      const form = await startEditing();
+
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+      await within(form).findByRole("alert");
+      refuse = false;
+      const done = within(form).getByRole("button", { name: "Done" });
+      expect(done).toBeEnabled();
+      fireEvent.click(done);
+
+      await waitFor(() => expect(patches(calls)).toHaveLength(2));
+      await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument());
+    });
+
+    it("cannot be cancelled while it is being saved", async () => {
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await open(SAGA, { onPatch: () => ({ body: SAGA, wait: held }) });
+      const form = await startEditing();
+
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+
+      await waitFor(() =>
+        expect(within(form).getByRole("button", { name: "Cancel" })).toBeDisabled(),
+      );
+      release();
+      await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument());
+    });
+
+    it("refuses a count the browser would read as empty", async () => {
+      const calls = await open();
+      const form = await startEditing();
+      const count = within(form).getByLabelText("Books in the series");
+
+      for (const wrong of ["1e", "-", "4 books"]) {
+        fireEvent.change(count, { target: { value: wrong } });
+        fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+        expect(within(form).getByRole("alert")).toHaveTextContent("A whole number from 1 to 200.");
+      }
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+    });
+
+    it("puts the focus in the title from 768px, and back on the pencil after Cancel or Done", async () => {
+      wide(true);
+      await open();
+
+      const form = await startEditing();
+      expect(within(form).getByLabelText("Title")).toHaveFocus();
+      fireEvent.click(within(form).getByRole("button", { name: "Cancel" }));
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Edit the series" })).toHaveFocus(),
+      );
+
+      const again = await startEditing();
+      fireEvent.click(within(again).getByRole("button", { name: "Done" }));
+      await waitFor(() => expect(screen.queryByRole("form")).not.toBeInTheDocument());
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Edit the series" })).toHaveFocus(),
+      );
     });
 
     it("drops the changes with Cancel", async () => {
@@ -431,6 +596,7 @@ describe("SeriesPage", () => {
       expect(await within(form).findByRole("alert")).toHaveTextContent(
         "Could not delete the series",
       );
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
       expect(router.push).not.toHaveBeenCalled();
     });
   });

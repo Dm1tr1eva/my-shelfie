@@ -8,13 +8,12 @@ import { Drawer } from "@/components/drawer";
 import { GenreMultiSelect } from "@/components/genre-multi-select";
 import { EditIcon, TrashIcon } from "@/components/icons";
 import { TagInput } from "@/components/tag-input";
-import { ApiError } from "@/lib/api";
 import { useBooks } from "@/lib/books";
 import type { AgeRating } from "@/lib/catalogue-constants";
 import { tropeSuggestions } from "@/lib/genres";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
-import { translateServerError } from "@/lib/i18n/server-errors";
+import { failureText } from "@/lib/i18n/server-errors";
 import { isWholeIn } from "@/lib/numbers";
 import { SERIES_STATUSES, useSeriesActions, type Series, type SeriesStatus } from "@/lib/series";
 
@@ -88,7 +87,15 @@ function Row({
   );
 }
 
-function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }) {
+function SeriesForm({
+  series,
+  onClose,
+  sheet,
+}: {
+  series: Series;
+  onClose: () => void;
+  sheet: boolean;
+}) {
   const t = useT();
   const domain = useDomain();
   const router = useRouter();
@@ -116,12 +123,6 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
 
   const suggestions = tropeSuggestions(books);
 
-  function failure(err: unknown, fallback: string) {
-    return err instanceof ApiError && err.status < 500
-      ? translateServerError(err.message, t)
-      : fallback;
-  }
-
   async function save(event: React.FormEvent) {
     event.preventDefault();
     setChecked(true);
@@ -141,7 +142,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
       });
       onClose();
     } catch (err) {
-      setError(failure(err, t("series.page.form.failed")));
+      setError(failureText(err, t, t("series.page.form.failed")));
       setPending(false);
     }
   }
@@ -154,7 +155,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
     } catch (err) {
       setAsking(false);
       setPending(false);
-      setError(failure(err, t("series.page.delete.failed")));
+      setError(failureText(err, t, t("series.page.delete.failed")));
     }
   }
 
@@ -173,6 +174,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
         <Row label={t("series.page.form.title")} htmlFor={id("title")}>
           <input
             id={id("title")}
+            autoFocus={!sheet}
             value={title}
             maxLength={200}
             aria-invalid={checked && titleMissing}
@@ -207,10 +209,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
           <div className="flex flex-wrap items-center gap-3">
             <input
               id={id("total")}
-              type="number"
               inputMode="numeric"
-              min={1}
-              max={TOTAL_MAX}
               value={total}
               aria-invalid={checked && totalWrong}
               aria-describedby={id("total-hint")}
@@ -272,7 +271,7 @@ function SeriesForm({ series, onClose }: { series: Series; onClose: () => void }
           {t("series.page.delete.button")}
         </button>
         <div className="flex gap-2">
-          <button type="button" onClick={onClose} className="btn-outline">
+          <button type="button" onClick={onClose} disabled={pending} className="btn-outline">
             {t("series.page.form.cancel")}
           </button>
           <button type="submit" disabled={pending} className="btn-outline bg-beige">
@@ -310,7 +309,7 @@ export function SeriesEdit({
   if (!sheet) {
     return (
       <div className="overflow-hidden rounded-card border-2 border-navy bg-card">
-        <SeriesForm series={series} onClose={onClose} />
+        <SeriesForm series={series} onClose={onClose} sheet={sheet} />
       </div>
     );
   }
@@ -318,7 +317,7 @@ export function SeriesEdit({
   return (
     <Drawer label={t("series.page.form.heading")} header={null} onClose={onClose} tall>
       <div className="-mx-5 -my-4">
-        <SeriesForm series={series} onClose={onClose} />
+        <SeriesForm series={series} onClose={onClose} sheet={sheet} />
       </div>
     </Drawer>
   );
