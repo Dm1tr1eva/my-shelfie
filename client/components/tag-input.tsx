@@ -82,7 +82,8 @@ export function TagInput({
       add(chosen);
     } else if (event.key === "Backspace" && text === "" && value.length > 0) {
       onChange(value.slice(0, -1));
-    } else if (event.key === "Escape") {
+    } else if (event.key === "Escape" && open) {
+      event.preventDefault();
       setOpen(false);
     }
   }

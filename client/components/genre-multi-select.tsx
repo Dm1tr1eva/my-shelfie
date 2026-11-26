@@ -71,7 +71,16 @@ export function GenreMultiSelect({
   }
 
   return (
-    <div ref={root} className="relative flex flex-col gap-1">
+    <div
+      ref={root}
+      className="relative flex flex-col gap-1"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          event.preventDefault();
+          setOpen(false);
+        }
+      }}
+    >
       <span className="font-semibold">{t("book.genres.label")}</span>
 
       <button
