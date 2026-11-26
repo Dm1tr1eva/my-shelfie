@@ -38,6 +38,80 @@
   --shadow-modal: 0 30px 60px -20px rgb(46 24 25 / 0.55);
   --shadow-popover: 0 22px 44px -18px rgb(46 24 25 / 0.55), 0 0 0 1px var(--color-beige);
   --shadow-tabbar: 0 14px 28px -12px rgb(46 24 25 / 0.6), 0 0 0 4px rgb(236 228 229 / 0.9);
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--ease-standard);
+
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-standard) both;
+  --animate-fade-out: fade-out var(--duration-base) var(--ease-exit) both;
+  --animate-pop-in: pop-in var(--duration-base) var(--ease-standard) both;
+  --animate-pop-out: pop-out var(--duration-base) var(--ease-exit) both;
+  --animate-rise-in: rise-in var(--duration-base) var(--ease-standard) both;
+  --animate-rise-out: rise-out var(--duration-base) var(--ease-exit) both;
+  --animate-sheet-in: sheet-in var(--duration-slow) var(--ease-standard) both;
+  --animate-sheet-out: sheet-out var(--duration-base) var(--ease-exit) both;
+  --animate-panel-in: panel-in var(--duration-slow) var(--ease-standard) both;
+  --animate-panel-out: panel-out var(--duration-base) var(--ease-exit) both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes pop-out {
+    to {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+  @keyframes rise-out {
+    to {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes sheet-out {
+    to {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes panel-in {
+    from {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes panel-out {
+    to {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @theme inline {
@@ -57,6 +131,24 @@
 
 :root {
   color-scheme: light;
+}
+
+@media (max-width: 47.99rem) {
+  html {
+    scroll-padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer base {
@@ -85,6 +177,21 @@
     outline: 2px solid var(--color-navy);
     outline-offset: 2px;
   }
+
+  :where(a[href], button, summary, input, select, textarea, [role="button"], [role="option"]) {
+    transition-property: color, background-color, border-color, outline-color, box-shadow, opacity,
+      text-decoration-color, transform;
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  :where(a[href], button:not(:disabled), summary, [role="button"]):active {
+    opacity: 0.8;
+  }
+
+  :where(button, input, select, textarea):disabled {
+    cursor: not-allowed;
+  }
 }
 
 @layer components {
@@ -100,19 +207,19 @@
   }
 
   .btn-primary {
-    @apply bg-burgundy text-card hover:opacity-90;
+    @apply bg-burgundy text-card hover:opacity-90 active:opacity-80;
   }
 
   .btn-outline {
-    @apply border border-slate bg-card text-navy hover:bg-beige;
+    @apply border border-slate bg-card text-navy hover:bg-beige active:bg-mist;
   }
 
   .btn-beige {
-    @apply rounded-control bg-beige text-ink hover:opacity-90;
+    @apply rounded-control bg-beige text-ink hover:opacity-90 active:opacity-80;
   }
 
   .btn-round {
-    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-mist bg-card text-navy transition-colors hover:bg-beige disabled:opacity-50;
+    @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-mist bg-card text-navy transition-colors hover:border-slate hover:bg-beige active:bg-mist disabled:opacity-50;
   }
 
   .num {
@@ -120,7 +227,7 @@
   }
 
   .field {
-    @apply min-h-11 w-full rounded-control border border-field bg-card px-3 py-2 text-ink placeholder:text-muted;
+    @apply min-h-11 w-full rounded-control border border-field bg-card px-3 py-2 text-ink transition-colors placeholder:text-muted hover:border-navy disabled:opacity-50 disabled:hover:border-field;
   }
 
   .card {
@@ -132,6 +239,6 @@
   }
 
   .link {
-    @apply text-navy underline underline-offset-2 hover:no-underline;
+    @apply text-navy underline underline-offset-2 transition-colors hover:text-burgundy hover:no-underline;
   }
 }
