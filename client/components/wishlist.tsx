@@ -120,6 +120,7 @@ export function Wishlist() {
 
           {loaded && all.length > 0 && (
             <SearchAndFilter
+              label={t("wishlist.search")}
               query={query}
               onQuery={(next) => show({ query: next, filters })}
               active={active}

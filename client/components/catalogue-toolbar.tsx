@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n";
 export type FilterPill = { key: FilterKey; value: string; label: string };
 
 export function SearchAndFilter({
+  label,
   query,
   onQuery,
   active,
@@ -15,6 +16,7 @@ export function SearchAndFilter({
   onOpenPanel,
   filterButton,
 }: {
+  label: string;
   query: string;
   onQuery: (query: string) => void;
   active: number;
@@ -27,7 +29,7 @@ export function SearchAndFilter({
   return (
     <div className="flex items-center gap-2 md:w-[420px]">
       <label className="relative min-w-0 flex-1">
-        <span className="sr-only">{t("library.searchAll")}</span>
+        <span className="sr-only">{label}</span>
         <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted">
           <SearchIcon size={18} />
         </span>
@@ -35,7 +37,7 @@ export function SearchAndFilter({
           type="search"
           value={query}
           onChange={(event) => onQuery(event.target.value)}
-          placeholder={t("library.searchAll")}
+          placeholder={label}
           className="field pl-10"
         />
       </label>

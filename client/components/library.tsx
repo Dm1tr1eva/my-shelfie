@@ -114,6 +114,7 @@ export function Library() {
 
           {loaded && books.books.length > 0 && (
             <SearchAndFilter
+              label={t("library.searchAll")}
               query={query}
               onQuery={(next) => show({ query: next, filters })}
               active={active}

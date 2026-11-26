@@ -228,7 +228,7 @@ describe("Wishlist", () => {
   it("narrows the rows by title or author, hides groups left empty and says when nothing matches", async () => {
     serve();
     renderApp(<Wishlist />);
-    const search = await screen.findByRole("searchbox", { name: "Title, author or series" });
+    const search = await screen.findByRole("searchbox", { name: "Search the wishlist" });
 
     fireEvent.change(search, { target: { value: "solo" } });
     expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
@@ -320,7 +320,7 @@ describe("Wishlist", () => {
     serve();
     renderApp(<Wishlist />);
 
-    expect(await screen.findByRole("searchbox", { name: "Title, author or series" })).toHaveValue(
+    expect(await screen.findByRole("searchbox", { name: "Search the wishlist" })).toHaveValue(
       "leaf",
     );
     expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
@@ -481,6 +481,7 @@ describe("Wishlist", () => {
     expect(
       screen.getByRole("button", { name: "Желание: Очень хочу. Нажми, чтобы сменить" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("searchbox", { name: "Поиск по вишлисту" })).toBeInTheDocument();
     unmount();
 
     act(() => setLocale("uk"));

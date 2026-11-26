@@ -3,6 +3,7 @@ import type { wishlist as en } from "../en/wishlist";
 
 export const wishlist: Localized<typeof en> = {
   title: "Вишлист",
+  search: "Поиск по вишлисту",
   loading: "Загружаем вишлист…",
   groups: {
     continue: {

@@ -1,5 +1,6 @@
 export const wishlist = {
   title: "Wishlist",
+  search: "Search the wishlist",
   loading: "Loading your wishlist…",
   groups: {
     continue: {
