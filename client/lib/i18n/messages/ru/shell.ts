@@ -49,5 +49,6 @@ export const shell: Localized<typeof en> = {
     login: "Вход",
     register: "Регистрация",
     privacy: "Конфиденциальность",
+    notFound: "Страница не найдена",
   },
 };

@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { APP_NAME } from "@/lib/brand";
-import { useLocale, useT, type MessageKey } from "@/lib/i18n";
+import { useLocale, type MessageKey } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 const TITLES: { match: (path: string) => boolean; key: MessageKey }[] = [
   { match: (path) => path === "/library", key: "shell.titles.library" },
@@ -20,25 +20,13 @@ const TITLES: { match: (path: string) => boolean; key: MessageKey }[] = [
 
 export function LocaleEffects() {
   const locale = useLocale();
-  const t = useT();
   const pathname = usePathname();
 
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
 
-  useEffect(() => {
-    const entry = TITLES.find((item) => item.match(pathname));
-    if (!entry) return;
-    const title = `${t(entry.key)} · ${APP_NAME}`;
-    const keepTitle = () => {
-      if (document.title !== title) document.title = title;
-    };
-    keepTitle();
-    const observer = new MutationObserver(keepTitle);
-    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
-    return () => observer.disconnect();
-  }, [pathname, t]);
+  useDocumentTitle(TITLES.find((item) => item.match(pathname))?.key);
 
   return null;
 }

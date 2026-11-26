@@ -46,5 +46,6 @@ export const shell = {
     login: "Log in",
     register: "Register",
     privacy: "Privacy",
+    notFound: "Page not found",
   },
 };
