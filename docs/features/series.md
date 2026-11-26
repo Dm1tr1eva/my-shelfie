@@ -22,7 +22,10 @@ series, is the wishlist ([wishlist.md](wishlist.md)). Design and reasons: [libra
 - Reading status and ownership are independent: a wanted book may be marked read, and an owned
   one may be "want to read".
 - Deleting a series never deletes books: they lose `seriesId` and `seriesNumber` and become
-  standalone.
+  standalone, and each keeps the series' genres and tropes followed by its own stored ones
+  (duplicates ignoring case dropped, cut to 12 genres and 30 tropes from the end). The series
+  and all its books change in one transaction, or nothing changes
+  ([../designs/series-delete-keeps-tags.md](../designs/series-delete-keeps-tags.md)).
 
 ## Endpoints
 
@@ -34,7 +37,7 @@ Everything requires a session (`401` otherwise).
 | `GET /api/series` | `200` with `{ series }`, each with `ownedCount` and `wantedCount`, newest first. |
 | `GET /api/series/:id` | `200` with `{ series, books }`; books by number, unnumbered last. `404` for a missing, foreign or malformed id. |
 | `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note`, `totalBooks` and `annotation`; `null` for `ageRating`, `desire` or `expected` answers `400`. `404` as above. |
-| `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
+| `DELETE /api/series/:id` | `204`. The books are kept, unlinked and given the series' genres and tropes, in one transaction. `404` as above. |
 | `GET /api/wishlist` | The v3 wishlist in three groups, see [wishlist.md](wishlist.md). |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
 | `GET /api/books` | Gains `?ownership=owned\|wanted`, `?seriesId=`, `?genre=`, `?trope=` and `?q=` (a case-insensitive text match on title and author, treated as plain text). `400` on an invalid value. |
@@ -73,7 +76,7 @@ or wanted, is missing, and each run of them is one dashed gap tile, which shows 
   the right. Done checks the title (not blank) and the count, then sends every field in one
   `PATCH` and closes; a refused save stays in the form with the reason, and Done can be pressed again. Cancel is held while a save is on its way; Cancel, and Escape on a phone, drop the changes. From 768 px the focus goes to Title when the form opens, and back to the pencil after Cancel or Done. From 768 px the form replaces the header card and keeps the progress
   card and the note beside it; below, it is a near full-screen sheet (`Drawer`). "Delete series"
-  asks in `ConfirmDialog` (its books stay in the library as standalone books, as `DELETE` does)
+  asks in `ConfirmDialog` (the books stay in the library as standalone books and take the series' genres and tropes, as `DELETE` does)
   and then goes to `/library`. There is no co-author field (the model has one `author`) and no
   "Fill empty fields with AI" yet.
 - **Expected numbers are shown, not edited.** A run of missing numbers is one row with the
@@ -145,6 +148,10 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
   titles, so a gap says "#4" until the book is added. Fetching titles belongs to the AI stage.
 - **An expected number stays when its book arrives.** `expected` is not cleaned when a book with
   that number is added; whoever reads it skips numbers that have a book.
+- **A deleted series' description and age rating are not handed to its books.** A book has its
+  own annotation, and it falls back to its own age once the series is gone. Tags over a book's
+  limit are dropped from the end, so its own hidden ones go first.
+- **Deleting a series needs a replica set** for its transaction; Atlas is one.
 - **The size is the author's word.** It is not checked against anything; a book numbered above
   it raises the total shown, it does not fail.
 
@@ -153,7 +160,7 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
 Books saved before this feature have no `ownership`, no tags and no links; they read as owned
 with empty arrays and need no repair. A series whose books were all removed stays in the list
 with zero counts; delete it from its page. To find books pointing at a deleted series, which
-should not occur because deleting unlinks them:
+should not occur because deleting unlinks them in the same transaction:
 
 ```js
 db.books.find({ seriesId: { $nin: db.series.distinct("_id") }, seriesId: { $exists: true } })

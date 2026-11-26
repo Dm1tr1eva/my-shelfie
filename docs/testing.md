@@ -62,6 +62,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 - **A precedence rule needs both orders in its test.** The wishlist's "an owned copy wins a
   shared number" first had the wanted copy listed before the owned one, so a mutant where the
   last book simply wins stayed green (2026-11-26). The test now holds one pair in each order.
+- **Break a transaction with the database, not a mock.** The series delete test sets a
+  collection validator (`collMod` on `books`) that refuses to unlink one book, so the write
+  fails after the series was deleted; it checks that both survive. The validator outlives
+  `clearTestDb`, which only empties collections, so the test removes it in `finally`. A mocked
+  repository would skip the session, which is the thing under test.
 
 ## Client (`client/**/*.test.tsx`, Vitest + Testing Library, `fetch` mocked)
 

@@ -230,7 +230,10 @@ in steps, each on its own branch:
    confirmation, Cancel / Done), a sheet on a phone; roomy book rows into the book panel and one
    row per run of missing numbers with the expected year and its source —
    [designs/v3-series-page.md](designs/v3-series-page.md)
-13. ⬜ The following steps: the add modal
+13. ✅ **Deleting a series keeps its tags, 2026-11-26** — its books take the series' genres and
+   tropes, followed by their own, in the same transaction as the delete; the confirmation says
+   so — [designs/series-delete-keeps-tags.md](designs/series-delete-keeps-tags.md)
+14. ⬜ The following steps: the add modal
 
 ## Course submission MVP — done 2026-10-09
 
