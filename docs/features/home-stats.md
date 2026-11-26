@@ -155,9 +155,8 @@ stays the public page, nothing in the nav is active. Design:
   clamped inside the chart and its arrow points at the month), `lists.tsx` (genres, waiting,
   very much, quote, new on the shelf; four covers below 768 px, six above) and `section.tsx`.
 - `client/components/popover.tsx`: a non-modal card with an arrow under its button from 768 px,
-  the same
-  content in `Drawer` below. First control focused, Esc or a click outside closes, focus back
-  to the button, which carries `aria-expanded` and `aria-controls`.
+  the same content in `Drawer` below. First control focused, Esc or a click outside closes,
+  focus back to the button, which carries `aria-expanded` and `aria-controls`.
 - Every block has its own empty line; a load shows a skeleton with a status line, a failure
   `ErrorState` with Try again. The `500` texts of stats, progress and the goal are translated
   (`client/lib/i18n/server-errors.ts`); texts live under `dashboard` in en / ru / uk.
