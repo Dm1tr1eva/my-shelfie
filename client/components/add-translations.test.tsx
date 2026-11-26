@@ -54,7 +54,7 @@ describe("add translations", () => {
     expect(target).toHaveTextContent("Додаємо до серії ACOTAR як книгу №3.");
     expect(within(target).getByText("ACOTAR").tagName).toBe("STRONG");
     expect(screen.getByRole("button", { name: "Знайти" })).toBeInTheDocument();
-    expect(screen.getByText("Шукайте за назвою, автором або ISBN.")).toBeInTheDocument();
+    expect(screen.getByText("Шукай за назвою, автором або ISBN.")).toBeInTheDocument();
   });
 
   it("counts the results with the Russian plural form", async () => {
