@@ -174,6 +174,13 @@ export function MonthsChart({ stats }: { stats: HomeStats }) {
         </ul>
 
         {opened && opened.books.length > 0 && (
+          <span
+            aria-hidden="true"
+            style={{ left: `calc(${((opened.month - 0.5) / 12) * 100}% - 0.375rem)` }}
+            className="absolute bottom-full z-30 h-3 w-3 translate-y-1/2 rotate-45 border-b border-r border-beige bg-card"
+          />
+        )}
+        {opened && opened.books.length > 0 && (
           <MonthCard
             id={`${baseId}-card`}
             label={t("dashboard.months.card", {

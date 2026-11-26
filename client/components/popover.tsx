@@ -14,6 +14,12 @@ const ALIGN = {
   end: "right-0",
 };
 
+const ARROW = {
+  start: "left-8",
+  center: "left-1/2 -ml-1.5",
+  end: "right-8",
+};
+
 function subscribeToWidth(onChange: () => void) {
   const query = window.matchMedia(WIDE);
   query.addEventListener("change", onChange);
@@ -79,6 +85,10 @@ function PopoverCard({
       aria-label={label}
       className={`absolute top-full z-30 mt-2 flex w-[22rem] max-w-[calc(100vw-2rem)] flex-col gap-4 rounded-popover bg-card p-5 text-left shadow-popover ${ALIGN[align]}`}
     >
+      <span
+        aria-hidden="true"
+        className={`absolute -top-1.5 h-3 w-3 rotate-45 border-l border-t border-beige bg-card ${ARROW[align]}`}
+      />
       <p className="font-serif text-lg font-semibold">{label}</p>
       {children}
     </div>
