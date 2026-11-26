@@ -220,6 +220,15 @@ describe("BookPanel", () => {
       await waitFor(() => expect(patches(calls)).toEqual([{ rating: 5 }, { rating: null }]));
     });
 
+    it("clears the rating when the chosen star is pressed again", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash", status: "read", rating: 3 }));
+
+      expect(screen.queryByRole("button", { name: "Clear" })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Rate 3 out of 5" }));
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ rating: null }]));
+    });
+
     it("sends quick changes one after another, in the order they were made", async () => {
       let release: () => void = () => {};
       const first = new Promise<void>((resolve) => {

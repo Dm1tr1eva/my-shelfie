@@ -167,7 +167,7 @@ function DurationField({ book, save, labelId }: { book: Book; save: SaveBook; la
     setInvalid(false);
   }
 
-  const input = `field min-h-10 w-16 bg-card ${invalid ? "border-2 border-burgundy" : "border-mist"}`;
+  const input = `field min-h-10 w-14 bg-card px-2 ${invalid ? "border-2 border-burgundy" : "border-mist"}`;
 
   return (
     <div
@@ -184,7 +184,7 @@ function DurationField({ book, save, labelId }: { book: Book; save: SaveBook; la
         if (event.key === "Enter") (event.target as HTMLElement).blur();
       }}
     >
-      <div className="flex items-center gap-2 text-sm text-muted">
+      <div className="flex flex-wrap items-center gap-1.5 text-sm text-muted">
         <input
           type="number"
           inputMode="numeric"
@@ -322,7 +322,7 @@ function Progress({ book, labelId }: { book: Book; labelId: string }) {
   const dropped = book.status === "dropped";
 
   return (
-    <span className="flex items-center gap-3">
+    <span className="flex w-full items-center gap-3">
       <span
         role="progressbar"
         aria-labelledby={labelId}
@@ -330,7 +330,7 @@ function Progress({ book, labelId }: { book: Book; labelId: string }) {
         aria-valuemax={100}
         aria-valuenow={percent}
         aria-valuetext={t("book.panel.progressLabel", { percent })}
-        className="relative h-1.5 w-[150px] overflow-hidden rounded-full bg-page md:w-[180px]"
+        className="relative h-1.5 min-w-0 max-w-[150px] flex-1 overflow-hidden rounded-full bg-page md:max-w-[200px] lg:max-w-[240px]"
       >
         <span
           className={`absolute inset-y-0 left-0 rounded-full ${dropped ? "bg-muted" : "bg-burgundy"}`}
@@ -357,7 +357,7 @@ export function BookProperties({ book, save }: { book: Book; save: SaveBook }) {
   const showDates = owned && status !== "want";
 
   return (
-    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1">
+    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 md:gap-x-6">
       <Row label={t("book.panel.have")} labelId={id("have")}>
         <HaveToggle
           labelId={id("have")}
@@ -407,6 +407,7 @@ export function BookProperties({ book, save }: { book: Book; save: SaveBook }) {
       {showRating && (
         <Row label={t("book.panel.rating")}>
           <StarRating
+            compact
             value={book.rating}
             onChange={(rating) => void save({ rating: rating ?? null })}
           />

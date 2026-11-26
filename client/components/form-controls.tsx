@@ -111,9 +111,11 @@ export function ReadingStatusPills({
 export function StarRating({
   value,
   onChange,
+  compact = false,
 }: {
   value: number | undefined;
   onChange: (value: number | undefined) => void;
+  compact?: boolean;
 }) {
   const t = useT();
 
@@ -126,7 +128,7 @@ export function StarRating({
             type="button"
             aria-label={t("book.controls.rate", { star })}
             aria-pressed={value === star}
-            onClick={() => onChange(star)}
+            onClick={() => onChange(compact && value === star ? undefined : star)}
             className="inline-flex h-11 w-11 items-center justify-center text-burgundy"
           >
             <StarIcon size={26} filled={value !== undefined && star <= value} />
@@ -134,7 +136,7 @@ export function StarRating({
         ))}
       </div>
 
-      {value === undefined ? (
+      {compact ? null : value === undefined ? (
         <span className="text-sm text-muted">{t("book.controls.notRated")}</span>
       ) : (
         <button type="button" onClick={() => onChange(undefined)} className="btn-outline">
