@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "@/components/icons";
 import { useT } from "@/lib/i18n";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function subscribeToNothing() {
+  return () => {};
+}
+
+function useOnClient() {
+  return useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+}
 
 export function Drawer({
   label,
@@ -26,12 +38,15 @@ export function Drawer({
   const t = useT();
   const panel = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
+  const onClient = useOnClient();
 
   useEffect(() => {
     close.current = onClose;
   }, [onClose]);
 
   useEffect(() => {
+    if (!onClient) return;
+
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -47,7 +62,7 @@ export function Drawer({
       document.body.style.overflow = overflow;
       opener?.focus();
     };
-  }, []);
+  }, [onClient]);
 
   function trapTab(event: React.KeyboardEvent) {
     if (event.key !== "Tab" || !panel.current) return;
@@ -67,6 +82,8 @@ export function Drawer({
       first.focus();
     }
   }
+
+  if (!onClient) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end md:items-stretch md:justify-end">

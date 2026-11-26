@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
+import { renderToString } from "react-dom/server";
 import { Drawer } from "./drawer";
 
 function Opener({ onClose = () => {} }: { onClose?: () => void }) {
@@ -78,5 +79,25 @@ describe("Drawer", () => {
 
     fireEvent.keyDown(close, { key: "Tab", shiftKey: true });
     expect(last).toHaveFocus();
+  });
+
+  it("renders nothing on the server, where there is no page to put it on", () => {
+    expect(() =>
+      renderToString(
+        <Drawer label="Things" header={<h2>Things</h2>} onClose={() => {}}>
+          <p>Inside</p>
+        </Drawer>,
+      ),
+    ).not.toThrow();
+  });
+
+  it("opens with the focus inside when it is on the page from the start", () => {
+    render(
+      <Drawer label="Things" header={<h2>Things</h2>} onClose={() => {}}>
+        <button type="button">First</button>
+      </Drawer>,
+    );
+
+    expect(screen.getByRole("dialog", { name: "Things" })).toHaveFocus();
   });
 });
