@@ -156,6 +156,7 @@ export function useDesire(row: WishlistRow, onFailure: (row: WishlistRow) => voi
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waiting = useRef<DesireLevel | null>(null);
   const latest = useRef(0);
+  const confirmed = useRef(0);
   const live = useRef({ row, onFailure, mutate });
 
   useEffect(() => {
@@ -173,16 +174,20 @@ export function useDesire(row: WishlistRow, onFailure: (row: WishlistRow) => voi
         body: JSON.stringify({ desire }),
         keepalive,
       });
-      if (request !== latest.current) return;
-      await live.current.mutate(
-        WISHLIST_KEY,
-        (data: WishlistResponse | undefined) => withDesire(data, current, desire),
-        { revalidate: false },
-      );
-      setPending((shown) => (shown === desire ? null : shown));
+      if (request > confirmed.current) {
+        confirmed.current = request;
+        await live.current.mutate(
+          WISHLIST_KEY,
+          (data: WishlistResponse | undefined) => withDesire(data, current, desire),
+          { revalidate: false },
+        );
+      }
+      if (request === latest.current) {
+        setPending((shown) => (shown === desire ? null : shown));
+      }
       await live.current.mutate((key) => isLibraryKey(key) && key !== WISHLIST_KEY);
     } catch {
-      if (request !== latest.current) return;
+      if (request !== latest.current || waiting.current !== null) return;
       setPending(null);
       live.current.onFailure(current);
     }

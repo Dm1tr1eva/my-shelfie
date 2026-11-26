@@ -98,6 +98,23 @@ function wishlistReads(calls: Call[]) {
   return calls.filter((call) => call.path === "/api/wishlist").length;
 }
 
+function heldPatches(replies: Array<{ status: number; held: boolean }>) {
+  const releases: Array<() => void> = [];
+  let saves = 0;
+  const calls = mockApi((call) => {
+    if (call.path === "/api/wishlist") return { body: { groups: groups() } };
+    if (call.method === "PATCH") {
+      const reply = replies[saves];
+      saves += 1;
+      if (!reply.held) return { status: reply.status, body: {} };
+      const wait = new Promise<void>((resolve) => releases.push(resolve));
+      return { status: reply.status, body: {}, wait };
+    }
+    if (call.method === "GET") return { body: { books: [], series: [] } };
+  });
+  return { calls, release: (index: number) => releases[index]() };
+}
+
 async function settle() {
   await act(() => new Promise((resolve) => setTimeout(resolve, 500)));
 }
@@ -341,7 +358,52 @@ describe("Wishlist", () => {
     expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
   });
 
-  it("sends a change right away when the page is left before the taps settle", async () => {
+  it("keeps the newer level when an older save fails while another tap is still settling", async () => {
+    const { calls, release } = heldPatches([
+      { status: 500, held: true },
+      { status: 200, held: false },
+    ]);
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Very much. Tap to change" });
+
+    fireEvent.click(pill);
+    await waitFor(() => expect(patches(calls)).toHaveLength(1));
+    fireEvent.click(pill);
+    release(0);
+    await act(() => Promise.resolve());
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
+
+    await waitFor(() => expect(patches(calls)).toHaveLength(2));
+    await settle();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(pill).toHaveAccessibleName("Desire: Someday. Tap to change");
+  });
+
+  it("shows the level an older save confirmed when the newer one fails", async () => {
+    const { calls, release } = heldPatches([
+      { status: 200, held: true },
+      { status: 500, held: false },
+    ]);
+    renderApp(<Wishlist />);
+    const pill = await screen.findByRole("button", { name: "Desire: Very much. Tap to change" });
+
+    fireEvent.click(pill);
+    await waitFor(() => expect(patches(calls)).toHaveLength(1));
+    fireEvent.click(pill);
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    release(0);
+    await settle();
+
+    expect(patches(calls).map((call) => call.body)).toEqual([
+      { desire: "normal" },
+      { desire: "someday" },
+    ]);
+    expect(pill).toHaveAccessibleName("Desire: Want. Tap to change");
+  });
+
+  it("sends a change right away, kept alive, when the page is left before the taps settle", async () => {
     const calls = serve();
     const { unmount } = renderApp(<Wishlist />);
     fireEvent.click(await screen.findByRole("button", { name: "Desire: Want. Tap to change" }));
@@ -351,6 +413,10 @@ describe("Wishlist", () => {
     expect(patches(calls)).toEqual([
       { method: "PATCH", path: "/api/series/fresh", body: { desire: "someday" } },
     ]);
+    const sent = vi
+      .mocked(fetch)
+      .mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === "PATCH");
+    expect((sent?.[1] as RequestInit).keepalive).toBe(true);
   });
 
   it("speaks Russian and Ukrainian", async () => {
