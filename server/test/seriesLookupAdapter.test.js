@@ -220,6 +220,96 @@ describe("the Anthropic series lookup adapter", () => {
     assert.equal(outcome.reason, "paused");
   });
 
+  it("keeps the same five-search tool on a continued turn, which the API counts as a whole", async () => {
+    const paused = { stop_reason: "pause_turn", content: searchBlocks([SOURCE], "srvtoolu_p") };
+    const { client, adapter } = adapterWith([paused, modelReply()]);
+
+    await adapter.lookUp(QUERY, TODAY);
+
+    assert.deepEqual(client.calls[1].tools, client.calls[0].tools);
+    assert.equal(client.calls[1].tools[0].max_uses, 5);
+  });
+
+  it("gives no answer when a search failed in the paused part of the turn", async () => {
+    const paused = {
+      stop_reason: "pause_turn",
+      content: [...searchBlocks([SOURCE], "srvtoolu_p"), ...searchErrorBlocks("unavailable")],
+    };
+    const { adapter } = adapterWith([paused, modelReply()]);
+
+    const outcome = await adapter.lookUp(QUERY, TODAY);
+
+    assert.equal(outcome.answer, null);
+    assert.equal(outcome.reason, "search_error");
+  });
+
+  it("does not let one lookup's search results vouch for the next lookup's sources", async () => {
+    const { adapter } = adapterWith([
+      modelReply({ urls: [SOURCE, OTHER_SOURCE] }),
+      modelReply({ urls: [SOURCE] }),
+    ]);
+
+    await adapter.lookUp(QUERY, TODAY);
+    const second = await adapter.lookUp(QUERY, TODAY);
+
+    assert.deepEqual(second.answer.sources, [SOURCE]);
+  });
+
+  it("matches a source to a search result across http, a fragment and a trailing slash", async () => {
+    const { adapter } = adapterWith([
+      modelReply({
+        answer: { ...SIX_OF_CROWS, sources: ["http://en.wikipedia.org/wiki/Six_of_Crows/#Plot"] },
+        urls: [SOURCE],
+      }),
+    ]);
+
+    const outcome = await adapter.lookUp(QUERY, TODAY);
+
+    assert.deepEqual(outcome.answer.sources, ["http://en.wikipedia.org/wiki/Six_of_Crows/#Plot"]);
+  });
+
+  it("keeps at most five sources", async () => {
+    const urls = Array.from({ length: 7 }, (_, index) => `https://example.org/page-${index}`);
+    const { adapter } = adapterWith([
+      modelReply({ answer: { ...SIX_OF_CROWS, sources: urls }, urls }),
+    ]);
+
+    const outcome = await adapter.lookUp(QUERY, TODAY);
+
+    assert.deepEqual(outcome.answer.sources, urls.slice(0, 5));
+  });
+
+  for (const [name, answer] of [
+    [
+      "more than a hundred books",
+      {
+        ...SIX_OF_CROWS,
+        books: Array.from({ length: 101 }, (_, index) => ({
+          number: index + 1,
+          title: `Book ${index + 1}`,
+          released: true,
+          expectedYear: null,
+        })),
+      },
+    ],
+    [
+      "a title over 200 characters",
+      {
+        ...SIX_OF_CROWS,
+        books: [{ number: 1, title: "x".repeat(201), released: true, expectedYear: null }],
+      },
+    ],
+    ["a series name over 200 characters", { ...SIX_OF_CROWS, series: "x".repeat(201) }],
+  ]) {
+    it(`gives no answer for ${name}, so the endpoint cannot relay long text`, async () => {
+      const { adapter } = adapterWith([modelReply({ answer })]);
+
+      const outcome = await adapter.lookUp(QUERY, TODAY);
+
+      assert.equal(outcome.reason, "invalid_answer");
+    });
+  }
+
   describe("when the API call itself fails", () => {
     let logged;
     let originalError;

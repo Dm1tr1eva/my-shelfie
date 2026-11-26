@@ -5,13 +5,16 @@ const {
 } = require("../../constants/seriesLookup");
 
 const MAX_SOURCES = 5;
+const MAX_BOOKS = 100;
+const TITLE_MAX = 200;
+const BOOK_NUMBER_MAX = 1000;
 
-const bookNumber = z.number().positive().max(1000);
+const bookNumber = z.number().positive().max(BOOK_NUMBER_MAX);
 
 const answerBookSchema = z
   .object({
     number: bookNumber,
-    title: z.string().trim().min(1).max(300),
+    title: z.string().trim().min(1).max(TITLE_MAX),
     released: z.boolean(),
     expectedYear: z.number().int().min(1900).max(2200).nullable(),
   })
@@ -19,10 +22,10 @@ const answerBookSchema = z
 
 const answerSchema = z
   .object({
-    series: z.string().trim().min(1).max(200).nullable(),
-    seriesOriginal: z.string().trim().min(1).max(200).nullable(),
+    series: z.string().trim().min(1).max(TITLE_MAX).nullable(),
+    seriesOriginal: z.string().trim().min(1).max(TITLE_MAX).nullable(),
     number: bookNumber.nullable(),
-    books: z.array(answerBookSchema).max(200),
+    books: z.array(answerBookSchema).max(MAX_BOOKS),
     status: z.enum(LOOKUP_SERIES_STATUSES),
     confidence: z.enum(LOOKUP_CONFIDENCE_LEVELS),
     sources: z.array(z.string()).max(20),
