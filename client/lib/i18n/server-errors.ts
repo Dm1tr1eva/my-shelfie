@@ -29,6 +29,9 @@ const SERVER_MESSAGES: Record<string, MessageKey> = {
   "Failed to fetch the current user": "errors.server.failedFetchUser",
   "Failed to search books": "errors.server.failedSearchBooks",
   "Failed to build the list": "errors.server.failedBuildList",
+  "Failed to fetch stats": "errors.server.failedFetchStats",
+  "Failed to save progress": "errors.server.failedSaveProgress",
+  "Failed to save the goal": "errors.server.failedSaveGoal",
   "unknown series": "errors.server.unknownSeries",
   "needs a seriesId": "errors.server.needsSeriesId",
 };

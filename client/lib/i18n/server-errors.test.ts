@@ -18,6 +18,18 @@ describe("translateServerError", () => {
     );
   });
 
+  it("translates the failures of Home's stats, progress and goal requests", () => {
+    expect(translateServerError("Failed to fetch stats", translator("ru"))).toBe(
+      "Не удалось загрузить статистику",
+    );
+    expect(translateServerError("Failed to save progress", translator("uk"))).toBe(
+      "Не вдалося зберегти прогрес",
+    );
+    expect(translateServerError("Failed to save the goal", translator("ru"))).toBe(
+      "Не удалось сохранить цель",
+    );
+  });
+
   it("translates every message the auth endpoints and the client can produce", () => {
     const t = translator("ru");
     const english = [
