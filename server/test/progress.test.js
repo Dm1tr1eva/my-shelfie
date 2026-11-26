@@ -3,6 +3,7 @@ require("dotenv").config({ quiet: true });
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 
+const Book = require("../models/book");
 const ProgressEntry = require("../models/progressEntry");
 const { useTestApp } = require("./helpers/app");
 
@@ -203,5 +204,83 @@ describe("progress API", () => {
       [kept.id],
     );
     assert.equal(await ProgressEntry.countDocuments({}), 1);
+  });
+
+  describe("the reading status", () => {
+    function todayUtc() {
+      const now = new Date();
+      return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    }
+
+    async function bookAfter(cookie, id) {
+      const response = await api(`/api/books/${id}`, { cookie });
+      assert.equal(response.status, 200);
+      return response.body;
+    }
+
+    it("moves an owned book from want to reading and dates its start today", async () => {
+      const alice = await signIn("alice@example.com");
+      const book = await addBook(alice, { status: "want", ownership: "owned" });
+      assert.equal(book.startedAt, undefined);
+
+      const response = await record(alice, { bookId: book.id, percent: 10 });
+
+      assert.equal(response.status, 201);
+      const after = await bookAfter(alice, book.id);
+      assert.equal(after.status, "reading");
+      assert.equal(after.startedAt, todayUtc().toISOString());
+    });
+
+    it("moves a planned book saved without an ownership, which reads as owned", async () => {
+      const alice = await signIn("alice@example.com");
+      const book = await addBook(alice);
+      const unset = await Book.updateOne({ _id: book.id }, { $unset: { ownership: 1 } });
+      assert.equal(unset.modifiedCount, 1);
+
+      await record(alice, { bookId: book.id, percent: 5 });
+
+      assert.equal((await bookAfter(alice, book.id)).status, "reading");
+    });
+
+    it("leaves a wishlist book planned", async () => {
+      const alice = await signIn("alice@example.com");
+      const book = await addBook(alice, { status: "want", ownership: "wanted" });
+
+      await record(alice, { bookId: book.id, percent: 10 });
+
+      const after = await bookAfter(alice, book.id);
+      assert.equal(after.status, "want");
+      assert.equal(after.startedAt, undefined);
+    });
+
+    for (const status of ["reading", "read", "dropped"]) {
+      it(`leaves a ${status} book ${status}, even at 100%`, async () => {
+        const alice = await signIn("alice@example.com");
+        const book = await addBook(alice, { status, startedAt: "2026-01-02" });
+
+        await record(alice, { bookId: book.id, percent: 100 });
+
+        const after = await bookAfter(alice, book.id);
+        assert.equal(after.status, status);
+        assert.equal(after.startedAt, "2026-01-02T00:00:00.000Z");
+      });
+    }
+
+    it("answers the entry exactly as before when it also starts the book", async () => {
+      const alice = await signIn("alice@example.com");
+      const book = await addBook(alice, { pages: 300 });
+
+      const response = await record(alice, { bookId: book.id, page: 30 });
+
+      assert.equal(response.status, 201);
+      assert.deepEqual(Object.keys(response.body).sort(), [
+        "bookId",
+        "date",
+        "id",
+        "page",
+        "percent",
+      ]);
+      assert.equal(response.body.percent, 10);
+    });
   });
 });

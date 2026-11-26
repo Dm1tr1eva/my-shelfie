@@ -1,5 +1,6 @@
 const bookRepository = require("../repositories/bookRepository");
 const progressRepository = require("../repositories/progressRepository");
+const bookService = require("./bookService");
 const { HttpError } = require("../errors/httpError");
 const { pageAtPercent } = require("./readingPosition");
 
@@ -18,11 +19,21 @@ function positionOf(book, { page, percent }) {
   return { page, percent: Math.floor((page * 100) / book.pages) };
 }
 
+function startsReading(book) {
+  return book.status === "want" && book.ownership !== "wanted";
+}
+
 async function recordProgress(userId, { bookId, ...position }) {
   const book = await bookRepository.findOneForUser(userId, bookId);
   if (!book) return null;
 
-  return progressRepository.create(userId, { bookId, ...positionOf(book, position) });
+  const entry = await progressRepository.create(userId, { bookId, ...positionOf(book, position) });
+
+  if (startsReading(book)) {
+    await bookService.updateBook(userId, bookId, { status: "reading" });
+  }
+
+  return entry;
 }
 
 async function listLatest(userId) {
