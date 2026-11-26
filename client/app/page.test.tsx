@@ -44,7 +44,7 @@ describe("home page", () => {
     mockApi(() => undefined, false);
     renderApp(<Home />);
 
-    for (const title of ["Collect by series", "Spot the gaps", "Know where to buy"]) {
+    for (const title of ["Collect by series", "Spot the gaps", "Links at hand"]) {
       expect(screen.getByRole("heading", { level: 3, name: title })).toBeInTheDocument();
     }
   });
