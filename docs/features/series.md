@@ -37,6 +37,7 @@ Everything requires a session (`401` otherwise).
 | `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note`, `totalBooks` and `annotation`; `null` for `ageRating`, `desire` or `expected` answers `400`. `404` as above. |
 | `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
 | `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`; a link matches when any of its languages does), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. The page does not send them: it fetches once and filters several values per group in the browser. |
+| `GET /api/wishlist` | The v3 wishlist in three groups, see [wishlist.md](wishlist.md). |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
 | `GET /api/books` | Gains `?ownership=owned\|wanted`, `?seriesId=`, `?genre=`, `?trope=` and `?q=` (a case-insensitive text match on title and author, treated as plain text). `400` on an invalid value. |
 
@@ -46,6 +47,10 @@ Everything requires a session (`401` otherwise).
 array clears them.
 
 ## "Next to buy"
+
+Being replaced by the grouped wishlist ([wishlist.md](wishlist.md), `GET /api/wishlist`). Both
+answer until the client half of v3 step 7 stops calling `/api/next-to-buy`; that step deletes
+the route, `services/nextToBuy.js` and its tests.
 
 Computed in `services/nextToBuy.js` as a pure function over the user's series and the books
 that are wanted or belong to a series:

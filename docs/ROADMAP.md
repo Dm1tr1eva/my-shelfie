@@ -179,8 +179,16 @@ in steps, each on its own branch:
    calendar; "Finished" stays two existing calls with a local `finishedAt`. Server only —
    [designs/v3-home-stats-api.md](designs/v3-home-stats-api.md),
    [features/home-stats.md](features/home-stats.md)
-6. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page and
-   endpoint, the Home screen
+6. 🟡 **Wishlist, server half done 2026-11-26** — `GET /api/wishlist` answers three groups
+   (Continue a series, New series, Standalone books) ordered by desire, each series row with its
+   segments and cover, each row with the values the browser filters on. Desire changes through
+   the existing `PATCH` routes. Left for the client half: the page with its search and filters
+   (its `500` text needs no new translation), then delete `/api/next-to-buy`, `services/nextToBuy.js` and
+   its tests, and rename `findForNextToBuy`. Follow-up: an upper bound on `seriesNumber` —
+   [designs/v3-wishlist-api.md](designs/v3-wishlist-api.md),
+   [features/wishlist.md](features/wishlist.md)
+7. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
+   the Home screen
 
 ## Course submission MVP — done 2026-10-09
 

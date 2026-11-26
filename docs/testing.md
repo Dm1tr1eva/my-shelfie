@@ -49,6 +49,9 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 - **A test nobody has seen fail is a guess.** Break the behaviour it covers (remove the
   ownership filter, drop `.strict()`, restore the old `401`) and confirm exactly that test
   goes red.
+- **A precedence rule needs both orders in its test.** The wishlist's "an owned copy wins a
+  shared number" first had the wanted copy listed before the owned one, so a mutant where the
+  last book simply wins stayed green (2026-11-26). The test now holds one pair in each order.
 
 ## Client (`client/**/*.test.tsx`, Vitest + Testing Library, `fetch` mocked)
 
