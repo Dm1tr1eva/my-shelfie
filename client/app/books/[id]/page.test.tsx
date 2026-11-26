@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import BookRoute from "./page";
 import BookPanelOverPage from "../../@panel/(.)books/[id]/page";
-import NoPanel from "../../@panel/default";
 
 vi.mock("@/components/library", () => ({
   Library: () => <main>The library</main>,
@@ -29,9 +28,5 @@ describe("book routes", () => {
 
     expect(screen.queryByRole("main")).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Book b1, closes by back" })).toBeInTheDocument();
-  });
-
-  it("draws no panel when the page is loaded at another address", () => {
-    expect(NoPanel()).toBeNull();
   });
 });

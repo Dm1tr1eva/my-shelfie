@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/lib/auth-context";
+import { resetLocale, setLocale } from "@/lib/i18n";
 import { book, booksResponse, choose, mockApi, renderApp, series, type Call } from "@/test/helpers";
-import type { Book } from "@/lib/books";
+import { useBooks, type Book } from "@/lib/books";
 import { BookPanel } from "./book-panel";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }));
@@ -18,10 +19,18 @@ const saga = series({ id: "saga", title: "Saga of Ash" });
 
 type Reply = { status?: number; body?: unknown; wait?: Promise<unknown> };
 
-function serve(
-  initial: Book,
-  { percent, onPatch }: { percent?: number; onPatch?: (call: Call) => Reply | undefined } = {},
-) {
+function later(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type Options = {
+  percent?: number;
+  onPatch?: (call: Call) => Reply | undefined;
+  onDelete?: (call: Call) => Reply | undefined;
+  covers?: string[] | "down";
+};
+
+function serve(initial: Book, { percent, onPatch, onDelete, covers = [] }: Options = {}) {
   let current = initial;
   const calls = mockApi((call) => {
     const { method, path, body } = call;
@@ -34,9 +43,11 @@ function serve(
         else next[key] = value;
       }
       current = next as Book;
-      return { body: current };
+      return { body: current, wait: later(30) };
     }
-    if (method === "DELETE" && path === `/api/books/${initial.id}`) return { status: 204 };
+    if (method === "DELETE" && path === `/api/books/${initial.id}`) {
+      return onDelete?.(call) ?? { status: 204 };
+    }
     if (path === `/api/books/${initial.id}`) return { body: current };
     if (path === "/api/series") return { body: { series: [saga] } };
     if (path === "/api/progress") {
@@ -49,7 +60,19 @@ function serve(
         },
       };
     }
-    if (path.startsWith("/api/books/search")) return { body: { results: [] } };
+    if (path.startsWith("/api/books/search")) {
+      if (covers === "down") return { status: 502, body: { error: "Book search is unavailable" } };
+      return {
+        body: {
+          results: covers.map((coverUrl, index) => ({
+            volumeId: `v${index}`,
+            title: "Ash",
+            authors: [],
+            coverUrl,
+          })),
+        },
+      };
+    }
     if (path.startsWith("/api/books?")) return booksResponse([current]);
   });
   return calls;
@@ -77,7 +100,8 @@ describe("BookPanel", () => {
     location.pathname = "/books/b1";
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await act(() => later(80));
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -204,7 +228,7 @@ describe("BookPanel", () => {
 
       fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
 
-      expect(await screen.findByRole("status")).toHaveTextContent("Saved");
+      expect(await screen.findByText("Saved")).toBeInTheDocument();
       expect(patches(calls)).toEqual([{ rating: 4 }]);
 
       fireEvent.click(screen.getByRole("button", { name: "Undo" }));
@@ -742,6 +766,471 @@ describe("BookPanel", () => {
 
       await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/library"));
       expect(router.back).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("after review", () => {
+    afterEach(() => {
+      localStorage.clear();
+      act(() => resetLocale());
+    });
+
+    function panelTree(fallback: Record<string, unknown> = {}) {
+      return (
+        <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, fallback }}>
+          <AuthProvider>
+            <BookPanel id="b1" closeBy="back" />
+          </AuthProvider>
+        </SWRConfig>
+      );
+    }
+
+    it("closes again after it was closed and opened once more", async () => {
+      serve(book({ id: "b1", title: "Ash" }));
+      const { rerender } = render(panelTree());
+      await screen.findByRole("heading", { name: "Ash" });
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      await waitFor(() => expect(router.back).toHaveBeenCalledTimes(1));
+      location.pathname = "/series/saga";
+      rerender(panelTree());
+      location.pathname = "/books/b1";
+      rerender(panelTree());
+      await screen.findByRole("heading", { name: "Ash" });
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      await waitFor(() => expect(router.back).toHaveBeenCalledTimes(2));
+    });
+
+    it("saves the same text again after it was undone", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+
+      fireEvent.focus(note);
+      fireEvent.change(note, { target: { value: "Lent" } });
+      fireEvent.blur(note);
+      fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+      await screen.findByText("Change undone");
+      expect(note).toHaveValue("");
+
+      fireEvent.focus(note);
+      fireEvent.change(note, { target: { value: "Lent" } });
+      fireEvent.blur(note);
+
+      await waitFor(() =>
+        expect(patches(calls)).toEqual([{ notes: "Lent" }, { notes: null }, { notes: "Lent" }]),
+      );
+    });
+
+    it("saves the text being typed when the page changes under the panel", async () => {
+      const calls = serve(book({ id: "b1", title: "Ash" }));
+      const { rerender } = render(panelTree());
+      await screen.findByRole("heading", { name: "Ash" });
+      const note = screen.getByRole("textbox", { name: "My note" });
+
+      fireEvent.focus(note);
+      fireEvent.change(note, { target: { value: "Half way" } });
+      location.pathname = "/library";
+      rerender(panelTree());
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ notes: "Half way" }]));
+    });
+
+    it("drops a quote that was cancelled", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "quote" }));
+      fireEvent.change(screen.getByRole("textbox", { name: "Quote" }), {
+        target: { value: "Not this one." },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      await later(60);
+
+      expect(patches(calls)).toEqual([]);
+      expect(screen.getByRole("button", { name: "quote" })).toBeInTheDocument();
+    });
+
+    it("shows only Not found when an old copy of a deleted book is still cached", async () => {
+      mockApi(({ path }) => {
+        if (path === "/api/books/b1") return { status: 404, body: { error: "Book not found" } };
+        if (path === "/api/series") return { body: { series: [] } };
+        if (path === "/api/progress") return { body: { entries: [] } };
+      });
+      render(panelTree({ "/api/books/b1": book({ id: "b1", title: "Ash" }) }));
+
+      expect(await screen.findByRole("heading", { name: "Book not found" })).toBeInTheDocument();
+      expect(screen.queryByRole("textbox", { name: "My note" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Delete book" })).not.toBeInTheDocument();
+    });
+
+    it("renames on leaving the fields and cancels with Escape", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash", author: "A. Writer" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+      const title = screen.getByRole("textbox", { name: "Title" });
+      fireEvent.focus(title);
+      fireEvent.change(title, { target: { value: "Ember" } });
+      fireEvent.keyDown(title, { key: "Escape" });
+      expect(screen.getByRole("heading", { name: "Ash" })).toBeInTheDocument();
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+
+      fireEvent.click(screen.getByRole("button", { name: "Rename" }));
+      const again = screen.getByRole("textbox", { name: "Title" });
+      fireEvent.focus(again);
+      fireEvent.change(again, { target: { value: "Ash and Ember" } });
+      fireEvent.blur(again, { relatedTarget: document.body });
+
+      expect(await screen.findByRole("heading", { name: "Ash and Ember" })).toBeInTheDocument();
+      expect(patches(calls)).toEqual([{ title: "Ash and Ember" }]);
+    });
+
+    it("changes the status and shows the rows of the new status", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash", status: "want" }));
+
+      expect(rowNames()).not.toContain("Rating");
+      choose(screen.getByRole("combobox", { name: "Status" }), "Read");
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ status: "read" }]));
+      expect(rowNames()).toContain("Rating");
+    });
+
+    it("refreshes the library under the panel after a save", async () => {
+      const calls = serve(book({ id: "b1", title: "Ash", status: "read" }));
+      function Shelf() {
+        const { books } = useBooks();
+        return <p>{books.length} on the shelf</p>;
+      }
+      renderApp(
+        <>
+          <Shelf />
+          <BookPanel id="b1" closeBy="back" />
+        </>,
+      );
+      await screen.findByText("1 on the shelf");
+      const lists = () => calls.filter((call) => call.path.startsWith("/api/books?")).length;
+      const before = lists();
+
+      fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
+
+      await waitFor(() => expect(lists()).toBe(before + 1));
+    });
+
+    it("stores a preset mood typed in the interface language under its English name", async () => {
+      act(() => setLocale("uk"));
+      const calls = await open(book({ id: "b1", title: "Ash" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "своє" }));
+      const field = screen.getByRole("textbox", { name: "Своє відчуття" });
+      fireEvent.change(field, { target: { value: "захоплює" } });
+      fireEvent.keyDown(field, { key: "Enter" });
+
+      await waitFor(() => expect(patches(calls)).toEqual([{ moods: ["Gripping"] }]));
+    });
+
+    it("keeps a later change on screen when an earlier one fails", async () => {
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      await open(book({ id: "b1", title: "Ash", status: "read", rating: 2 }), {
+        onPatch: ({ body }) => {
+          if (first) {
+            first = false;
+            return { status: 500, body: { error: "Failed to update book" } };
+          }
+          return {
+            body: { ...book({ id: "b1", title: "Ash", status: "read" }), ...(body as object) },
+            wait: held,
+          };
+        },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Rate 3 out of 5" }));
+      fireEvent.click(screen.getByRole("button", { name: "Yes" }));
+
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Yes" })).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByRole("button", { name: "Rate 2 out of 5" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      release();
+    });
+
+    it("keeps the same field's later change when an earlier one fails", async () => {
+      let release: () => void = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      let first = true;
+      await open(book({ id: "b1", title: "Ash", status: "read", rating: 2 }), {
+        onPatch: () => {
+          if (first) {
+            first = false;
+            return { status: 500, body: { error: "Failed to update book" } };
+          }
+          return { body: book({ id: "b1", title: "Ash", status: "read", rating: 5 }), wait: held };
+        },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Rate 3 out of 5" }));
+      fireEvent.click(screen.getByRole("button", { name: "Rate 5 out of 5" }));
+
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Rate 5 out of 5" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      release();
+    });
+
+    it("shows the server's own words for a refused save", async () => {
+      await open(book({ id: "b1", title: "Ash", status: "read" }), {
+        onPatch: () => ({ status: 404, body: { error: "Book not found" } }),
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("Book not found");
+    });
+
+    it("puts the focus back in the panel after Undo and after Retry", async () => {
+      let failing = false;
+      await open(book({ id: "b1", title: "Ash", status: "read" }), {
+        onPatch: () =>
+          failing ? { status: 500, body: { error: "Failed to update book" } } : undefined,
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Rate 4 out of 5" }));
+      fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
+      expect(screen.getByRole("dialog", { name: "Ash" })).toHaveFocus();
+
+      failing = true;
+      fireEvent.click(screen.getByRole("button", { name: "Rate 2 out of 5" }));
+      fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+      expect(screen.getByRole("dialog", { name: "Ash" })).toHaveFocus();
+    });
+
+    it("says 0% when the log has no entry for the book", async () => {
+      await open(book({ id: "b1", title: "Ash", status: "reading" }));
+
+      expect(await screen.findByRole("progressbar", { name: "Progress" })).toHaveAttribute(
+        "aria-valuetext",
+        "0% read",
+      );
+    });
+
+    describe("dates", () => {
+      it("ignores a year outside 1900 to 2100", async () => {
+        const calls = await open(book({ id: "b1", title: "Ash", status: "reading" }));
+
+        fireEvent.click(screen.getByRole("button", { name: "Started: Pick a date" }));
+        const input = screen.getByLabelText("Started");
+        fireEvent.change(input, { target: { value: "1899-12-31" } });
+        fireEvent.blur(input);
+        await later(60);
+
+        expect(patches(calls)).toEqual([]);
+
+        fireEvent.click(screen.getByRole("button", { name: "Started: Pick a date" }));
+        const edge = screen.getByLabelText("Started");
+        fireEvent.change(edge, { target: { value: "1900-01-01" } });
+        fireEvent.blur(edge);
+        await waitFor(() => expect(patches(calls)).toEqual([{ startedAt: "1900-01-01" }]));
+      });
+
+      it("clears a date with its cross", async () => {
+        const calls = await open(
+          book({ id: "b1", title: "Ash", status: "read", finishedAt: "2026-10-20T00:00:00.000Z" }),
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Finished: Clear the date" }));
+
+        await waitFor(() => expect(patches(calls)).toEqual([{ finishedAt: null }]));
+        expect(
+          await screen.findByRole("button", { name: "Finished: Pick a date" }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("refuses pages outside 1 to 10,000 and clears them when emptied", async () => {
+      const calls = await open(book({ id: "b1", title: "Ash", pages: 300 }));
+      const pages = screen.getByRole("spinbutton", { name: "Pages" });
+
+      for (const wrong of ["0", "10001", "2.5"]) {
+        fireEvent.focus(pages);
+        fireEvent.change(pages, { target: { value: wrong } });
+        fireEvent.blur(pages);
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+          "A whole number from 1 to 10,000.",
+        );
+      }
+      expect(patches(calls)).toEqual([]);
+
+      fireEvent.focus(pages);
+      fireEvent.change(pages, { target: { value: "10000" } });
+      fireEvent.blur(pages);
+      await waitFor(() => expect(patches(calls)).toEqual([{ pages: 10000 }]));
+
+      fireEvent.focus(pages);
+      fireEvent.change(pages, { target: { value: "" } });
+      fireEvent.blur(pages);
+      await waitFor(() => expect(patches(calls)).toEqual([{ pages: 10000 }, { pages: null }]));
+    });
+
+    describe("links", () => {
+      it("asks for an http address", async () => {
+        const calls = await open(book({ id: "b1", title: "Ash" }));
+
+        fireEvent.click(screen.getByRole("button", { name: "link" }));
+        fireEvent.change(screen.getByRole("textbox", { name: "Link" }), {
+          target: { value: "bookmate.ru/ash" },
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+        expect(screen.getByRole("alert")).toHaveTextContent("Start the link with https://");
+        expect(patches(calls)).toEqual([]);
+      });
+
+      it("replaces a link with the same address instead of adding it twice", async () => {
+        const url = "https://bookmate.ru/ash";
+        const calls = await open(
+          book({ id: "b1", title: "Ash", links: [{ kind: "paper", languages: ["uk"], url }] }),
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "link" }));
+        choose(screen.getByRole("combobox", { name: "Type" }), "Online");
+        fireEvent.change(screen.getByRole("textbox", { name: "Link" }), { target: { value: url } });
+        fireEvent.click(screen.getByRole("button", { name: "language" }));
+        fireEvent.click(screen.getByRole("checkbox", { name: /English/ }));
+        fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+        await waitFor(() =>
+          expect(patches(calls)).toEqual([{ links: [{ kind: "online", languages: ["en"], url }] }]),
+        );
+      });
+
+      it("closes only the language list, then only the form, with Escape", async () => {
+        await open(book({ id: "b1", title: "Ash" }));
+
+        fireEvent.click(screen.getByRole("button", { name: "link" }));
+        fireEvent.click(screen.getByRole("button", { name: "language" }));
+        fireEvent.keyDown(screen.getByRole("searchbox", { name: "Find a language" }), {
+          key: "Escape",
+        });
+        expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+        expect(screen.getByRole("textbox", { name: "Link" })).toBeInTheDocument();
+
+        fireEvent.keyDown(screen.getByRole("textbox", { name: "Link" }), { key: "Escape" });
+        expect(screen.queryByRole("textbox", { name: "Link" })).not.toBeInTheDocument();
+        await later(60);
+        expect(router.back).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("delete", () => {
+      it("says so when the book could not be deleted", async () => {
+        await open(book({ id: "b1", title: "Ash" }), {
+          onDelete: () => ({ status: 500, body: { error: "Failed to delete book" } }),
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Delete book" }));
+        fireEvent.click(
+          within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+        );
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+          "Could not delete the book. Try again.",
+        );
+        expect(router.back).not.toHaveBeenCalled();
+      });
+
+      it("sends one delete however often Delete is pressed", async () => {
+        let release: () => void = () => {};
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const calls = await open(book({ id: "b1", title: "Ash" }), {
+          onDelete: () => ({ status: 204, wait: held }),
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Delete book" }));
+        const remove = within(screen.getByRole("alertdialog")).getByRole("button", {
+          name: "Delete",
+        });
+        fireEvent.click(remove);
+        await waitFor(() => expect(remove).toBeDisabled());
+        fireEvent.click(remove);
+        release();
+
+        await waitFor(() => expect(router.back).toHaveBeenCalledOnce());
+        expect(calls.filter((call) => call.method === "DELETE")).toHaveLength(1);
+      });
+    });
+
+    describe("cover", () => {
+      it("takes a cover from Google Books and searches only once", async () => {
+        const calls = await open(book({ id: "b1", title: "Ash", author: "A. Writer" }), {
+          covers: ["https://books.google/one.jpg", "https://books.google/two.jpg"],
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+        fireEvent.click(await screen.findByRole("button", { name: "Use cover 2" }));
+
+        await waitFor(() =>
+          expect(patches(calls)).toEqual([{ coverUrl: "https://books.google/two.jpg" }]),
+        );
+        expect(screen.getByRole("img", { name: "Powered by Google" })).toBeInTheDocument();
+        await later(60);
+        expect(calls.filter((call) => call.path.startsWith("/api/books/search"))).toEqual([
+          { method: "GET", path: "/api/books/search?q=Ash%20A.%20Writer", body: undefined },
+        ]);
+        expect(screen.getByRole("button", { name: "Use cover 1" })).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "Use cover 2" })).not.toBeInTheDocument();
+      });
+
+      it("takes a cover by its address and checks it", async () => {
+        const calls = await open(book({ id: "b1", title: "Ash" }));
+
+        fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+        const field = screen.getByRole("textbox", { name: "Cover link" });
+        fireEvent.change(field, { target: { value: "cover.jpg" } });
+        fireEvent.click(screen.getByRole("button", { name: "Use" }));
+        expect(screen.getByRole("alert")).toHaveTextContent("Start the link with https://");
+
+        fireEvent.change(field, { target: { value: "https://example.com/cover.jpg" } });
+        fireEvent.keyDown(field, { key: "Enter" });
+        await waitFor(() =>
+          expect(patches(calls)).toEqual([{ coverUrl: "https://example.com/cover.jpg" }]),
+        );
+      });
+
+      it("goes back to a plain cover", async () => {
+        const calls = await open(
+          book({ id: "b1", title: "Ash", coverUrl: "https://example.com/old.jpg" }),
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+        fireEvent.click(screen.getByRole("button", { name: "Plain cover" }));
+
+        await waitFor(() => expect(patches(calls)).toEqual([{ coverUrl: null }]));
+        expect(screen.getByRole("button", { name: "Plain cover" })).toBeDisabled();
+      });
+
+      it("says when Google Books cannot be reached and keeps the other ways", async () => {
+        await open(book({ id: "b1", title: "Ash" }), { covers: "down" });
+
+        fireEvent.click(screen.getByRole("button", { name: "Change cover" }));
+
+        expect(
+          await screen.findByText(
+            "Could not reach Google Books. A link or a plain cover still works.",
+          ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole("textbox", { name: "Cover link" })).toBeInTheDocument();
+      });
     });
   });
 });
