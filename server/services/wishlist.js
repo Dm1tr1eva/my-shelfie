@@ -1,3 +1,5 @@
+const { SERIES_NUMBER_MAX } = require("../constants/library");
+
 const DESIRE_RANK = new Map([
   ["high", 0],
   ["normal", 1],
@@ -49,7 +51,7 @@ function segmentsOf(series, books) {
   }
 
   const known = [...states.keys(), ...(series.expected ?? []).map((entry) => entry.number)];
-  const last = Math.floor(Math.max(series.totalBooks ?? 0, ...known));
+  const last = Math.min(Math.max(series.totalBooks ?? 0, ...known), SERIES_NUMBER_MAX);
   const numbers = new Set(known);
   for (let number = 1; number <= last; number += 1) {
     numbers.add(number);

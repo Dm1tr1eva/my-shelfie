@@ -284,6 +284,20 @@ describe("wishlist segments", () => {
     );
   });
 
+  it("fills gaps no further than 999, so a huge number stays a single segment", () => {
+    const saga = series({ expected: [{ number: 5e6, source: "ai" }] });
+
+    const groups = buildWishlist({ series: [saga], books: [owned(saga, 1), wanted(saga, 1e7)] });
+    const segments = rowOf(groups, saga.id).segments;
+
+    assert.equal(segments.length, 1001);
+    assert.deepEqual(segments.slice(-3), [
+      { number: 999, state: "missing" },
+      { number: 5e6, state: "missing" },
+      { number: 1e7, state: "wanted" },
+    ]);
+  });
+
   it("draws an expected number that already has a book in that book's state", () => {
     const saga = series({ expected: [{ number: 2, source: "manual" }] });
 

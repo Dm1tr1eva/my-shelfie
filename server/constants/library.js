@@ -12,6 +12,7 @@ const GENRES_MAX = 12;
 const MOOD_NAME_MAX = 40;
 const MOODS_MAX = 12;
 const BOOK_LENGTH_MAX = 10000;
+const SERIES_NUMBER_MAX = 999;
 
 module.exports = {
   OWNERSHIP,
@@ -28,4 +29,5 @@ module.exports = {
   MOOD_NAME_MAX,
   MOODS_MAX,
   BOOK_LENGTH_MAX,
+  SERIES_NUMBER_MAX,
 };

@@ -186,6 +186,28 @@ describe("GET /api/wishlist", () => {
     assert.equal(itemsIn(response, "newSeries")[0].desire, "normal");
   });
 
+  it("answers a bounded row for a book saved with a number in the millions", async () => {
+    const alice = await signIn("alice@example.com");
+    const userId = new Book.base.Types.ObjectId(await userIdOf(alice));
+    const saga = await addSeries(alice, { title: "Saga" });
+    await addBook(alice, { title: "One", seriesId: saga.id, seriesNumber: 1 });
+    await Book.collection.insertOne({
+      userId,
+      title: "Typo",
+      author: "Someone",
+      ownership: "wanted",
+      seriesId: new Book.base.Types.ObjectId(saga.id),
+      seriesNumber: 1e7,
+    });
+
+    const response = await wishlistOf(alice);
+    const segments = itemsIn(response, "continue")[0].segments;
+
+    assert.equal(response.status, 200);
+    assert.equal(segments.length, 1000);
+    assert.deepEqual(segments.at(-1), { number: 1e7, state: "wanted" });
+  });
+
   it("moves a series when its desire level changes through the series endpoint", async () => {
     const alice = await signIn("alice@example.com");
     const first = await addSeries(alice, { title: "A first" });
