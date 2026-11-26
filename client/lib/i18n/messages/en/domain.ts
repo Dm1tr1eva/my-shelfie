@@ -1,5 +1,6 @@
 export const domain = {
   status: { want: "To read", reading: "Reading", read: "Read", dropped: "Dropped" },
+  statusAudio: { reading: "Listening", read: "Listened" },
   ownership: { owned: "In my library", wanted: "Wishlist" },
   format: {
     paper: "Paper",
@@ -42,6 +43,15 @@ export const domain = {
     online: "Online",
   },
   language: { ru: "Russian", uk: "Ukrainian", en: "English", misc: "Other" },
+  mood: {
+    Gripping: "Gripping",
+    Cozy: "Cozy",
+    Tense: "Tense",
+    Funny: "Funny",
+    Sad: "Sad",
+    Inspiring: "Inspiring",
+  },
+  recommend: { yes: "Yes", maybe: "Maybe", no: "No" },
   genre: {
     Fantasy: "Fantasy",
     Romantasy: "Romantasy",

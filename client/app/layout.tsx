@@ -30,8 +30,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  panel,
 }: Readonly<{
   children: React.ReactNode;
+  panel: React.ReactNode;
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
@@ -39,6 +41,7 @@ export default function RootLayout({
         <LocaleEffects />
         <AuthProvider>
           <AppFrame>{children}</AppFrame>
+          {panel}
         </AuthProvider>
       </body>
     </html>

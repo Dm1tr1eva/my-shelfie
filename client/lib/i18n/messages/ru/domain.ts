@@ -3,6 +3,7 @@ import type { domain as en } from "../en/domain";
 
 export const domain: Localized<typeof en> = {
   status: { want: "В планах", reading: "Читаю", read: "Прочитано", dropped: "Брошено" },
+  statusAudio: { reading: "Слушаю", read: "Прослушано" },
   ownership: { owned: "В моей библиотеке", wanted: "Вишлист" },
   format: {
     paper: "Бумажная",
@@ -45,6 +46,15 @@ export const domain: Localized<typeof en> = {
     online: "Онлайн",
   },
   language: { ru: "Русский", uk: "Украинский", en: "Английский", misc: "Другой" },
+  mood: {
+    Gripping: "Захватывает",
+    Cozy: "Уютно",
+    Tense: "Напряжённо",
+    Funny: "Смешно",
+    Sad: "Грустно",
+    Inspiring: "Вдохновляет",
+  },
+  recommend: { yes: "Да", maybe: "Может быть", no: "Нет" },
   genre: {
     Fantasy: "Фэнтези",
     Romantasy: "Романтическое фэнтези",

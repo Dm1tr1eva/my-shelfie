@@ -3,11 +3,10 @@
 import { useId } from "react";
 import { CheckIcon, StarIcon } from "@/components/icons";
 import { SERIES_STATE_CHOICES, type SeriesStatus } from "@/lib/series";
-import { STATUSES, type BookStatus, type Format, type Ownership } from "@/lib/books";
+import { STATUSES, type BookStatus, type Format } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 
-const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
 const TOGGLE_FORMATS: Format[] = ["paper", "ebook"];
 
 function SegmentedToggle<T extends string>({
@@ -48,27 +47,6 @@ function SegmentedToggle<T extends string>({
         );
       })}
     </div>
-  );
-}
-
-export function OwnershipToggle({
-  value,
-  onChange,
-}: {
-  value: Ownership;
-  onChange: (value: Ownership) => void;
-}) {
-  const t = useT();
-  const domain = useDomain();
-
-  return (
-    <SegmentedToggle
-      label={t("book.controls.ownership")}
-      options={OWNERSHIPS}
-      labels={{ owned: domain.ownership("owned"), wanted: domain.ownership("wanted") }}
-      value={value}
-      onChange={onChange}
-    />
   );
 }
 

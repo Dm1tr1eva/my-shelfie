@@ -2,18 +2,27 @@
 
 import { useMemo } from "react";
 import { DEFAULT_GENRES, type BookStatus } from "@/lib/books";
-import type {
-  Format,
-  LinkKind,
-  LinkLanguage,
-  Ownership,
-  SeriesStatus,
+import {
+  PRESET_MOODS,
+  type Format,
+  type LinkKind,
+  type LinkLanguage,
+  type Ownership,
+  type Recommend,
+  type SeriesStatus,
 } from "@/lib/catalogue-constants";
 import { translator, useLocale, type MessageKey, type Translate } from "./index";
 
 export function makeDomain(t: Translate) {
   return {
     status: (value: BookStatus) => t(`domain.status.${value}`),
+    bookStatus: (value: BookStatus, format: Format) =>
+      format === "audio" && (value === "reading" || value === "read")
+        ? t(`domain.statusAudio.${value}`)
+        : t(`domain.status.${value}`),
+    mood: (name: string) =>
+      PRESET_MOODS.includes(name) ? t(`domain.mood.${name}` as MessageKey) : name,
+    recommend: (value: Recommend) => t(`domain.recommend.${value}`),
     ownership: (value: Ownership) => t(`domain.ownership.${value}`),
     format: (value: Format) => t(`domain.format.${value}`),
     formatBook: (value: Format) => t(`domain.format.${value}Book`),

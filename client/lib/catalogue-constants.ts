@@ -8,6 +8,23 @@ export type AgeRating = "none" | "12" | "16" | "18";
 export type Recommend = "yes" | "maybe" | "no";
 export type ExpectedSource = "fantlab" | "ai" | "manual";
 
+export const PRESET_MOODS: readonly string[] = [
+  "Gripping",
+  "Cozy",
+  "Tense",
+  "Funny",
+  "Sad",
+  "Inspiring",
+];
+
+export const RECOMMEND_VALUES: Recommend[] = ["yes", "maybe", "no"];
+
+export const MOODS_MAX = 12;
+export const MOOD_NAME_MAX = 40;
+export const LINKS_MAX = 10;
+export const QUOTES_MAX = 50;
+export const BOOK_LENGTH_MAX = 10000;
+
 export const OWNERSHIP_LABELS: Record<Ownership, string> = {
   owned: "In my library",
   wanted: "Wishlist",

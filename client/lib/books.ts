@@ -153,6 +153,9 @@ export type BookChanges = Partial<{
   links: ShopLink[];
   notes: string | null;
   annotation: string | null;
+  coverUrl: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
 }>;
 
 type BooksResponse = {
@@ -169,7 +172,7 @@ export function isLibraryKey(key: unknown) {
   return typeof key === "string" && LIBRARY_KEY.test(key);
 }
 
-function bookKey(id: string) {
+export function bookKey(id: string) {
   return `/api/books/${id}`;
 }
 

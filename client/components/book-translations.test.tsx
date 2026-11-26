@@ -3,29 +3,31 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { book, booksResponse, mockApi, renderApp, series } from "@/test/helpers";
 import { resetLocale, setLocale } from "@/lib/i18n";
-import { BookPage } from "./book-page";
+import { BookPanel } from "./book-panel";
 import { GenreMultiSelect } from "./genre-multi-select";
 import { ShopLinkEditor, type LinkRow } from "./shop-link-editor";
 import { StarRating } from "./form-controls";
 import { TagInput } from "./tag-input";
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
 }));
 
-const WANTED = book({
+const LISTENING = book({
   id: "w1",
   title: "Ash One",
-  ownership: "wanted",
-  genres: ["Fantasy", "Slow magic"],
+  format: "audio",
+  status: "reading",
+  durationMinutes: 870,
   links: [{ kind: "ebook", languages: ["uk"], url: "https://www.example.com/ash" }],
 });
 
 function serve() {
-  mockApi(({ path }) => {
-    if (path === "/api/books/w1") return { body: WANTED };
-    if (path.startsWith("/api/books")) return booksResponse([WANTED]);
+  mockApi(({ method, path, body }) => {
+    if (method === "PATCH") return { body: { ...LISTENING, ...(body as object) } };
+    if (path === "/api/books/w1") return { body: LISTENING };
     if (path === "/api/series") return { body: { series: [series({ id: "s1" })] } };
+    if (path === "/api/progress") return { body: { entries: [] } };
   });
 }
 
@@ -57,39 +59,48 @@ describe("book screens in other languages", () => {
     act(() => resetLocale());
   });
 
-  it("shows the book page in Ukrainian with plural links and a filled placeholder", async () => {
+  it("shows the book panel in Ukrainian with audiobook words and «ти» texts", async () => {
     act(() => setLocale("uk"));
     serve();
-    renderApp(<BookPage id="w1" />);
+    renderApp(<BookPanel id="w1" closeBy="back" />);
 
     expect(await screen.findByRole("heading", { name: "Ash One" })).toBeInTheDocument();
     expect(screen.getByText("Окрема книга")).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "Вішліст" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Формат" })).toBeInTheDocument();
-    expect(screen.getByText("Де взяти")).toBeInTheDocument();
-    expect(screen.getByText("1 посилання")).toBeInTheDocument();
+    expect(screen.getByRole("radiogroup", { name: "У мене" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Є" })).toBeChecked();
+    expect(screen.getByRole("combobox", { name: "Формат" })).toHaveTextContent("Аудіокнига");
+    expect(screen.getByRole("combobox", { name: "Статус" })).toHaveTextContent("Слухаю");
+    expect(screen.getByRole("spinbutton", { name: "Години" })).toHaveValue(14);
+    expect(screen.getByRole("heading", { name: "Посилання" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Видалити посилання example.com" }),
+      screen.getByRole("button", { name: "Видалити посилання на example.com" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Поставити оцінку 4 із 5" })).toBeInTheDocument();
-    expect(screen.getByText("Без оцінки")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Читаю" })).toBeInTheDocument();
-    expect(screen.getByText("Фентезі")).toBeInTheDocument();
-    expect(screen.getByText("Slow magic")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Захоплює" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Можливо" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Думки про книгу, звідки вона, у кого зараз")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "Видалити книгу" }));
+    expect(screen.getByRole("alertdialog", { name: "Видалити «Ash One»?" })).toBeInTheDocument();
   });
 
-  it("shows the unsaved-changes bar in Russian once something changes", async () => {
+  it("shows the saved toast and the dialog in Russian", async () => {
     act(() => setLocale("ru"));
     serve();
-    renderApp(<BookPage id="w1" />);
+    renderApp(<BookPanel id="w1" closeBy="back" />);
     await screen.findByRole("heading", { name: "Ash One" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Поставить оценку 4 из 5" }));
+    fireEvent.click(screen.getByRole("button", { name: "Да" }));
 
-    const bar = screen.getByRole("region", { name: "Несохранённые изменения" });
-    expect(within(bar).getByText("Есть несохранённые изменения")).toBeInTheDocument();
-    expect(within(bar).getByRole("button", { name: "Сохранить изменения" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Статус чтения" })).toBeInTheDocument();
+    expect(await screen.findByText("Сохранено")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Отменить" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Статус" })).toHaveTextContent("Слушаю");
+
+    fireEvent.click(screen.getByRole("button", { name: "Удалить книгу" }));
+    const dialog = screen.getByRole("alertdialog", { name: "Удалить «Ash One»?" });
+    expect(dialog).toHaveAccessibleDescription(
+      "Книга пропадёт из библиотеки вместе с прогрессом, заметкой и цитатами. Отменить это будет нельзя.",
+    );
+    expect(within(dialog).getByRole("button", { name: "Отмена" })).toHaveFocus();
   });
 
   it("counts the books of a trope with Russian plural forms", () => {

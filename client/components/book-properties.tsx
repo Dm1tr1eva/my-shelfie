@@ -1,0 +1,436 @@
+"use client";
+
+import { useCallback, useId, useRef, useState } from "react";
+import { StarRating } from "@/components/form-controls";
+import { XIcon } from "@/components/icons";
+import { Select } from "@/components/select";
+import { STATUSES, type Book, type BookChanges, type BookStatus } from "@/lib/books";
+import { BOOK_LENGTH_MAX, type Format, type Ownership } from "@/lib/catalogue-constants";
+import { useLocale, useT } from "@/lib/i18n";
+import { useDomain } from "@/lib/i18n/domain";
+import { useBookProgress } from "@/lib/progress";
+import { useDraft } from "@/lib/use-book-autosave";
+
+type Save = (changes: BookChanges, options?: { optimistic?: boolean }) => Promise<boolean>;
+
+const FORMATS: Format[] = ["paper", "ebook", "audio"];
+const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
+
+function Row({
+  label,
+  labelId,
+  children,
+}: {
+  label: string;
+  labelId?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <dt id={labelId} className="flex min-h-11 items-center text-sm text-muted">
+        {label}
+      </dt>
+      <dd className="flex min-h-11 min-w-0 items-center">{children}</dd>
+    </>
+  );
+}
+
+function HaveToggle({
+  value,
+  onChange,
+  labelId,
+}: {
+  value: Ownership;
+  onChange: (value: Ownership) => void;
+  labelId: string;
+}) {
+  const t = useT();
+
+  return (
+    <div
+      role="radiogroup"
+      aria-labelledby={labelId}
+      className="inline-flex rounded-pill bg-page p-0.5"
+    >
+      {OWNERSHIPS.map((option) => {
+        const selected = value === option;
+        return (
+          <button
+            key={option}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => !selected && onChange(option)}
+            className={`inline-flex min-h-9 items-center rounded-pill px-3.5 text-sm font-semibold ${
+              selected
+                ? option === "owned"
+                  ? "bg-burgundy text-card"
+                  : "bg-mist text-navy"
+                : "text-ink hover:bg-beige"
+            }`}
+          >
+            {t(`book.panel.haveOptions.${option}`)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function wholeIn(text: string, min: number, max: number) {
+  const value = Number(text);
+  return text.trim() !== "" && Number.isInteger(value) && value >= min && value <= max;
+}
+
+function PagesField({ book, save, labelId }: { book: Book; save: Save; labelId: string }) {
+  const t = useT();
+  const [invalid, setInvalid] = useState(false);
+  const commit = useCallback(
+    async (text: string) => {
+      if (text.trim() !== "" && !wholeIn(text, 1, BOOK_LENGTH_MAX)) {
+        setInvalid(true);
+        return false;
+      }
+      return save({ pages: text.trim() === "" ? null : Number(text) }, { optimistic: false });
+    },
+    [save],
+  );
+  const draft = useDraft("pages", book.pages === undefined ? "" : String(book.pages), commit);
+
+  return (
+    <div className="flex flex-col gap-1">
+      <input
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={BOOK_LENGTH_MAX}
+        aria-labelledby={labelId}
+        aria-invalid={invalid}
+        value={draft.value}
+        onChange={(event) => {
+          draft.setValue(event.target.value);
+          setInvalid(false);
+        }}
+        onFocus={() => draft.setEditing(true)}
+        onBlur={() => {
+          draft.setEditing(false);
+          void draft.flush();
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.currentTarget.blur();
+        }}
+        className={`field min-h-10 w-24 bg-card ${invalid ? "border-2 border-burgundy" : "border-mist"}`}
+      />
+      {invalid && (
+        <p role="alert" className="text-sm font-semibold text-burgundy">
+          {t("book.panel.pagesInvalid")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function durationText(minutes: number | undefined) {
+  return minutes === undefined ? ":" : `${Math.floor(minutes / 60)}:${minutes % 60}`;
+}
+
+function DurationField({ book, save, labelId }: { book: Book; save: Save; labelId: string }) {
+  const t = useT();
+  const [invalid, setInvalid] = useState(false);
+  const commit = useCallback(
+    async (text: string) => {
+      const [hours, minutes] = text.split(":");
+      if (hours.trim() === "" && minutes.trim() === "") {
+        return save({ durationMinutes: null }, { optimistic: false });
+      }
+      const h = hours.trim() === "" ? "0" : hours;
+      const m = minutes.trim() === "" ? "0" : minutes;
+      const total = Number(h) * 60 + Number(m);
+      if (
+        !wholeIn(h, 0, BOOK_LENGTH_MAX) ||
+        !wholeIn(m, 0, 59) ||
+        total < 1 ||
+        total > BOOK_LENGTH_MAX
+      ) {
+        setInvalid(true);
+        return false;
+      }
+      return save({ durationMinutes: total }, { optimistic: false });
+    },
+    [save],
+  );
+  const draft = useDraft("duration", durationText(book.durationMinutes), commit);
+  const [hours, minutes] = draft.value.split(":");
+
+  function part(index: 0 | 1, text: string) {
+    const parts = draft.value.split(":");
+    parts[index] = text;
+    draft.setValue(parts.join(":"));
+    setInvalid(false);
+  }
+
+  const input = `field min-h-10 w-16 bg-card ${invalid ? "border-2 border-burgundy" : "border-mist"}`;
+
+  return (
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      className="flex flex-col gap-1"
+      onFocus={() => draft.setEditing(true)}
+      onBlur={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+        draft.setEditing(false);
+        void draft.flush();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter") (event.target as HTMLElement).blur();
+      }}
+    >
+      <div className="flex items-center gap-2 text-sm text-muted">
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          aria-label={t("book.panel.hours")}
+          aria-invalid={invalid}
+          value={hours}
+          onChange={(event) => part(0, event.target.value)}
+          className={input}
+        />
+        {t("book.panel.hoursShort")}
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={59}
+          aria-label={t("book.panel.minutes")}
+          aria-invalid={invalid}
+          value={minutes}
+          onChange={(event) => part(1, event.target.value)}
+          className={input}
+        />
+        {t("book.panel.minutesShort")}
+      </div>
+      {invalid && (
+        <p role="alert" className="text-sm font-semibold text-burgundy">
+          {t("book.panel.durationInvalid")}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function dateValue(iso: string | undefined) {
+  return iso ? iso.slice(0, 10) : "";
+}
+
+function DateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string | null) => void;
+}) {
+  const t = useT();
+  const locale = useLocale();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const button = useRef<HTMLButtonElement>(null);
+
+  function start() {
+    setDraft(dateValue(value));
+    setEditing(true);
+  }
+
+  function finish(text: string) {
+    setEditing(false);
+    window.setTimeout(() => button.current?.focus());
+    if (text === dateValue(value)) return;
+    const year = Number(text.slice(0, 4));
+    if (text !== "" && (year < 1900 || year > 2100)) return;
+    onChange(text === "" ? null : text);
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="date"
+        aria-label={label}
+        autoFocus
+        min="1900-01-01"
+        max="2100-12-31"
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={(event) => finish(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            finish(event.currentTarget.value);
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            setEditing(false);
+            window.setTimeout(() => button.current?.focus());
+          }
+        }}
+        className="field min-h-10 w-auto bg-card"
+      />
+    );
+  }
+
+  const shown = value
+    ? new Intl.DateTimeFormat(locale, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(value))
+    : null;
+
+  return (
+    <span className="inline-flex items-center gap-1">
+      <button
+        ref={button}
+        type="button"
+        aria-label={shown ? `${label}: ${shown}` : `${label}: ${t("book.panel.pickDate")}`}
+        onClick={start}
+        className={`inline-flex min-h-9 items-center rounded-control px-3 text-sm ${
+          shown
+            ? "bg-page text-ink hover:bg-beige"
+            : "border border-dashed border-slate text-muted hover:bg-page"
+        }`}
+      >
+        {shown ?? t("book.panel.pickDate")}
+      </button>
+      {shown && (
+        <button
+          type="button"
+          aria-label={`${label}: ${t("book.panel.clearDate")}`}
+          onClick={() => onChange(null)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-beige"
+        >
+          <XIcon size={14} />
+        </button>
+      )}
+    </span>
+  );
+}
+
+function Progress({ book, labelId }: { book: Book; labelId: string }) {
+  const t = useT();
+  const percent = useBookProgress(book.id);
+  const dropped = book.status === "dropped";
+
+  return (
+    <span className="flex items-center gap-3">
+      <span
+        role="progressbar"
+        aria-labelledby={labelId}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-valuetext={t("book.panel.progressLabel", { percent })}
+        className="relative h-1.5 w-[150px] overflow-hidden rounded-full bg-page md:w-[180px]"
+      >
+        <span
+          className={`absolute inset-y-0 left-0 rounded-full ${dropped ? "bg-muted" : "bg-burgundy"}`}
+          style={{ width: `${percent}%` }}
+        />
+      </span>
+      <span className={`text-[13px] font-semibold ${dropped ? "text-muted" : "text-burgundy"}`}>
+        {percent}%
+      </span>
+    </span>
+  );
+}
+
+export function BookProperties({ book, save }: { book: Book; save: Save }) {
+  const t = useT();
+  const domain = useDomain();
+  const ids = useId();
+  const id = (name: string) => `${ids}-${name}`;
+  const audio = book.format === "audio";
+  const owned = book.ownership === "owned";
+  const status = book.status;
+  const showProgress = owned && (status === "reading" || status === "dropped");
+  const showRating = owned && (status === "read" || status === "dropped");
+  const showDates = owned && status !== "want";
+
+  return (
+    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1">
+      <Row label={t("book.panel.have")} labelId={id("have")}>
+        <HaveToggle
+          labelId={id("have")}
+          value={book.ownership}
+          onChange={(ownership) => void save({ ownership })}
+        />
+      </Row>
+      <Row label={t("book.panel.format")}>
+        <Select
+          label={t("book.panel.format")}
+          hideLabel
+          className="text-sm"
+          value={book.format}
+          onChange={(format) => void save({ format: format as Format })}
+          options={FORMATS.map((format) => ({ value: format, label: domain.format(format) }))}
+        />
+      </Row>
+      {audio ? (
+        <Row label={t("book.panel.duration")} labelId={id("duration")}>
+          <DurationField book={book} save={save} labelId={id("duration")} />
+        </Row>
+      ) : (
+        <Row label={t("book.panel.pages")} labelId={id("pages")}>
+          <PagesField book={book} save={save} labelId={id("pages")} />
+        </Row>
+      )}
+      {owned && (
+        <Row label={t("book.panel.status")}>
+          <Select
+            label={t("book.panel.status")}
+            hideLabel
+            className="text-sm"
+            value={status}
+            onChange={(value) => void save({ status: value as BookStatus })}
+            options={STATUSES.map((value) => ({
+              value,
+              label: domain.bookStatus(value, book.format),
+            }))}
+          />
+        </Row>
+      )}
+      {showProgress && (
+        <Row label={t("book.panel.progress")} labelId={id("progress")}>
+          <Progress book={book} labelId={id("progress")} />
+        </Row>
+      )}
+      {showRating && (
+        <Row label={t("book.panel.rating")}>
+          <StarRating
+            value={book.rating}
+            onChange={(rating) => void save({ rating: rating ?? null })}
+          />
+        </Row>
+      )}
+      {showDates && (
+        <>
+          <Row label={t("book.panel.started")}>
+            <DateField
+              label={t("book.panel.started")}
+              value={book.startedAt}
+              onChange={(startedAt) => void save({ startedAt })}
+            />
+          </Row>
+          <Row label={t("book.panel.finished")}>
+            <DateField
+              label={t("book.panel.finished")}
+              value={book.finishedAt}
+              onChange={(finishedAt) => void save({ finishedAt })}
+            />
+          </Row>
+        </>
+      )}
+    </dl>
+  );
+}
