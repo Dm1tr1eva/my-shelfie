@@ -81,7 +81,9 @@ function WhereAreYou({
               aria-checked={unit === option}
               onClick={() => switchUnit(option)}
               className={`min-h-10 flex-1 rounded-pill px-3 text-sm font-semibold ${
-                unit === option ? "bg-navy text-page" : "border border-mist text-navy"
+                unit === option
+                  ? "bg-navy text-page"
+                  : "border border-mist text-navy hover:bg-beige"
               }`}
             >
               {t(option === "pages" ? "dashboard.where.pages" : "dashboard.where.percent")}
@@ -191,7 +193,7 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
           href={href}
           tabIndex={-1}
           aria-hidden="true"
-          className="w-[72px] shrink-0 sm:w-[84px]"
+          className="w-[72px] shrink-0 transition-transform duration-(--duration-base) hover:-translate-y-1 sm:w-[84px]"
         >
           <BookCover url={book.coverUrl} title={book.title} format={book.format} />
         </Link>

@@ -195,7 +195,11 @@ export function NewOnShelf({ books }: { books: HomeStats["newOnShelf"] }) {
         <ul className="grid grid-cols-4 gap-3 md:grid-cols-6 md:gap-4">
           {books.map((book, index) => (
             <li key={book.id} className={index >= 4 ? "hidden md:block" : undefined}>
-              <Link href={`/books/${book.id}`} aria-label={book.title} className="block">
+              <Link
+                href={`/books/${book.id}`}
+                aria-label={book.title}
+                className="block transition-transform duration-(--duration-base) hover:-translate-y-1"
+              >
                 <BookCover
                   url={book.coverUrl}
                   title={book.title}
