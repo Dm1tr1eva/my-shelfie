@@ -233,7 +233,14 @@ in steps, each on its own branch:
 13. ✅ **Deleting a series keeps its tags, 2026-11-26** — its books take the series' genres and
    tropes, followed by their own, in the same transaction as the delete; the confirmation says
    so — [designs/series-delete-keeps-tags.md](designs/series-delete-keeps-tags.md)
-14. ⬜ The following steps: the add modal
+14. ✅ **Interaction states and motion, 2026-11-26** — a working rule in `CLAUDE.md` ("UI states
+   and motion"); motion tokens (three durations, two easings, fade / pop / rise / sheet / panel
+   animations); a smooth default transition, pressed and disabled states and reduced motion in
+   the base styles; drawers, dialogs, popovers and toasts animate in and out; hover and pressed
+   states added across the shell, library, book panel, series page, wishlist and home. The add
+   flow follows the rule in its own step —
+   [features/interaction-states.md](features/interaction-states.md)
+15. ⬜ The following steps: the add modal
 
 ## Course submission MVP — done 2026-10-09
 
