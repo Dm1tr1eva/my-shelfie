@@ -13,10 +13,10 @@ function startOfTodayUtc() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
-function datesForEnteredStatus(changes, current) {
-  const field = DATE_SET_BY_STATUS[changes.status];
-  if (!field || changes.status === current?.status) return {};
-  if (changes[field] !== undefined || current?.[field]) return {};
+function datesForEnteredStatus(request, current) {
+  const field = DATE_SET_BY_STATUS[request.status];
+  if (!field || request.status === current?.status) return {};
+  if (request[field] !== undefined || current?.[field]) return {};
   return { [field]: startOfTodayUtc() };
 }
 
