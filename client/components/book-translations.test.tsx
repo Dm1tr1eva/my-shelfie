@@ -72,6 +72,7 @@ describe("book screens in other languages", () => {
     expect(screen.getByRole("combobox", { name: "Статус" })).toHaveTextContent("Слухаю");
     expect(screen.getByRole("spinbutton", { name: "Години" })).toHaveValue(14);
     expect(screen.getByRole("heading", { name: "Посилання" })).toBeInTheDocument();
+    expect(screen.getByText("Електронна")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Видалити посилання на example.com" }),
     ).toBeInTheDocument();

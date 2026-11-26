@@ -13,10 +13,16 @@ import {
 } from "@/lib/catalogue-constants";
 import type { ShopLink } from "@/lib/books";
 import { useT } from "@/lib/i18n";
-import { useDomain } from "@/lib/i18n/domain";
+import { useDomain, type Domain } from "@/lib/i18n/domain";
 import { hostOf, isHttpUrl } from "@/lib/links";
 
 const FRESH_LINK_MS = 1500;
+
+const WORDY_KINDS: LinkKind[] = ["free", "online"];
+
+function typeName(domain: Domain, kind: LinkKind) {
+  return WORDY_KINDS.includes(kind) ? domain.linkKindShort(kind) : domain.linkKind(kind);
+}
 
 export const ADD_PILL =
   "inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy";
@@ -189,7 +195,7 @@ function LinkForm({ onAdd, onCancel }: { onAdd: (link: ShopLink) => void; onCanc
         onChange={(value) => setKind(value as LinkKind)}
         options={LINK_KINDS.map((item) => ({
           value: item.value,
-          label: domain.linkKindShort(item.value),
+          label: typeName(domain, item.value),
         }))}
       />
       <div className="flex flex-col gap-1">
@@ -278,7 +284,7 @@ export function BookLinks({
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold">{domain.linkKindShort(link.kind)}</p>
+                  <p className="text-sm font-semibold">{typeName(domain, link.kind)}</p>
                   <p className="truncate text-xs text-muted">{host}</p>
                 </div>
                 <span className="flex flex-wrap justify-end gap-1">
@@ -291,7 +297,7 @@ export function BookLinks({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={t("book.panel.links.open", {
-                    kind: domain.linkKindShort(link.kind),
+                    kind: typeName(domain, link.kind),
                     host,
                   })}
                   className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-navy hover:bg-beige"
