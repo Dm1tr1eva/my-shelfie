@@ -1,6 +1,4 @@
 export const series = {
-  joinAnd: " and ",
-  somethingWrong: "Something went wrong.",
   checkConnection: "Check your connection and try again.",
   loading: "Loading the series…",
   notFound: "Series not found",

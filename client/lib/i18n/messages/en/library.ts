@@ -51,7 +51,6 @@ export const library = {
   rating: "Rated {rating} out of 5",
   progress: {
     own: "Own {owned} of {total}",
-    ownWithBooks: "Own {owned} of {total}: books {numbers}",
   },
   filters: {
     title: "Filters",

@@ -54,7 +54,6 @@ export const library: Localized<typeof en> = {
   rating: "Оценка: {rating} из 5",
   progress: {
     own: "Есть {owned} из {total}",
-    ownWithBooks: "Есть {owned} из {total}: книги {numbers}",
   },
   filters: {
     title: "Фильтры",

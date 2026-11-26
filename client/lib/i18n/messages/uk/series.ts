@@ -2,8 +2,6 @@ import type { Localized } from "../../core";
 import type { series as en } from "../en/series";
 
 export const series: Localized<typeof en> = {
-  joinAnd: " і ",
-  somethingWrong: "Щось пішло не так.",
   checkConnection: "Перевір з'єднання та спробуй ще раз.",
   loading: "Завантажуємо серію…",
   notFound: "Серію не знайдено",
