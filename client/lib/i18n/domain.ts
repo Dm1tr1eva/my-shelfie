@@ -28,7 +28,6 @@ export function makeDomain(t: Translate) {
     formatBook: (value: Format) => t(`domain.format.${value}Book`),
     seriesStatus: (value: SeriesStatus) => t(`domain.seriesStatus.${value}`),
     seriesChoice: (value: SeriesStatus) => t(`domain.seriesChoice.${value}`),
-    seriesHeader: (value: SeriesStatus) => t(`domain.seriesHeader.${value}`),
     linkKind: (value: LinkKind) => t(`domain.linkKind.${value}`),
     linkKindShort: (value: LinkKind) => t(`domain.linkKindShort.${value}`),
     language: (value: LinkLanguage) => t(`domain.language.${value === "other" ? "misc" : value}`),

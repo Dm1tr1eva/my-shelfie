@@ -1,357 +1,194 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { BookCover } from "@/components/book-cover";
-import { GenreChip, StatusDot, TropeChip, WishlistLabel } from "@/components/chips";
+import { useCallback, useId, useRef, useState } from "react";
+import { AgeChip, GenreChip, SeriesStatusChip, TropeChip } from "@/components/chips";
 import { ErrorState, NotFound } from "@/components/error-state";
-import { OwnProgress } from "@/components/own-progress";
-import { EditIcon, PlusIcon } from "@/components/icons";
-import { SeriesStatePills } from "@/components/form-controls";
-import { GenreMultiSelect } from "@/components/genre-multi-select";
-import { Shelf } from "@/components/shelf";
-import { ShelfSkeleton } from "@/components/skeleton";
-import { TagInput } from "@/components/tag-input";
+import { ChevronDownIcon, EditIcon } from "@/components/icons";
+import { SeriesBooks } from "@/components/series-books";
+import { SeriesEdit } from "@/components/series-edit";
+import { SeriesNote } from "@/components/series-note";
+import { SeriesSegments } from "@/components/series-segments";
+import { RowsSkeleton } from "@/components/skeleton";
+import { Toast, type ToastMessage } from "@/components/toast";
 import { ApiError } from "@/lib/api";
-import { useBooks, type Book, type Genre } from "@/lib/books";
-import { gapNumbersOf, highestNumberOf, isOwned, ownedNumbersOf } from "@/lib/catalogue";
-import { useSeries, useSeriesActions, type Series, type SeriesStatus } from "@/lib/series";
+import type { Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
-import { translateServerError } from "@/lib/i18n/server-errors";
-import { useDomain } from "@/lib/i18n/domain";
+import { useSeries, type Series } from "@/lib/series";
+import { seriesSlots } from "@/lib/shelves";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
-function SeriesBody({ series, books }: { series: Series; books: Book[] }) {
-  const router = useRouter();
-  const t = useT();
-  const d = useDomain();
-  const { updateSeries, deleteSeries } = useSeriesActions();
-  const [editing, setEditing] = useState(false);
-  const [firstField, setFirstField] = useState<"title" | "note">("title");
-  const formRef = useRef<HTMLFormElement>(null);
-  const titleRef = useRef<HTMLInputElement>(null);
-  const noteRef = useRef<HTMLTextAreaElement>(null);
-  const [title, setTitle] = useState(series.title);
-  const [author, setAuthor] = useState(series.author ?? "");
-  const [note, setNote] = useState(series.note ?? "");
-  const [status, setStatus] = useState<SeriesStatus>(series.status);
-  const [totalText, setTotalText] = useState(series.totalBooks ? String(series.totalBooks) : "");
-  const [genres, setGenres] = useState<Genre[]>(series.genres);
-  const [tropes, setTropes] = useState<string[]>(series.tropes);
-  const [annotation, setAnnotation] = useState(series.annotation ?? "");
-  const { books: allBooks } = useBooks();
-  const tropeCounts = new Map<string, number>();
-  for (const item of allBooks) {
-    for (const trope of item.tropes) tropeCounts.set(trope, (tropeCounts.get(trope) ?? 0) + 1);
-  }
-  const suggestions = [...tropeCounts].map(([name, count]) => ({ name, count }));
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
+const LABEL = "text-xs font-semibold uppercase tracking-[0.06em] text-muted";
 
-  const ownedNumbers = ownedNumbersOf(books);
-  const ownedCount = books.filter(isOwned).length;
-  const total = Math.max(series.totalBooks ?? 0, highestNumberOf(books), books.length);
-  const gaps = gapNumbersOf(books);
-  const recorded = new Set(books.map((book) => book.seriesNumber));
-  const missing = Array.from({ length: total }, (_, index) => index + 1).filter(
-    (number) => !ownedNumbers.includes(number),
-  );
-  const nextNumber = Math.floor(highestNumberOf(books)) + 1;
-  const numbered = books.filter((book) => book.seriesNumber !== undefined);
-  const unnumbered = books.filter((book) => book.seriesNumber === undefined);
-
-  useEffect(() => {
-    if (!editing) return;
-    formRef.current?.scrollIntoView({ block: "start" });
-    (firstField === "note" ? noteRef : titleRef).current?.focus({ preventScroll: true });
-  }, [editing, firstField]);
-
-  function openEditing(field: "title" | "note") {
-    setFirstField(field);
-    setEditing(true);
-  }
-
-  async function save(event: React.FormEvent) {
-    event.preventDefault();
-    setPending(true);
-    setError(null);
-    try {
-      await updateSeries(series.id, {
-        title: title.trim(),
-        author: author.trim() === "" ? null : author.trim(),
-        note: note.trim() === "" ? null : note.trim(),
-        status,
-        totalBooks: totalText.trim() === "" ? null : Number(totalText),
-        genres,
-        tropes,
-        annotation: annotation.trim() === "" ? null : annotation,
-      });
-      setEditing(false);
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? translateServerError(err.message, t) : t("series.somethingWrong"),
-      );
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function remove() {
-    if (!window.confirm(t("series.form.confirmDelete", { title: series.title }))) return;
-    setPending(true);
-    try {
-      await deleteSeries(series.id);
-      router.push("/library");
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? translateServerError(err.message, t) : t("series.somethingWrong"),
-      );
-      setPending(false);
-    }
-  }
+function TitleWithAge({ series, id }: { series: Series; id: string }) {
+  const words = series.title.trim().split(/\s+/);
+  const last = words.pop() ?? "";
+  const age = series.ageRating;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-          {d.seriesHeader(series.status)}
-        </p>
-        <h1 className="text-[32px] font-semibold leading-tight md:text-[44px]">{series.title}</h1>
-        {(series.author || series.note) && (
-          <p className="text-muted">
-            {series.author}
-            {series.author && series.note ? " · " : ""}
-            {series.note && <em>{series.note}</em>}
-          </p>
+    <h1 id={id} className="text-[30px] font-semibold leading-[1.1] md:text-[38px] lg:text-[44px]">
+      {words.length > 0 && `${words.join(" ")} `}
+      <span className="whitespace-nowrap">
+        {last}
+        {age !== "none" && (
+          <>
+            {" "}
+            <AgeChip age={age} />
+          </>
         )}
-        <button
-          type="button"
-          onClick={() => openEditing("note")}
-          className="btn-outline self-start"
-        >
-          <EditIcon size={18} />
-          {series.note ? t("series.editNote") : t("series.addNote")}
-        </button>
-      </header>
+      </span>
+    </h1>
+  );
+}
 
-      <section
-        aria-labelledby="copies-heading"
-        className="flex flex-col gap-4 rounded-card bg-navy p-6 text-page md:flex-row md:items-center md:justify-between"
-      >
-        <div className="flex flex-col gap-3 md:flex-1">
-          <h2
-            id="copies-heading"
-            className="font-sans text-sm font-semibold uppercase tracking-wide text-mist"
-          >
-            {t("series.copies")}
-          </h2>
-          <p className="font-serif text-4xl font-semibold">
-            {ownedCount} <span className="text-xl text-mist">{t("series.ofTotal", { total })}</span>
-          </p>
-          <OwnProgress ownedNumbers={ownedNumbers} ownedCount={ownedCount} total={total} onDark />
-          {missing.length > 0 && (
-            <p className="text-sm text-mist">
-              {t("series.missing", {
-                list: missing
-                  .map((number) =>
-                    gaps.includes(number) ? t("series.missingGap", { number }) : `#${number}`,
-                  )
-                  .join(t("series.joinAnd")),
-              })}
-            </p>
+function Details({ series }: { series: Series }) {
+  const t = useT();
+  const hasTags = series.genres.length + series.tropes.length > 0;
+
+  return (
+    <div className="flex flex-col gap-5">
+      {hasTags && (
+        <dl className="flex flex-col gap-3">
+          {series.genres.length > 0 && (
+            <div className="grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3">
+              <dt className={`${LABEL} pt-1.5`}>{t("series.page.genre")}</dt>
+              <dd className="flex flex-wrap gap-2">
+                {series.genres.map((genre) => (
+                  <GenreChip key={genre} genre={genre} />
+                ))}
+              </dd>
+            </div>
           )}
+          {series.tropes.length > 0 && (
+            <div className="grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3">
+              <dt className={`${LABEL} pt-1.5`}>{t("series.page.tropes")}</dt>
+              <dd className="flex flex-wrap gap-2">
+                {series.tropes.map((trope) => (
+                  <TropeChip key={trope} trope={trope} />
+                ))}
+              </dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {series.annotation && (
+        <div className={`flex flex-col gap-2 ${hasTags ? "border-t border-mist pt-5" : ""}`}>
+          <h2 className="text-xl font-semibold">{t("series.page.annotation")}</h2>
+          <p className="max-w-3xl whitespace-pre-line leading-relaxed">{series.annotation}</p>
         </div>
-        <Link href={`/add?series=${series.id}&number=${nextNumber}`} className="btn-beige">
-          <PlusIcon size={18} />
-          {t("series.addNext")}
-        </Link>
-      </section>
+      )}
+    </div>
+  );
+}
 
-      <section aria-label={t("series.booksRegion")} className="flex flex-col gap-4">
-        <Shelf>
-          {numbered
-            .sort((a, b) => (a.seriesNumber ?? 0) - (b.seriesNumber ?? 0))
-            .map((book) => {
-              const wanted = !isOwned(book);
-              return (
-                <li key={book.id}>
-                  <Link href={`/books/${book.id}`} className="flex flex-col gap-2">
-                    <div className={wanted ? "opacity-55 saturate-[.7]" : ""}>
-                      <BookCover
-                        url={book.coverUrl}
-                        title={book.title}
-                        number={book.seriesNumber}
-                        format={book.format}
-                      />
-                    </div>
-                    <span className="line-clamp-2 text-[15px] font-semibold leading-snug">
-                      {book.title}
-                    </span>
-                    <span className="flex">
-                      {wanted ? <WishlistLabel /> : <StatusDot status={book.status} />}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          {Array.from({ length: Math.floor(total) }, (_, index) => index + 1)
-            .filter((number) => !recorded.has(number))
-            .map((number) => (
-              <li key={`missing-${number}`}>
-                <Link
-                  href={`/add?series=${series.id}&number=${number}`}
-                  className="flex flex-col gap-2"
-                >
-                  <span className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1 rounded-cover border-2 border-dashed border-burgundy bg-burgundy/[0.06] px-2 text-center">
-                    <span className="num text-lg text-burgundy">#{number}</span>
-                    <span className="text-xs font-semibold text-burgundy">
-                      {t("series.missingFromSeries")}
-                    </span>
-                  </span>
-                  <span className="text-[15px] font-semibold">{t("series.notInLibrary")}</span>
-                </Link>
-              </li>
-            ))}
-        </Shelf>
+function ProgressCard({ series, books }: { series: Series; books: Book[] }) {
+  const t = useT();
+  const { segments } = seriesSlots(series, books);
+  const owned = segments.filter((state) => state === "owned").length;
 
-        {unnumbered.length > 0 && (
-          <ul className="flex flex-wrap gap-2 text-sm">
-            {unnumbered.map((book) => (
-              <li key={book.id}>
-                <Link href={`/books/${book.id}`} className="link">
-                  {book.title}
-                </Link>{" "}
-                <span className="text-muted">{t("series.noNumber")}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+  return (
+    <div className="flex items-center gap-3 rounded-card bg-navy px-4 py-3 text-page md:flex-col md:items-stretch md:gap-4 md:px-5 md:py-5">
+      <p className="shrink-0 font-serif font-semibold">
+        <span className="num text-xl md:text-4xl">{owned}</span>{" "}
+        <span className="text-sm text-mist md:text-lg">
+          {t("series.page.ownedOf", { total: segments.length })}
+        </span>
+      </p>
+      <SeriesSegments states={segments} card />
+    </div>
+  );
+}
 
-      <section aria-labelledby="about-heading" className="card flex flex-col gap-4 p-5">
-        <h2 id="about-heading" className="text-xl font-semibold">
-          {t("series.about.title")}
-        </h2>
-        {series.annotation ? (
-          <p className="max-w-3xl whitespace-pre-line">{series.annotation}</p>
-        ) : (
-          <p className="text-muted">{t("series.about.noDescription")}</p>
-        )}
-        <ul aria-label={t("series.about.genresAndTropes")} className="flex flex-wrap gap-2">
-          {series.genres.map((genre) => (
-            <li key={genre}>
-              <GenreChip genre={genre} />
-            </li>
-          ))}
-          {series.tropes.map((trope) => (
-            <li key={trope}>
-              <TropeChip trope={trope} />
-            </li>
-          ))}
-          {series.genres.length + series.tropes.length === 0 && (
-            <li className="text-sm text-muted">{t("series.about.noTags")}</li>
-          )}
-        </ul>
-        <p className="text-sm text-muted">{t("series.about.shared")}</p>
-      </section>
+function SeriesView({ series, books }: { series: Series; books: Book[] }) {
+  const t = useT();
+  const detailsId = useId();
+  const titleId = useId();
+  const wide = useMediaQuery("(min-width: 48rem)");
+  const [editing, setEditing] = useState(false);
+  const [more, setMore] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const counter = useRef(0);
+  const pencil = useRef<HTMLButtonElement>(null);
+  const { slots } = seriesSlots(series, books);
+  const hasDetails = series.genres.length + series.tropes.length > 0 || Boolean(series.annotation);
 
-      <div className="flex flex-col gap-3">
-        {!editing ? (
-          <button
-            type="button"
-            onClick={() => openEditing("title")}
-            className="btn-outline self-start"
-          >
-            {t("series.form.editSeries")}
-          </button>
-        ) : (
-          <form
-            ref={formRef}
-            onSubmit={save}
-            aria-label={t("series.form.editSeries")}
-            className="card flex scroll-mt-20 flex-col gap-3 p-5"
-          >
-            <label className="flex flex-col gap-1">
-              <span className="font-semibold">{t("series.form.title")}</span>
-              <input
-                ref={titleRef}
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="field"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-semibold">{t("series.form.author")}</span>
-              <input value={author} onChange={(e) => setAuthor(e.target.value)} className="field" />
-            </label>
-            <SeriesStatePills value={status} onChange={setStatus} />
-            <GenreMultiSelect value={genres} onChange={setGenres} />
-            <TagInput
-              label={t("series.form.tropes")}
-              value={tropes}
-              onChange={setTropes}
-              suggestions={suggestions}
-            />
-            <label className="flex flex-col gap-1">
-              <span className="font-semibold">{t("series.form.description")}</span>
-              <textarea
-                value={annotation}
-                onChange={(e) => setAnnotation(e.target.value)}
-                rows={5}
-                placeholder={t("series.form.descriptionPlaceholder")}
-                className="field"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-semibold">{t("series.form.totalBooks")}</span>
-              <input
-                type="number"
-                min={1}
-                max={200}
-                inputMode="numeric"
-                placeholder={t("series.form.optional")}
-                value={totalText}
-                onChange={(e) => setTotalText(e.target.value)}
-                className="field sm:w-40"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span className="font-semibold">{t("series.form.note")}</span>
-              <textarea
-                ref={noteRef}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                placeholder={t("series.form.notePlaceholder")}
-                className="field"
-              />
-            </label>
-            {error && (
-              <p role="alert" className="font-semibold text-burgundy">
-                {error}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={pending} className="btn-primary">
-                {pending ? t("series.form.saving") : t("series.form.save")}
-              </button>
-              <button type="button" onClick={() => setEditing(false)} className="btn-outline">
-                {t("series.form.cancel")}
-              </button>
+  const show = useCallback((message: Omit<ToastMessage, "id">) => {
+    counter.current += 1;
+    setToast({ ...message, id: counter.current });
+  }, []);
+  const dismiss = useCallback(() => setToast(null), []);
+
+  function closeEditing() {
+    setEditing(false);
+    window.setTimeout(() => pencil.current?.focus());
+  }
+
+  const side = (
+    <div className="flex flex-col gap-4">
+      <ProgressCard series={series} books={books} />
+      <SeriesNote series={series} show={show} />
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-5 md:gap-6">
+      {editing && wide ? (
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_300px]">
+          <SeriesEdit series={series} onClose={closeEditing} sheet={false} />
+          {side}
+        </div>
+      ) : (
+        <section
+          aria-labelledby={titleId}
+          className="card relative grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_230px] md:gap-x-6 md:gap-y-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:p-8"
+        >
+          <div className="flex min-w-0 flex-col gap-5 md:col-start-1 md:row-start-1">
+            <div className="flex items-start gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-2">
+                <TitleWithAge series={series} id={titleId} />
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {series.author && <span className="text-muted">{series.author}</span>}
+                  <SeriesStatusChip status={series.status} />
+                </p>
+              </div>
               <button
+                ref={pencil}
                 type="button"
-                onClick={remove}
-                disabled={pending}
-                className="btn-outline ml-auto border-burgundy text-burgundy"
+                aria-label={t("series.page.edit")}
+                onClick={() => setEditing(true)}
+                className="btn-round shrink-0"
               >
-                {t("series.form.delete")}
+                <EditIcon size={18} />
               </button>
             </div>
-          </form>
-        )}
-      </div>
+          </div>
+          <div className="md:col-start-2 md:row-span-2 md:row-start-1">{side}</div>
+          <div
+            id={detailsId}
+            className={`min-w-0 md:col-start-1 md:row-start-2 md:block ${more ? "" : "hidden"}`}
+          >
+            <Details series={series} />
+          </div>
+          {hasDetails && (
+            <button
+              type="button"
+              aria-expanded={more}
+              aria-controls={detailsId}
+              aria-label={more ? t("series.page.less") : t("series.page.more")}
+              onClick={() => setMore((current) => !current)}
+              className="absolute -bottom-4 left-1/2 inline-flex h-8 w-12 -translate-x-1/2 items-center justify-center rounded-pill border border-mist bg-card text-navy md:hidden"
+            >
+              <span className={more ? "rotate-180" : ""}>
+                <ChevronDownIcon size={18} />
+              </span>
+            </button>
+          )}
+        </section>
+      )}
+
+      {editing && !wide && <SeriesEdit series={series} onClose={closeEditing} sheet />}
+      <SeriesBooks series={series} slots={slots} />
+      <Toast toast={toast} onDismiss={dismiss} />
     </div>
   );
 }
@@ -369,13 +206,7 @@ export function SeriesPage({ id }: { id: string }) {
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-8 sm:py-8">
-      <nav aria-label={t("series.breadcrumb")} className="text-sm">
-        <Link href="/library" className="link">
-          {t("shell.nav.library")}
-        </Link>
-      </nav>
-
-      {isLoading && <ShelfSkeleton label={t("series.loading")} />}
+      {isLoading && <RowsSkeleton label={t("series.loading")} />}
       {notFound && (
         <NotFound
           title={t("series.notFound")}
@@ -383,16 +214,14 @@ export function SeriesPage({ id }: { id: string }) {
           backLabel={t("series.backToLibrary")}
         />
       )}
-      {error && !notFound && (
+      {error && !notFound && !series && (
         <ErrorState
           title={t("series.loadError")}
           text={t("series.checkConnection")}
           onRetry={reload}
         />
       )}
-      {series && (
-        <SeriesBody key={`${series.id}-${series.updatedAt}`} series={series} books={books} />
-      )}
+      {series && !notFound && <SeriesView series={series} books={books} />}
     </main>
   );
 }

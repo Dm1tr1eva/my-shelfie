@@ -2,6 +2,8 @@
 
 import {
   LINK_LANGUAGES,
+  type AgeRating,
+  type Format,
   type LinkKind,
   type LinkLanguage,
   type SeriesStatus,
@@ -25,14 +27,14 @@ const STATUS_DOT_CLASSES: Record<BookStatus, { dot: string; word: string }> = {
   dropped: { dot: "bg-mist", word: "text-muted" },
 };
 
-export function StatusDot({ status }: { status: BookStatus }) {
+export function StatusDot({ status, format }: { status: BookStatus; format?: Format }) {
   const domain = useDomain();
   const { dot, word } = STATUS_DOT_CLASSES[status];
 
   return (
     <span className={`inline-flex items-center gap-1.5 whitespace-nowrap text-[13px] ${word}`}>
       <span aria-hidden="true" className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
-      {domain.status(status)}
+      {format ? domain.bookStatus(status, format) : domain.status(status)}
     </span>
   );
 }
@@ -56,6 +58,20 @@ export function SeriesStatusChip({ status }: { status: SeriesStatus }) {
       className={`inline-flex h-6 items-center whitespace-nowrap rounded-full px-2.5 text-xs font-medium ring-1 ring-inset ${SERIES_STATUS_CLASSES[status]}`}
     >
       {domain.seriesStatus(status)}
+    </span>
+  );
+}
+
+export function AgeChip({ age }: { age: Exclude<AgeRating, "none"> }) {
+  const t = useT();
+
+  return (
+    <span
+      title={t("series.page.age", { age })}
+      className="num inline-flex h-[26px] shrink-0 items-center rounded-[6px] border border-slate px-1.5 align-middle text-xs font-semibold text-ink"
+    >
+      <span aria-hidden="true">{age}+</span>
+      <span className="sr-only">{t("series.page.age", { age })}</span>
     </span>
   );
 }

@@ -1,271 +1,458 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { book, mockApi, renderApp, series } from "@/test/helpers";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { book, booksResponse, mockApi, renderApp, series, type Call } from "@/test/helpers";
+import type { Series } from "@/lib/series";
 import { SeriesPage } from "./series-page";
 
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => router,
 }));
 
-const SAGA = series({ id: "saga", title: "Saga of Ash", author: "A. Writer", status: "ongoing" });
+const SAGA = series({
+  id: "saga",
+  title: "Roots of Ash",
+  author: "A. Writer",
+  status: "ongoing",
+  ageRating: "16",
+  totalBooks: 5,
+  genres: ["Fantasy"],
+  tropes: ["dragons", "slow burn"],
+  annotation: "A schism and a waking dragon.",
+  note: "Book 4 not before 2027.",
+  expected: [{ number: 4, expectedYear: 2027, source: "manual" }],
+});
 const BOOKS = [
-  book({ id: "one", title: "Ash One", seriesId: "saga", seriesNumber: 1, genres: ["Fantasy"] }),
   book({
-    id: "three",
-    title: "Ash Three",
+    id: "one",
+    title: "Ash One",
     seriesId: "saga",
-    seriesNumber: 3,
+    seriesNumber: 1,
     status: "reading",
     format: "ebook",
-    genres: ["Fantasy", "Romance"],
-    tropes: ["slow burn"],
   }),
-  book({
-    id: "two",
-    title: "Ash Two",
-    seriesId: "saga",
-    seriesNumber: 2,
-    ownership: "wanted",
-    tropes: ["slow burn"],
-  }),
+  book({ id: "two", title: "Ash Two", seriesId: "saga", seriesNumber: 2, ownership: "wanted" }),
+  book({ id: "three", title: "Ash Three", seriesId: "saga", seriesNumber: 3, status: "read" }),
+  book({ id: "extra", title: "Ash Stories", seriesId: "saga", status: "want" }),
 ];
 
-function serve(saga = SAGA) {
-  return mockApi(({ method, path }) => {
+type Reply = { status?: number; body?: unknown; wait?: Promise<unknown> };
+
+function later(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function serve(
+  initial: Series = SAGA,
+  {
+    books = BOOKS,
+    onPatch,
+    onDelete,
+  }: {
+    books?: typeof BOOKS;
+    onPatch?: (call: Call) => Reply | undefined;
+    onDelete?: () => Reply;
+  } = {},
+) {
+  let current = initial;
+  return mockApi((call) => {
+    const { method, path, body } = call;
     if (method === "PATCH" && path === "/api/series/saga") {
-      return { body: { ...SAGA, status: "complete" } };
+      const reply = onPatch?.(call);
+      if (reply) return reply;
+      const next: Record<string, unknown> = { ...current };
+      for (const [key, value] of Object.entries(body as object)) {
+        if (value === null) delete next[key];
+        else next[key] = value;
+      }
+      current = next as Series;
+      return { body: current, wait: later(30) };
     }
-    if (path === "/api/series/saga") return { body: { series: saga, books: BOOKS } };
-    if (path === "/api/series/gone") return { status: 404, body: { error: "Not found" } };
+    if (method === "DELETE" && path === "/api/series/saga") return onDelete?.() ?? { status: 204 };
+    if (path === "/api/series/saga") return { body: { series: current, books } };
+    if (path === "/api/series/gone") return { status: 404, body: { error: "Series not found" } };
+    if (path === "/api/series") return { body: { series: [current] } };
+    if (path.startsWith("/api/books?")) return booksResponse(books);
+    if (path === "/api/progress") {
+      return { body: { entries: [{ id: "p", bookId: "one", date: "2026-11-01", percent: 40 }] } };
+    }
   });
 }
 
+function patches(calls: Call[]) {
+  return calls.filter((call) => call.method === "PATCH").map((call) => call.body);
+}
+
+async function open(initial?: Series, options?: Parameters<typeof serve>[1]) {
+  const calls = serve(initial, options);
+  renderApp(<SeriesPage id="saga" />);
+  await screen.findByRole("heading", { level: 1 });
+  return calls;
+}
+
+function wide(matches: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches,
+    media: query,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
+}
+
 describe("SeriesPage", () => {
-  afterEach(() => {
+  beforeEach(() => {
+    router.push.mockReset();
+    wide(false);
+  });
+
+  afterEach(async () => {
+    await act(() => later(60));
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
-  it("shows how many of the series you own and which number is a gap", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
+  describe("header", () => {
+    it("shows the title with its age, the author, the status and the series' own details", async () => {
+      await open();
 
-    expect(await screen.findByRole("heading", { name: "Saga of Ash" })).toBeInTheDocument();
-    expect(screen.getByText("Own 2 of 3")).toBeInTheDocument();
-    expect(screen.getByText("Missing: #2 (a gap)")).toBeInTheDocument();
-  });
-
-  it("marks which books of the series are e-books", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    const books = await screen.findByRole("region", { name: "Books in this series" });
-
-    expect(within(books).getAllByRole("img", { name: "E-book" })).toHaveLength(1);
-    expect(within(books).getAllByRole("img", { name: "Paper book" })).toHaveLength(2);
-  });
-
-  it("keeps block elements out of inline ones in the row of covers", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    const books = await screen.findByRole("region", { name: "Books in this series" });
-
-    expect(books.querySelector("span div")).toBeNull();
-  });
-
-  it("links the next book to the add page with the next number", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    expect(await screen.findByRole("link", { name: "Add the next book" })).toHaveAttribute(
-      "href",
-      "/add?series=saga&number=4",
-    );
-  });
-
-  it("shows the tags and the description of the series itself", async () => {
-    serve({
-      ...SAGA,
-      genres: ["Fantasy", "Romance"],
-      tropes: ["slow burn"],
-      annotation: "Fae courts and one bargain.",
+      const title = screen.getByRole("heading", { level: 1 });
+      expect(title).toHaveTextContent("Roots of Ash");
+      expect(within(title).getByText("Age 16+")).toBeInTheDocument();
+      expect(screen.getByText("A. Writer")).toBeInTheDocument();
+      expect(screen.getByText("Ongoing")).toBeInTheDocument();
+      expect(screen.getByText("Fantasy")).toBeInTheDocument();
+      expect(screen.getByText("slow burn")).toBeInTheDocument();
+      expect(screen.getByText("A schism and a waking dragon.")).toBeInTheDocument();
+      expect(screen.getByText("Book 4 not before 2027.")).toBeInTheDocument();
     });
-    renderApp(<SeriesPage id="saga" />);
 
-    const about = (await screen.findByRole("heading", { name: "About this series" })).closest(
-      "section",
-    ) as HTMLElement;
+    it("glues the age to the last word of the title", async () => {
+      await open();
 
-    expect(within(about).getByText("Fae courts and one bargain.")).toBeInTheDocument();
-    expect(within(about).getByText("Fantasy")).toBeInTheDocument();
-    expect(within(about).getByText("Romance")).toBeInTheDocument();
-    expect(within(about).getByText("slow burn")).toBeInTheDocument();
-  });
-
-  it("saves the genres, tropes and description you edit", async () => {
-    const calls = serve();
-    renderApp(<SeriesPage id="saga" />);
-    await screen.findByRole("heading", { name: "Saga of Ash" });
-
-    fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
-    const form = screen.getByRole("form", { name: "Edit series" });
-    fireEvent.click(within(form).getByRole("button", { name: /Choose genres/ }));
-    fireEvent.click(within(form).getByRole("checkbox", { name: "Horror" }));
-    const tropes = within(form).getByRole("textbox", { name: "Tropes" });
-    fireEvent.change(tropes, { target: { value: "slow burn" } });
-    fireEvent.keyDown(tropes, { key: "Enter" });
-    fireEvent.change(within(form).getByLabelText("Description"), {
-      target: { value: "Dark and slow." },
+      const glued = within(screen.getByRole("heading", { level: 1 })).getByText("Ash", {
+        exact: false,
+        selector: ".whitespace-nowrap",
+      });
+      expect(within(glued).getByText("Age 16+")).toBeInTheDocument();
     });
-    fireEvent.click(within(form).getByRole("button", { name: "Save" }));
 
-    await waitFor(() =>
-      expect(calls).toContainEqual(
-        expect.objectContaining({
-          method: "PATCH",
-          path: "/api/series/saga",
-          body: expect.objectContaining({
-            genres: ["Horror"],
-            tropes: ["slow burn"],
-            annotation: "Dark and slow.",
-          }),
-        }),
-      ),
-    );
+    it("leaves the age out when the series has none", async () => {
+      await open({ ...SAGA, ageRating: "none" });
+
+      expect(screen.queryByText(/Age/)).not.toBeInTheDocument();
+    });
+
+    it("counts what you own against every book and missing number, as the library does", async () => {
+      await open();
+
+      expect(screen.getByText("of 6 owned")).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "Own 3 of 6" })).toBeInTheDocument();
+    });
+
+    it("folds the details on a phone behind a button that says whether they are open", async () => {
+      await open();
+      const more = screen.getByRole("button", { name: "Show more" });
+      const details = document.getElementById(more.getAttribute("aria-controls") ?? "");
+
+      expect(more).toHaveAttribute("aria-expanded", "false");
+      expect(details).toHaveClass("hidden");
+      expect(details).toContainElement(screen.getByText("A schism and a waking dragon."));
+
+      fireEvent.click(more);
+
+      expect(screen.getByRole("button", { name: "Show less" })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+      expect(details).not.toHaveClass("hidden");
+    });
+
+    it("has nothing to fold when the series has no genre, tropes or annotation", async () => {
+      await open({ ...SAGA, genres: [], tropes: [], annotation: undefined });
+
+      expect(screen.queryByRole("button", { name: "Show more" })).not.toBeInTheDocument();
+    });
   });
 
-  it("saves the edited series details", async () => {
-    const calls = serve();
-    renderApp(<SeriesPage id="saga" />);
-    await screen.findByRole("heading", { name: "Saga of Ash" });
+  describe("books", () => {
+    it("lists the books by number, each one link to its panel, with status and format", async () => {
+      await open();
+      const rows = within(screen.getByRole("region", { name: "Books" })).getAllByRole("listitem");
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
-    const form = screen.getByRole("form", { name: "Edit series" });
-    fireEvent.click(within(form).getByRole("radio", { name: "Finished" }));
-    fireEvent.click(within(form).getByRole("button", { name: "Save" }));
+      expect(rows.map((row) => row.textContent)).toEqual([
+        expect.stringMatching(/^#1.*Ash One.*Reading.*E-book/),
+        expect.stringMatching(/^#2.*Ash Two.*In wishlist$/),
+        expect.stringMatching(/^#3.*Ash Three.*Read.*Paper/),
+        expect.stringMatching(/^#4–5.*Not in the catalogue yet/),
+        expect.stringMatching(/Ash Stories.*To read/),
+      ]);
+      expect(within(rows[0]).getByRole("link")).toHaveAttribute("href", "/books/one");
+      expect(within(rows[1]).queryByText("Paper")).not.toBeInTheDocument();
+    });
 
-    await waitFor(() =>
-      expect(calls).toContainEqual({
-        method: "PATCH",
-        path: "/api/series/saga",
-        body: {
-          title: "Saga of Ash",
-          author: "A. Writer",
-          note: null,
-          status: "complete",
-          totalBooks: null,
-          genres: [],
-          tropes: [],
-          annotation: null,
-        },
-      }),
-    );
+    it("shows the progress of a book being read, from the log", async () => {
+      await open();
+      const row = screen.getByRole("link", { name: /Ash One/ });
+
+      expect(await within(row).findByRole("progressbar")).toHaveAttribute(
+        "aria-valuetext",
+        "40% read",
+      );
+      expect(
+        within(screen.getByRole("link", { name: /Ash Three/ })).queryByRole("progressbar"),
+      ).toBeNull();
+    });
+
+    it("says when missing numbers are expected and leads to adding them", async () => {
+      await open();
+
+      expect(screen.getByText("From your note: not before 2027")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Add #4–5 to the series" })).toHaveAttribute(
+        "href",
+        "/add?series=saga&number=4",
+      );
+    });
+
+    it("offers the first book when the series has none yet", async () => {
+      await open({ ...SAGA, totalBooks: undefined, expected: [] }, { books: [] });
+
+      expect(screen.getByText("No books in this series yet.")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Add a book" })).toHaveAttribute(
+        "href",
+        "/add?series=saga&number=1",
+      );
+    });
   });
 
-  it("says so when the series does not exist", async () => {
-    serve();
-    renderApp(<SeriesPage id="gone" />);
+  describe("note", () => {
+    it("is edited in place, saved on leaving it, and can be undone", async () => {
+      const calls = await open();
 
-    expect(await screen.findByText("Series not found")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Back to the library" })).toHaveAttribute(
-      "href",
-      "/library",
-    );
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      expect(note).toHaveFocus();
+      fireEvent.change(note, { target: { value: "Book 4 moved to 2028." } });
+      fireEvent.blur(note);
+
+      expect(await screen.findByText("Saved")).toBeInTheDocument();
+      expect(patches(calls)).toEqual([{ note: "Book 4 moved to 2028." }]);
+      expect(await screen.findByText("Book 4 moved to 2028.")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+      await waitFor(() =>
+        expect(patches(calls)).toEqual([
+          { note: "Book 4 moved to 2028." },
+          { note: "Book 4 not before 2027." },
+        ]),
+      );
+      expect(await screen.findByText("Change undone")).toBeInTheDocument();
+    });
+
+    it("cancels with Escape", async () => {
+      const calls = await open();
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      fireEvent.change(note, { target: { value: "Gone" } });
+      fireEvent.keyDown(note, { key: "Escape" });
+
+      expect(screen.getByText("Book 4 not before 2027.")).toBeInTheDocument();
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+    });
+
+    it("keeps the typed note and offers Retry when saving fails", async () => {
+      await open(SAGA, { onPatch: () => ({ status: 500, body: { error: "Failed" } }) });
+
+      fireEvent.click(screen.getByRole("button", { name: "Edit the note" }));
+      const note = screen.getByRole("textbox", { name: "My note" });
+      fireEvent.change(note, { target: { value: "Lent to Olena" } });
+      fireEvent.blur(note);
+
+      expect(await screen.findByRole("alert")).toHaveTextContent("Could not save the note");
+      expect(screen.getByRole("textbox", { name: "My note" })).toHaveValue("Lent to Olena");
+      expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+    });
+
+    it("offers to add a note when there is none", async () => {
+      await open({ ...SAGA, note: undefined });
+
+      fireEvent.click(screen.getByRole("button", { name: "Add a note" }));
+
+      expect(screen.getByRole("textbox", { name: "My note" })).toHaveFocus();
+    });
   });
 
-  it("counts against the stated size of the series and lists the numbers still missing", async () => {
-    serve({ ...SAGA, totalBooks: 5 });
-    renderApp(<SeriesPage id="saga" />);
+  describe("edit mode", () => {
+    async function startEditing() {
+      fireEvent.click(screen.getByRole("button", { name: "Edit the series" }));
+      return screen.findByRole("form", { name: "Editing the series" });
+    }
 
-    expect(await screen.findByText("Own 2 of 5")).toBeInTheDocument();
-    expect(screen.getByText("Missing: #2 (a gap) and #4 and #5")).toBeInTheDocument();
+    it("saves every field with Done and goes back to the header", async () => {
+      const calls = await open();
+      const form = await startEditing();
+
+      fireEvent.change(within(form).getByLabelText("Title"), {
+        target: { value: "Roots of Chaos" },
+      });
+      fireEvent.change(within(form).getByLabelText("Author"), { target: { value: "" } });
+      fireEvent.click(within(form).getByRole("radio", { name: "Complete" }));
+      fireEvent.change(within(form).getByLabelText("Books in the series"), {
+        target: { value: "6" },
+      });
+      fireEvent.click(within(form).getByRole("radio", { name: "12+" }));
+      fireEvent.change(within(form).getByLabelText("Annotation"), { target: { value: " " } });
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+
+      await waitFor(() =>
+        expect(patches(calls)).toEqual([
+          {
+            title: "Roots of Chaos",
+            author: null,
+            status: "complete",
+            totalBooks: 6,
+            ageRating: "12",
+            genres: ["Fantasy"],
+            tropes: ["dragons", "slow burn"],
+            annotation: null,
+          },
+        ]),
+      );
+      await waitFor(() =>
+        expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Roots of Chaos"),
+      );
+      expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    });
+
+    it("sends nothing while the title is blank or the count is not 1 to 200", async () => {
+      const calls = await open();
+      const form = await startEditing();
+
+      fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "  " } });
+      fireEvent.change(within(form).getByLabelText("Books in the series"), {
+        target: { value: "201" },
+      });
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+
+      expect(within(form).getByText("The series needs a title.")).toBeInTheDocument();
+      expect(within(form).getByText("A whole number from 1 to 200.")).toBeInTheDocument();
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+
+      fireEvent.change(within(form).getByLabelText("Books in the series"), {
+        target: { value: "" },
+      });
+      fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "Ash" } });
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+      await waitFor(() =>
+        expect(patches(calls)[0]).toMatchObject({ title: "Ash", totalBooks: null }),
+      );
+    });
+
+    it("keeps the form and says so when the server refuses", async () => {
+      await open(SAGA, { onPatch: () => ({ status: 500, body: { error: "Failed" } }) });
+      const form = await startEditing();
+
+      fireEvent.click(within(form).getByRole("button", { name: "Done" }));
+
+      expect(await within(form).findByRole("alert")).toHaveTextContent("Could not save the series");
+      expect(screen.getByRole("form", { name: "Editing the series" })).toBeInTheDocument();
+    });
+
+    it("drops the changes with Cancel", async () => {
+      const calls = await open();
+      const form = await startEditing();
+
+      fireEvent.change(within(form).getByLabelText("Title"), { target: { value: "Changed" } });
+      fireEvent.click(within(form).getByRole("button", { name: "Cancel" }));
+
+      expect(screen.queryByRole("form")).not.toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Roots of Ash");
+      await later(60);
+      expect(patches(calls)).toEqual([]);
+    });
+
+    it("is a sheet on a phone that Escape closes, and a card in the page from 768px", async () => {
+      await open();
+      await startEditing();
+      expect(screen.getByRole("dialog", { name: "Editing the series" })).toBeInTheDocument();
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(screen.queryByRole("form")).not.toBeInTheDocument();
+
+      wide(true);
+      await startEditing();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.getByRole("form", { name: "Editing the series" })).toBeInTheDocument();
+    });
+
+    it("asks before deleting, Cancel first, and leaves for the library after", async () => {
+      const calls = await open();
+      const form = await startEditing();
+
+      fireEvent.click(within(form).getByRole("button", { name: "Delete series" }));
+      const dialog = screen.getByRole("alertdialog", { name: "Delete the series “Roots of Ash”?" });
+      expect(dialog).toHaveAccessibleDescription(/Its books stay in your library/);
+      expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
+
+      fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+      expect(calls.some((call) => call.method === "DELETE")).toBe(false);
+
+      fireEvent.click(within(form).getByRole("button", { name: "Delete series" }));
+      fireEvent.click(
+        within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+      );
+
+      await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+      expect(calls.filter((call) => call.method === "DELETE")).toHaveLength(1);
+    });
+
+    it("stays when the series could not be deleted", async () => {
+      await open(SAGA, { onDelete: () => ({ status: 500, body: { error: "Failed" } }) });
+      const form = await startEditing();
+
+      fireEvent.click(within(form).getByRole("button", { name: "Delete series" }));
+      fireEvent.click(
+        within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+      );
+
+      expect(await within(form).findByRole("alert")).toHaveTextContent(
+        "Could not delete the series",
+      );
+      expect(router.push).not.toHaveBeenCalled();
+    });
   });
 
-  it("saves the stated size, and clears it when the field is emptied", async () => {
-    const calls = serve({ ...SAGA, totalBooks: 5 });
-    renderApp(<SeriesPage id="saga" />);
-    await screen.findByRole("heading", { name: "Saga of Ash" });
+  describe("states", () => {
+    it("says so when the series does not exist", async () => {
+      serve();
+      renderApp(<SeriesPage id="gone" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit series" }));
-    const form = screen.getByRole("form", { name: "Edit series" });
-    expect(within(form).getByLabelText("Books in the series")).toHaveValue(5);
-    fireEvent.change(within(form).getByLabelText("Books in the series"), { target: { value: "" } });
-    fireEvent.click(within(form).getByRole("button", { name: "Save" }));
+      expect(await screen.findByRole("heading", { name: "Series not found" })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Back to the library" })).toHaveAttribute(
+        "href",
+        "/library",
+      );
+    });
 
-    await waitFor(() =>
-      expect(calls).toContainEqual(
-        expect.objectContaining({
-          method: "PATCH",
-          body: expect.objectContaining({ totalBooks: null }),
-        }),
-      ),
-    );
-  });
+    it("offers to try again when the series cannot be loaded", async () => {
+      let down = true;
+      mockApi(({ path }) => {
+        if (path === "/api/series/saga") {
+          return down
+            ? { status: 500, body: { error: "Failed to fetch series" } }
+            : { body: { series: SAGA, books: [] } };
+        }
+        if (path === "/api/progress") return { body: { entries: [] } };
+      });
+      renderApp(<SeriesPage id="saga" />);
 
-  it("names the kind of series above the title, as the design does", async () => {
-    serve({ ...SAGA, status: "complete" });
-    renderApp(<SeriesPage id="saga" />);
-
-    expect(await screen.findByText("Complete series")).toBeInTheDocument();
-  });
-
-  it("names a readable series as still coming out and readable now, with a chip of its own", async () => {
-    serve({ ...SAGA, status: "readable" });
-    renderApp(<SeriesPage id="saga" />);
-
-    expect(await screen.findByText("Ongoing series, readable now")).toBeInTheDocument();
-  });
-
-  it("offers to edit the note as a proper button, with an icon", async () => {
-    serve({ ...SAGA, note: "book 6 delayed" });
-    renderApp(<SeriesPage id="saga" />);
-
-    const button = await screen.findByRole("button", { name: "Edit note" });
-
-    expect(button).toHaveClass("btn-outline");
-    expect(button.querySelector("svg")).not.toBeNull();
-  });
-
-  it("opens the edit form from the note link", async () => {
-    serve({ ...SAGA, note: "book 6 delayed" });
-    renderApp(<SeriesPage id="saga" />);
-
-    fireEvent.click(await screen.findByRole("button", { name: "Edit note" }));
-
-    expect(screen.getByRole("form", { name: "Edit series" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Note")).toHaveValue("book 6 delayed");
-  });
-
-  it("brings the form into view and puts the cursor in the note when you use the note link", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    fireEvent.click(await screen.findByRole("button", { name: "Add a note" }));
-
-    const form = screen.getByRole("form", { name: "Edit series" });
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-    expect(vi.mocked(Element.prototype.scrollIntoView).mock.contexts.at(-1)).toBe(form);
-    expect(screen.getByLabelText("Note")).toHaveFocus();
-  });
-
-  it("puts the cursor in the title when you open the form with Edit series", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    fireEvent.click(await screen.findByRole("button", { name: "Edit series" }));
-
-    expect(screen.getByLabelText("Title")).toHaveFocus();
-  });
-
-  it("labels an owned cover with its reading status and a wanted one as in the wishlist", async () => {
-    serve();
-    renderApp(<SeriesPage id="saga" />);
-
-    const books = await screen.findByRole("region", { name: "Books in this series" });
-    const covers = within(books).getAllByRole("link");
-
-    expect(covers[0]).toHaveTextContent(/Ash One\s*To read$/);
-    expect(covers[1]).toHaveTextContent(/Ash Two\s*In wishlist$/);
-    expect(covers[2]).toHaveTextContent(/Ash Three\s*Reading$/);
+      expect(await screen.findByText("Could not load this series")).toBeInTheDocument();
+      down = false;
+      fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+      expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Roots of Ash");
+    });
   });
 });

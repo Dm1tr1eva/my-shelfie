@@ -14,6 +14,8 @@ const SAGA = series({
   author: "A. Writer",
   status: "readable",
   totalBooks: 5,
+  ageRating: "16",
+  expected: [{ number: 4, expectedYear: 2027, source: "manual" }],
 });
 const ONE = book({ id: "one", title: "Ash One", seriesId: "saga", seriesNumber: 1 });
 const TWO = book({
@@ -29,6 +31,8 @@ function serveSeries() {
   mockApi(({ path }) => {
     if (path === "/api/series/saga") return { body: { series: SAGA, books: [ONE, TWO, THREE] } };
     if (path.startsWith("/api/books")) return booksResponse([ONE, TWO, THREE]);
+    if (path === "/api/series") return { body: { series: [SAGA] } };
+    if (path === "/api/progress") return { body: { entries: [] } };
   });
 }
 
@@ -39,49 +43,52 @@ describe("the series page in other languages", () => {
     act(() => resetLocale());
   });
 
-  it("is in Ukrainian, with the missing numbers listed and the gap marked", async () => {
+  it("is in Ukrainian, with the count, the rows and the gap", async () => {
     act(() => setLocale("uk"));
     serveSeries();
     renderApp(<SeriesPage id="saga" />);
 
-    expect(await screen.findByText("Серія виходить, вже можна читати")).toBeInTheDocument();
-    expect(screen.getByText("Бракує: #2 (пропуск) і #4 і #5")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Додати наступну книгу" })).toBeInTheDocument();
-    const books = screen.getByRole("region", { name: "Книги цієї серії" });
+    const title = await screen.findByRole("heading", { level: 1 });
+    expect(within(title).getByText("Вік 16+")).toBeInTheDocument();
+    expect(screen.getByText("Можна читати")).toBeInTheDocument();
+    expect(screen.getByText("з 5 є")).toBeInTheDocument();
+    const books = screen.getByRole("region", { name: "Книги" });
     expect(within(books).getByText("У вішлісті")).toBeInTheDocument();
     expect(within(books).getAllByText("У планах")).toHaveLength(2);
-    expect(screen.getByRole("heading", { name: "Про цю серію" })).toBeInTheDocument();
+    expect(within(books).getByText("Ще немає в каталозі")).toBeInTheDocument();
+    expect(within(books).getByText("За нотаткою до серії: не раніше 2027")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Додати #4–5 до серії" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Моя нотатка" })).toBeInTheDocument();
   });
 
-  it("is in Russian, down to the form and the labels of its fields", async () => {
+  it("is in Russian, down to the edit form and the labels of its fields", async () => {
     act(() => setLocale("ru"));
     serveSeries();
     renderApp(<SeriesPage id="saga" />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Изменить серию" }));
-    const form = screen.getByRole("form", { name: "Изменить серию" });
+    fireEvent.click(await screen.findByRole("button", { name: "Редактировать серию" }));
+    const form = screen.getByRole("form", { name: "Редактирование серии" });
 
-    expect(within(form).getByLabelText("Название")).toBeInTheDocument();
-    expect(within(form).getByLabelText("Книг в серии")).toHaveAttribute(
-      "placeholder",
-      "Необязательно",
-    );
-    expect(within(form).getByRole("button", { name: "Удалить серию" })).toBeInTheDocument();
-    expect(screen.getByText("Не хватает: #2 (пропуск) и #4 и #5")).toBeInTheDocument();
+    expect(within(form).getByLabelText("Название")).toHaveValue("Saga of Ash");
+    expect(within(form).getByText("планируется, можно оставить пустым")).toBeInTheDocument();
+    expect(within(form).getByRole("radio", { name: "Можно читать" })).toBeChecked();
+    expect(within(form).getByRole("radio", { name: "Не указан" })).not.toBeChecked();
+    expect(within(form).getByRole("button", { name: "Готово" })).toBeInTheDocument();
+    expect(within(form).getByRole("button", { name: "Отменить" })).toBeInTheDocument();
   });
 
   it("asks before deleting in the language of the interface, with the title filled in", async () => {
     act(() => setLocale("uk"));
     serveSeries();
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     renderApp(<SeriesPage id="saga" />);
 
-    fireEvent.click(await screen.findByRole("button", { name: "Змінити серію" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Редагувати серію" }));
     fireEvent.click(screen.getByRole("button", { name: "Видалити серію" }));
 
-    expect(confirm).toHaveBeenCalledWith(
-      "Видалити серію «Saga of Ash»? Її книги залишаться на твоїй полиці.",
+    const dialog = screen.getByRole("alertdialog", { name: "Видалити серію «Saga of Ash»?" });
+    expect(dialog).toHaveAccessibleDescription(
+      "Її книги залишаться в бібліотеці як окремі. Скасувати це буде неможливо.",
     );
-    confirm.mockRestore();
+    expect(within(dialog).getByRole("button", { name: "Скасувати" })).toHaveFocus();
   });
 });

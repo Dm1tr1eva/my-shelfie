@@ -25,12 +25,6 @@ export const domain: Localized<typeof en> = {
     complete: "Завершена",
     unknown: "Не знаю",
   },
-  seriesHeader: {
-    ongoing: "Серія виходить",
-    readable: "Серія виходить, вже можна читати",
-    complete: "Завершена серія",
-    unknown: "Статус серії невідомий",
-  },
   linkKind: {
     paper: "Паперова",
     ebook: "Електронна",

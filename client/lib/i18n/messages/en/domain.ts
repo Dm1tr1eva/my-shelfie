@@ -22,12 +22,6 @@ export const domain = {
     complete: "Finished",
     unknown: "Don't know",
   },
-  seriesHeader: {
-    ongoing: "Ongoing series",
-    readable: "Ongoing series, readable now",
-    complete: "Complete series",
-    unknown: "Unknown series",
-  },
   linkKind: {
     paper: "Paper",
     ebook: "E-book",
