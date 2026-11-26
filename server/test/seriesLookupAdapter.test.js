@@ -221,7 +221,11 @@ describe("the Anthropic series lookup adapter", () => {
   });
 
   it("keeps the same five-search tool on a continued turn, which the API counts as a whole", async () => {
-    const paused = { stop_reason: "pause_turn", content: searchBlocks([SOURCE], "srvtoolu_p") };
+    const paused = {
+      stop_reason: "pause_turn",
+      content: searchBlocks([SOURCE], "srvtoolu_p"),
+      usage: { input_tokens: 500, output_tokens: 50, server_tool_use: { web_search_requests: 2 } },
+    };
     const { client, adapter } = adapterWith([paused, modelReply()]);
 
     await adapter.lookUp(QUERY, TODAY);
