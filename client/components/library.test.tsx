@@ -258,6 +258,14 @@ describe("Library", () => {
       expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument();
     });
 
+    it("counts only books you have under a reading status", async () => {
+      const { panel } = await openPanel();
+
+      fireEvent.click(within(panel).getByRole("button", { name: "To read" }));
+
+      expect(within(panel).getByRole("button", { name: "Show 1 book" })).toBeInTheDocument();
+    });
+
     it("empties applied and new choices on Reset without applying anything until you ask", async () => {
       const { button, panel } = await openPanel();
       fireEvent.click(within(panel).getByRole("button", { name: "In wishlist" }));

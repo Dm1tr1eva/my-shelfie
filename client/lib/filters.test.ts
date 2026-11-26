@@ -322,6 +322,15 @@ describe("library filter groups", () => {
     expect(matchesFilters({ book: book(), series: series() }, standalone)).toBe(false);
   });
 
+  it("matches a reading status only for books you have, since a wanted book shows none", () => {
+    const toRead = only({ reading: ["want"] });
+
+    expect(matchesFilters({ book: book({ status: "want" }) }, toRead)).toBe(true);
+    expect(matchesFilters({ book: book({ status: "want", ownership: "wanted" }) }, toRead)).toBe(
+      false,
+    );
+  });
+
   it("matches what you have against what you want", () => {
     const wanted = only({ have: ["wanted"] });
 

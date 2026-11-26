@@ -91,7 +91,7 @@ function valuesOf(subject: Subject, key: FilterKey): string[] {
     case "have":
       return book ? [book.ownership === "wanted" ? "wanted" : "owned"] : [];
     case "reading":
-      return book ? [book.status] : [];
+      return book && book.ownership !== "wanted" ? [book.status] : [];
     case "format":
       return book ? [book.format] : [];
     case "age":
