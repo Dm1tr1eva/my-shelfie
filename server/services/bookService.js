@@ -6,12 +6,29 @@ const { HttpError } = require("../errors/httpError");
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 
+const DATE_SET_BY_STATUS = { reading: "startedAt", read: "finishedAt" };
+
+function startOfTodayUtc() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+function datesForEnteredStatus(changes, current) {
+  const field = DATE_SET_BY_STATUS[changes.status];
+  if (!field || changes.status === current?.status) return {};
+  if (changes[field] !== undefined || current?.[field]) return {};
+  return { [field]: startOfTodayUtc() };
+}
+
 async function createBook(userId, data) {
   if (data.seriesId) {
     await seriesService.assertSeriesExists(userId, data.seriesId);
   }
 
-  const book = await bookRepository.create(userId, data);
+  const book = await bookRepository.create(userId, {
+    ...data,
+    ...datesForEnteredStatus(data, null),
+  });
 
   if (data.seriesId) {
     await seriesService.absorbTags(userId, data.seriesId, book);
@@ -57,13 +74,15 @@ async function updateBook(userId, id, updates) {
 
   const touchesSeries = updates.seriesId !== undefined || typeof updates.seriesNumber === "number";
 
-  if (touchesSeries) {
+  if (touchesSeries || updates.status !== undefined) {
     const current = await bookRepository.findOneForUser(userId, id);
     if (!current) return null;
 
+    Object.assign(changes, datesForEnteredStatus(updates, current));
+
     const seriesId = updates.seriesId === undefined ? current.seriesId : updates.seriesId;
 
-    if (!seriesId) {
+    if (touchesSeries && !seriesId) {
       if (typeof updates.seriesNumber === "number") {
         throw new HttpError(400, "seriesNumber: needs a seriesId");
       }
