@@ -183,8 +183,9 @@ in steps, each on its own branch:
    (Continue a series, New series, Standalone books) ordered by desire, each series row with its
    segments and cover, each row with the values the browser filters on. Desire changes through
    the existing `PATCH` routes. Left for the client half: the page with its search and filters
-   (its `500` text needs no new translation), then delete `/api/next-to-buy`, `services/nextToBuy.js` and
-   its tests, and rename `findForNextToBuy`. Follow-up: an upper bound on `seriesNumber` —
+   (its `500` text needs no new translation), then delete `/api/next-to-buy`,
+   `services/nextToBuy.js` and its tests, and rename `findForNextToBuy`. Gaps are filled no
+   further than 999, so an old number in the millions cannot stall the server —
    [designs/v3-wishlist-api.md](designs/v3-wishlist-api.md),
    [features/wishlist.md](features/wishlist.md)
 7. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,

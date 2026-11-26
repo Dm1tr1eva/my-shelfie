@@ -23,10 +23,12 @@ answer. This is the API only. Design: [../designs/v3-wishlist-api.md](../designs
   `standalone` only when it has no series or its series no longer exists.
 - Segments ascend by number, one per number: `owned` beats `wanted` beats `missing`. The numbers
   are the books' numbers, the `expected` numbers, and every whole number from 1 to the larger of
-  `totalBooks` and the highest of those. Unnumbered books follow as `number: null`, oldest
+  `totalBooks` and the highest of those, but no further than 999 (`SERIES_NUMBER_MAX`). A
+  fraction keeps its own segment: `expected` `2.5` after an owned `1` gives `1`, `2`, `2.5`. An
+  owned book without a number counts as owned for the group. Unnumbered books follow as `number: null`, oldest
   first.
 - Order inside a group: desire `high`, `normal`, `someday` (a series row by `Series.desire`, a
-  book row by `Book.desire`; a value missing from an old document reads as `normal`); then
+  book row by `Book.desire`; the models' default gives an old document `normal`); then
   series by title (`localeCompare`), books newest first; then by id.
 
 ## Endpoints
@@ -101,11 +103,10 @@ Next to buy.
 - **No format, reading status, rating or "Have" filter values**: a series row has no single
   format, and the rest describe owned books. Age is not sent either: the client has no age
   filter yet.
-- **A fractional number widens nothing**: `2.5` gets a segment, but only whole numbers are
-  filled in as `missing`.
-- **Segments are not capped.** `seriesNumber` has no upper bound (`validation/bookSchemas.js`),
-  so a book numbered 2019 by mistake sends 2,019 segments. Bounding the number is its own
-  validation change.
+- **Gaps stop at 999.** A number in the millions stored by mistake before the request limit
+  once took two seconds and then a `500` (`Set maximum size exceeded`), and the one replica
+  serves everyone; now it stays a single segment and nothing past 999 is filled in. A series
+  numbered past 999 on purpose shows its numbers without the gaps between them.
 
 ## Recovery
 

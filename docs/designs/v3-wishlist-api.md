@@ -27,7 +27,7 @@ A pure function, `services/wishlist.js`, over Next to buy's inputs (`findForNext
 
 **Segments**, ascending, one per number. A series' numbers are its books' numbers, its
 `expected` numbers, and every whole number from 1 to the larger of `totalBooks` and the highest
-of those. A number is `owned` if an owned book (no `ownership` counts as owned) has it, else
+of those, but no further than 999 (`SERIES_NUMBER_MAX`). A number is `owned` if an owned book (no `ownership` counts as owned) has it, else
 `wanted` if a wanted book does, else `missing`. Unnumbered books follow as
 `{ number: null, state }`, oldest first. The client draws at most ten.
 
@@ -36,7 +36,7 @@ of those. A number is `owned` if an owned book (no `ownership` counts as owned) 
 A wanted book with no series, or whose series is gone, is `standalone`.
 
 **Order.** Desire `high`, `normal`, `someday` (series rows by `Series.desire`, books by
-`Book.desire`; a missing value counts as `normal`). Ties: series by title (`localeCompare`),
+`Book.desire`; the models' default gives older documents `normal`). Ties: series by title (`localeCompare`),
 books newest first by `createdAt`; then by id, so the order never depends on the database.
 
 **Rows.** Series: `type: "series"`, `id`, `title`, `author?`, `status`, `desire`, `coverUrl?`,
@@ -62,11 +62,9 @@ deletes the route, `nextToBuy.js` and its tests.
 - **Search matches a row's own title and author**, not the titles of a series' books.
 - **No format, reading status, rating or "Have" filter values**: a series row has no single
   format, and the rest describe owned books.
-- **A fractional number widens nothing.** `2.5` gets its own segment, but only whole numbers
-  are filled in as `missing`.
-- **Segments are not capped.** `seriesNumber` has no upper bound (`bookSchemas.js:60`), so a
-  book numbered 2019 by mistake sends 2,019 segments. Bounding it is a validation change of
-  its own, flagged as a follow-up.
+- **Gaps stop at 999.** A number stored before the request limit (`1e7` took two seconds and
+  then failed, for every user of the one replica) stays one segment; nothing past 999 is
+  filled in. A fraction keeps its own segment: `2.5` fills `1` and `2`.
 
 ## Cost
 
