@@ -94,18 +94,21 @@ export function FilterPanel({
   groups,
   filters,
   countWith,
+  showLabel,
   onApply,
   onClose,
 }: {
   groups: PanelGroup[];
   filters: Filters;
   countWith: (draft: Filters) => number;
+  showLabel?: (count: number) => string;
   onApply: (next: Filters) => void;
   onClose: () => void;
 }) {
   const t = useT();
   const [draft, setDraft] = useState<Filters>(filters);
-  const showText = t("library.filters.show", { count: countWith(draft) });
+  const count = countWith(draft);
+  const showText = showLabel ? showLabel(count) : t("library.filters.show", { count });
 
   function toggle(key: FilterKey, value: string) {
     setDraft((current) => ({

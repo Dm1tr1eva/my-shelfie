@@ -124,16 +124,27 @@ function valuesOf(subject: Subject, key: FilterKey): string[] {
   }
 }
 
-export function matchesFilters(subject: Subject, filters: Filters, except?: FilterKey) {
+export type ValuesOf<T> = (item: T, key: FilterKey) => readonly string[];
+
+export function matchesValues<T>(
+  item: T,
+  valuesFor: ValuesOf<T>,
+  filters: Filters,
+  except?: FilterKey,
+) {
   return LIBRARY_FILTER_KEYS.every((key) => {
     if (key === except) return true;
 
     const wanted = filters[key];
     if (wanted.length === 0) return true;
 
-    const have = valuesOf(subject, key);
+    const have = valuesFor(item, key);
     return wanted.some((value) => have.includes(value));
   });
+}
+
+export function matchesFilters(subject: Subject, filters: Filters, except?: FilterKey) {
+  return matchesValues(subject, valuesOf, filters, except);
 }
 
 export function applyFilters<T>(items: T[], subjectOf: (item: T) => Subject, filters: Filters) {
@@ -300,10 +311,10 @@ export function panelChipLabel(key: FilterKey, value: string, labels: FilterLabe
   return label;
 }
 
-function byFrequency(subjects: Subject[], key: FilterKey) {
+function byFrequency<T>(items: T[], valuesFor: ValuesOf<T>, key: FilterKey) {
   const counts = new Map<string, number>();
-  for (const subject of subjects) {
-    for (const value of new Set(valuesOf(subject, key))) {
+  for (const item of items) {
+    for (const value of new Set(valuesFor(item, key))) {
       counts.set(value, (counts.get(value) ?? 0) + 1);
     }
   }
@@ -312,31 +323,42 @@ function byFrequency(subjects: Subject[], key: FilterKey) {
   );
 }
 
-function panelValues(key: FilterKey, subjects: Subject[]): readonly string[] {
+function panelValues<T>(key: FilterKey, items: T[], valuesFor: ValuesOf<T>): readonly string[] {
   const known = KNOWN_VALUES[key];
-  if (!known) return byFrequency(subjects, key);
+  if (!known) return byFrequency(items, valuesFor, key);
 
   if (key === "age") {
-    return subjects.some((subject) => subject.book && subject.book.ageRating !== "none")
+    return items.some((item) => valuesFor(item, key).some((value) => value !== "none"))
       ? known
       : [];
   }
   if (key === "language" || key === "kind") {
-    const found = new Set(subjects.flatMap((subject) => valuesOf(subject, key)));
+    const found = new Set(items.flatMap((item) => valuesFor(item, key)));
     return known.filter((value) => found.has(value));
   }
   return known;
 }
 
+export function filterPanelGroups<T>(
+  keys: FilterKey[],
+  items: T[],
+  valuesFor: ValuesOf<T>,
+  labels: FilterLabels,
+): PanelGroup[] {
+  return keys
+    .map((key) => ({
+      key,
+      label: labels.t(`library.panel.group.${key}`),
+      folds: FOLDING.includes(key),
+      searchLabel: key === "trope" ? labels.t("library.filters.searchForOne.trope") : undefined,
+      options: panelValues(key, items, valuesFor).map((value) => ({
+        value,
+        label: panelOptionLabel(key, value, labels),
+      })),
+    }))
+    .filter((group) => group.options.length > 0);
+}
+
 export function libraryFilterGroups(subjects: Subject[], labels: FilterLabels): PanelGroup[] {
-  return LIBRARY_FILTER_KEYS.map((key) => ({
-    key,
-    label: labels.t(`library.panel.group.${key}`),
-    folds: FOLDING.includes(key),
-    searchLabel: key === "trope" ? labels.t("library.filters.searchForOne.trope") : undefined,
-    options: panelValues(key, subjects).map((value) => ({
-      value,
-      label: panelOptionLabel(key, value, labels),
-    })),
-  })).filter((group) => group.options.length > 0);
+  return filterPanelGroups(LIBRARY_FILTER_KEYS, subjects, valuesOf, labels);
 }

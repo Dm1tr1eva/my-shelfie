@@ -1,4 +1,10 @@
-import { LIBRARY_FILTER_KEYS, NO_FILTERS, knownFilterValues, type Filters } from "./filters";
+import {
+  LIBRARY_FILTER_KEYS,
+  NO_FILTERS,
+  knownFilterValues,
+  type FilterKey,
+  type Filters,
+} from "./filters";
 
 const QUERY = "q";
 const MAX_VALUE_LENGTH = 200;
@@ -7,10 +13,13 @@ type Readable = { get(name: string): string | null; getAll(name: string): string
 
 export type LibraryParams = { query: string; filters: Filters };
 
-export function readLibraryParams(params: Readable): LibraryParams {
+export function readLibraryParams(
+  params: Readable,
+  keys: FilterKey[] = LIBRARY_FILTER_KEYS,
+): LibraryParams {
   const filters = { ...NO_FILTERS };
 
-  for (const key of LIBRARY_FILTER_KEYS) {
+  for (const key of keys) {
     const known = knownFilterValues(key);
     const values = params
       .getAll(key)
