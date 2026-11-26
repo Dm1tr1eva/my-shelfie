@@ -11,7 +11,19 @@ const SEGMENT_COLORS: Record<SegmentState, string> = {
   missing: "bg-mist",
 };
 
-export function SeriesSegments({ states }: { states: SegmentState[] }) {
+const CARD_COLORS: Record<SegmentState, string> = {
+  owned: "bg-beige",
+  wanted: "bg-slate",
+  missing: "bg-page/25",
+};
+
+export function SeriesSegments({
+  states,
+  card = false,
+}: {
+  states: SegmentState[];
+  card?: boolean;
+}) {
   const t = useT();
   const owned = states.filter((state) => state === "owned").length;
   const shown = states.slice(0, MAX_SEGMENTS);
@@ -21,16 +33,24 @@ export function SeriesSegments({ states }: { states: SegmentState[] }) {
     <span
       role="img"
       aria-label={t("library.progress.own", { owned, total: states.length })}
-      className="inline-flex shrink-0 items-center gap-[3px]"
+      className={`items-center gap-[3px] ${card ? "flex min-w-0 flex-1" : "inline-flex shrink-0"}`}
     >
       {shown.map((state, index) => (
         <span
           key={index}
           data-state={state}
-          className={`h-1.5 w-3 rounded-[2px] md:w-4 ${SEGMENT_COLORS[state]}`}
+          className={
+            card
+              ? `h-1.5 min-w-2 max-w-10 flex-1 rounded-[2px] ${CARD_COLORS[state]}`
+              : `h-1.5 w-3 rounded-[2px] md:w-4 ${SEGMENT_COLORS[state]}`
+          }
         />
       ))}
-      {rest > 0 && <span className="ml-1 text-xs leading-none text-muted">+{rest}</span>}
+      {rest > 0 && (
+        <span className={`ml-1 text-xs leading-none ${card ? "text-mist" : "text-muted"}`}>
+          +{rest}
+        </span>
+      )}
     </span>
   );
 }

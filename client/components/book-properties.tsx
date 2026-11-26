@@ -3,6 +3,7 @@
 import { useCallback, useId, useRef, useState } from "react";
 import { StarRating } from "@/components/form-controls";
 import { XIcon } from "@/components/icons";
+import { ProgressBar } from "@/components/progress-bar";
 import { Select } from "@/components/select";
 import { STATUSES, type Book, type BookStatus } from "@/lib/books";
 import {
@@ -321,28 +322,14 @@ function DateField({
 function Progress({ book, labelId }: { book: Book; labelId: string }) {
   const t = useT();
   const percent = useBookProgress(book.id);
-  const dropped = book.status === "dropped";
 
   return (
-    <span className="flex w-full items-center gap-3">
-      <span
-        role="progressbar"
-        aria-labelledby={labelId}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-        aria-valuetext={t("book.panel.progressLabel", { percent })}
-        className="relative h-1.5 min-w-0 max-w-[150px] flex-1 overflow-hidden rounded-full bg-page md:max-w-[200px] lg:max-w-[240px]"
-      >
-        <span
-          className={`absolute inset-y-0 left-0 rounded-full ${dropped ? "bg-muted" : "bg-burgundy"}`}
-          style={{ width: `${percent}%` }}
-        />
-      </span>
-      <span className={`text-[13px] font-semibold ${dropped ? "text-muted" : "text-burgundy"}`}>
-        {percent}%
-      </span>
-    </span>
+    <ProgressBar
+      percent={percent}
+      labelledBy={labelId}
+      valueText={t("book.panel.progressLabel", { percent })}
+      muted={book.status === "dropped"}
+    />
   );
 }
 
