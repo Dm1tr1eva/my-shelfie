@@ -17,7 +17,7 @@ export const home = {
     },
     gaps: {
       title: "Spot the gaps",
-      text: "Next to buy lists every missing volume of the series you collect, plus the standalone books you want.",
+      text: "Missing numbers show up right on the series shelf in your library, and the wishlist gathers the volumes you lack and the standalone books you want.",
       chip: "Gap: you own #1 and #3",
     },
     shops: {
