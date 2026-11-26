@@ -363,6 +363,7 @@ describe("home stats", () => {
       seriesNumber: 1,
       startedAt: new Date("2026-10-03"),
     });
+    const idle = book({ title: "Idle", status: "reading" });
     const untouched = book({ title: "Untouched", status: "reading", ownership: "wanted" });
     const audio = book({ title: "Audio", status: "reading", format: "audio" });
     const done = book({ title: "Done", status: "read" });
@@ -375,14 +376,14 @@ describe("home stats", () => {
     ];
 
     const reading = stats({
-      books: [stale, fresh, untouched, audio, done],
+      books: [stale, fresh, idle, untouched, audio, done],
       series: [saga],
       entries,
     }).currentlyReading;
 
     assert.deepEqual(
       reading.map((item) => item.title),
-      ["Fresh", "Audio", "Stale", "Untouched"],
+      ["Fresh", "Audio", "Stale", "Untouched", "Idle"],
     );
     assert.deepEqual(reading[0], {
       id: fresh.id,
@@ -400,11 +401,11 @@ describe("home stats", () => {
 
   it("counts each genre once per owned book, most common first", () => {
     const books = [
-      book({ genres: ["Fantasy", "Romance"] }),
-      book({ genres: ["Fantasy"] }),
+      book({ genres: ["Romance", "Fantasy"] }),
+      book({ genres: ["Romance"] }),
       book({ genres: ["Classics"] }),
       book({ genres: ["Fantasy", "Classics"], ownership: "wanted" }),
-      book({ genres: ["Romance"] }),
+      book({ genres: ["Fantasy"] }),
     ];
 
     assert.deepEqual(stats({ books }).genres, [
@@ -440,6 +441,15 @@ describe("home stats", () => {
           source: "fantlab",
         },
         { series: { id: empyrean.id, title: "Empyrean" }, number: 3 },
+      ]);
+    });
+
+    it("attaches an expected entry only to the number that follows, not to a later one", () => {
+      const saga = series({ expected: [{ number: 3, expectedYear: 2030, source: "ai" }] });
+      const books = [book({ seriesId: saga.id, seriesNumber: 1 })];
+
+      assert.deepEqual(stats({ books, series: [saga] }).waitingForContinuation, [
+        { series: { id: saga.id, title: saga.title }, number: 2 },
       ]);
     });
 
@@ -497,8 +507,8 @@ describe("home stats", () => {
       const calm = series({ title: "Calm", desire: "normal" });
       const books = [
         book({ title: "Flame", ownership: "wanted", desire: "high" }),
+        book({ seriesId: roots.id, seriesNumber: 2, coverUrl: "https://example.com/r2.jpg" }),
         book({ seriesId: roots.id, seriesNumber: 1, coverUrl: "https://example.com/r1.jpg" }),
-        book({ seriesId: roots.id, seriesNumber: 2 }),
         book({ seriesId: court.id, seriesNumber: 2, ownership: "wanted" }),
         book({
           seriesId: court.id,
@@ -531,6 +541,34 @@ describe("home stats", () => {
           total: 2,
         },
         { type: "book", id: books[0].id, title: "Flame", author: "An author" },
+      ]);
+    });
+
+    it("counts every book of a series in its total, even past its size", () => {
+      const saga = series({ desire: "high", totalBooks: 2 });
+      const books = [
+        book({ seriesId: saga.id, seriesNumber: 1 }),
+        book({ seriesId: saga.id, seriesNumber: 1.5, ownership: "wanted" }),
+        book({ seriesId: saga.id, seriesNumber: 2, ownership: "wanted" }),
+      ];
+
+      assert.deepEqual(
+        stats({ books, series: [saga] }).veryMuch.map((item) => [item.owned, item.total]),
+        [[1, 3]],
+      );
+    });
+
+    it("shows a wanted book whose series is gone as a standalone book", () => {
+      const orphan = book({
+        title: "Orphan",
+        ownership: "wanted",
+        desire: "high",
+        seriesId: "series-gone",
+        seriesNumber: 2,
+      });
+
+      assert.deepEqual(stats({ books: [orphan] }).veryMuch, [
+        { type: "book", id: orphan.id, title: "Orphan", author: "An author" },
       ]);
     });
 
@@ -573,6 +611,14 @@ describe("home stats", () => {
 
       assert.deepEqual(morning, night);
       assert.notDeepEqual(morning, tomorrow);
+    });
+
+    it("moves to the next quote across the end of a month", () => {
+      const order = ["One", "Two", "Three"];
+      const last = quoteOn("2026-01-31T12:00:00Z");
+      const first = quoteOn("2026-02-01T12:00:00Z");
+
+      assert.equal(first.text, order[(order.indexOf(last.text) + 1) % order.length]);
     });
 
     it("shows every quote once before repeating, with its page and book", () => {
