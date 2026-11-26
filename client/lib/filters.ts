@@ -42,6 +42,15 @@ export const LIBRARY_FILTER_KEYS: FilterKey[] = [
   "rating",
 ];
 
+export const BOOK_FILTER_KEYS: FilterKey[] = [
+  "have",
+  "reading",
+  "format",
+  "language",
+  "kind",
+  "rating",
+];
+
 export type Filters = Record<FilterKey, string[]>;
 
 export const NO_FILTERS: Filters = {

@@ -1,6 +1,6 @@
 import type { Book } from "./books";
 import { isOwned } from "./catalogue";
-import { NO_FILTERS, matchesFilters, type Filters } from "./filters";
+import { BOOK_FILTER_KEYS, NO_FILTERS, matchesFilters, type Filters } from "./filters";
 import type { Series } from "./series";
 
 export type SegmentState = "owned" | "wanted" | "missing";
@@ -129,11 +129,14 @@ export function libraryShelves(
   }
 
   const shelves: SeriesShelf[] = [];
+  const filteringBooks = BOOK_FILTER_KEYS.some((key) => filters[key].length > 0);
 
   for (const [seriesId, members] of booksBySeries) {
     const owner = seriesById.get(seriesId) as Series;
     const { slots, segments } = seriesSlots(owner, members);
-    const visible = slots.filter((slot) => slot.kind === "gap" || matches(slot.book, owner));
+    const visible = slots.filter((slot) =>
+      slot.kind === "gap" ? !filteringBooks : matches(slot.book, owner),
+    );
     const shownBooks = visible.filter((slot) => slot.kind === "book").length;
     if (shownBooks === 0) continue;
 

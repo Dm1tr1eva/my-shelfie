@@ -157,15 +157,52 @@ describe("libraryShelves", () => {
     expect(shelves.count).toBe(2);
   });
 
-  it("hides the books a filter leaves out but keeps the segments of the whole series", () => {
+  it("under a filter on the series keeps its gaps and hides the books left out", () => {
     const shelves = libraryShelves([one, two, alone], [saga], "", {
       ...NO_FILTERS,
-      have: ["owned"],
+      genre: ["Fantasy"],
     });
 
     expect(describeSlots(shelves.series[0].slots)).toEqual(["Ash One", "gap 3-6"]);
     expect(shelves.series[0].segments).toHaveLength(6);
-    expect(shelves.count).toBe(2);
+    expect(shelves.count).toBe(1);
+  });
+
+  it.each([
+    ["have", "owned"],
+    ["reading", "want"],
+    ["format", "paper"],
+    ["rating", "none"],
+  ] as const)(
+    "under a filter on single books (%s) hides the gaps, which no single book can match",
+    (key, value) => {
+      const shelves = libraryShelves([one, two, alone], [saga], "", {
+        ...NO_FILTERS,
+        [key]: [value],
+      });
+
+      expect(describeSlots(shelves.series[0].slots)).toContain("Ash One");
+      expect(shelves.series[0].slots.some((slot) => slot.kind === "gap")).toBe(false);
+      expect(shelves.series[0].segments).toHaveLength(6);
+    },
+  );
+
+  it("under a link filter hides the gaps too", () => {
+    const linked = book({
+      title: "Linked",
+      seriesId: "saga",
+      seriesNumber: 1,
+      links: [{ kind: "free", languages: ["en"], url: "https://a.example" }],
+    });
+
+    for (const filters of [
+      { ...NO_FILTERS, language: ["en"] },
+      { ...NO_FILTERS, kind: ["free"] },
+    ]) {
+      expect(describeSlots(libraryShelves([linked], [saga], "", filters).series[0].slots)).toEqual([
+        "Linked",
+      ]);
+    }
   });
 
   it("drops a series none of whose books match", () => {
