@@ -315,6 +315,15 @@ describe("library filter groups", () => {
     expect(matchesFilters({ book: book() }, only({ rating: ["none"] }))).toBe(true);
   });
 
+  it("matches a rating only for books you have, since a wanted book shows none", () => {
+    expect(
+      matchesFilters({ book: book({ ownership: "wanted" }) }, only({ rating: ["none"] })),
+    ).toBe(false);
+    expect(
+      matchesFilters({ book: book({ ownership: "wanted", rating: 5 }) }, only({ rating: ["5"] })),
+    ).toBe(false);
+  });
+
   it("matches the standalone choice only for a book outside any series", () => {
     const standalone = only({ status: ["standalone"] });
 
