@@ -67,8 +67,8 @@ About eight client files, three locales, around 30 behaviour tests. No dependenc
 
 ## Open questions
 
-- Should Home offer "Mark page" for an owned book that is still To read? The server would now
-  start it ([reading-progress.md](../features/reading-progress.md)); Home lists books being read.
+- Should Home offer "Mark page" for an owned book that is still To read? The server now starts
+  it ([reading-progress.md](../features/reading-progress.md)); Home lists books being read.
 - Should a signed-in visit to `/` go to Home? Today `/` stays the public page.
 
 ## Review
