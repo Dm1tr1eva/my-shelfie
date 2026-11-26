@@ -253,6 +253,8 @@ describe("wishlist segments", () => {
     const books = [
       wanted(saga, 2),
       owned(saga, 2),
+      owned(saga, 4),
+      wanted(saga, 4),
       wanted(saga, 3),
       owned(saga, 1),
       wanted(saga, 2.5),
@@ -265,7 +267,7 @@ describe("wishlist segments", () => {
       [2, "owned"],
       [2.5, "wanted"],
       [3, "wanted"],
-      [4, "missing"],
+      [4, "owned"],
       [5, "missing"],
     ]);
   });
