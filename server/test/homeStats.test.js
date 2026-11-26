@@ -189,11 +189,12 @@ describe("home stats", () => {
     it("reads an entry without a page as the share of the book's current pages", () => {
       const novel = book({ pages: 300 });
       const entries = [
-        entry(novel, "2026-03-01", { percent: 10 }),
-        entry(novel, "2026-03-02", { page: 150, percent: 50 }),
+        entry(novel, "2026-03-01", { page: 30, percent: 10 }),
+        entry(novel, "2026-03-02", { percent: 50 }),
+        entry(novel, "2026-03-03", { page: 200, percent: 66 }),
       ];
 
-      assert.equal(stats({ books: [novel], entries }).pagesRead, 150);
+      assert.equal(stats({ books: [novel], entries }).pagesRead, 200);
     });
 
     it("adds the rest of the book when it is finished", () => {

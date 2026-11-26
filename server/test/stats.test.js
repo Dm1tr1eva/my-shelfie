@@ -173,6 +173,13 @@ describe("home stats API", () => {
     await buildShelf(bob);
     const own = await addBook(alice, { pages: 100, status: "reading" });
     await record(alice, { bookId: own.id, page: 10 });
+    await ProgressEntry.collection.insertOne({
+      userId: new Book.base.Types.ObjectId(await userIdOf(bob)),
+      bookId: new Book.base.Types.ObjectId(own.id),
+      date: new Date(),
+      page: 90,
+      percent: 90,
+    });
 
     const stats = await statsOf(alice);
 
