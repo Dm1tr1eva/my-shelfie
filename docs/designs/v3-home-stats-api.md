@@ -21,19 +21,16 @@ Home renders from one request. `year` is optional (default: this UTC year), four
 2000–2100, the only allowed parameter. It moves the read count, pages, months and goal; the
 other blocks describe the shelf now.
 
-**Loading:** all books (`{ userId, createdAt }` index, cap 2,000, as Next to buy), series via
-`seriesService.listDocs`, the year's entries (`{ userId, date }`) plus each book's last entry
-before it (`{ userId, bookId, date }`), latest entries, the goal. No new index. Books pass
-through `toBookDto` (series genres, legacy defaults); a pure `services/homeStats.js` builds the
-response with explicit fields.
+**Loading:** all books (no cap: it would cut totals silently), series via
+`seriesService.listDocs`, every progress entry (hundreds), the goal. No new index. Books pass through `toBookDto` (series genres, legacy
+defaults); a pure `services/homeStats.js` builds the response with explicit fields.
 
 **Definitions (UTC calendar):**
 
 - *Read*: `status: read`, `finishedAt` in the year, any format or ownership.
 - *Pages*: per book with `pages`, not audio; each entry dated in the year adds
   `max(0, page − previous page)`. The previous entry may be last year's; the first ever starts
-  from 0. A missing `page` reads as `round(percent × pages / 100)`. "Finished" writes 100%,
-  the last page, so it adds the remainder.
+  from 0; a missing `page` is `round(percent × pages / 100)`. "Finished" writes the last page.
 - *Waiting on the shelf*: owned, `status: want`.
 - *Series complete*: of series with an owned book, those owning every whole number 1 to
   `totalBooks`; without it, status `complete` and every number up to the highest known
@@ -44,12 +41,10 @@ response with explicit fields.
 - *Currently reading*: `status: reading` with the latest entry, most recent first.
 - *Genres*: owned books, each genre once per book.
 - *Waiting for continuation*: series with an owned book; next = highest numbered book + 1,
-  with its `expected` entry, or without one when the series is not `complete` and the number
-  is within `totalBooks`.
+  with its `expected` entry if any; skipped when `complete` or past `totalBooks`.
 - *Very much*: `data-model.md`'s wishlist groups with `desire: high`, at most 3; a local rule
   `GET /api/wishlist` may later own.
-- *Quote of the day*: all quotes, oldest book first; index = UTC days since 1970 mod count, so
-  every quote shows before one repeats.
+- *Quote of the day*: all quotes as loaded; index = UTC days since 1970 mod count.
 - *New on the shelf*: 6 newest owned books.
 
 **"Finished"** stays two existing calls: `POST /api/progress` with 100%, and `PATCH` the book
@@ -64,12 +59,18 @@ day; the server would stamp a UTC one.
 - **The first entry counts from page 0**: logging a half-read book counts its first half.
 - **Unnumbered books never complete a series** or set its next number.
 - **Genres match exactly**: "Fantasy" and "fantasy" are two bars.
-- **One failing block fails Home.**
 - **A new quote shifts the day's quote.**
 
 ## Cost
 
-Route, controller, service, pure builder, schema, repository methods, about 35 tests.
+Route, controller, service, pure builder, schema, two repository methods, 39 tests.
+
+## Review
+
+Kept against the "cut" pass: `year` and the second completeness rule (the brief and
+`data-model.md` ask for them), the local Very much (the brief forbids depending on the
+wishlist), the percent fallback (`pages` can arrive after entries). Response shapes and tie
+rules: [../features/home-stats.md](../features/home-stats.md).
 
 ## Open questions
 

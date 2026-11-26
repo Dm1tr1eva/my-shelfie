@@ -28,6 +28,18 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   `bookService.listBooks(...)` through the module object; a destructured import would keep the
   real function. Silence `console.error` the same way, and assert on its calls: the log line is
   the contract there.
+- **A cross-user test can pass with the user filter gone.** In `stats.test.js`, Bob's progress
+  entries point at Bob's books, which Alice's stats drop as orphans, so removing `userId` from
+  `progressRepository.findAllForUser` changed nothing. The test now also inserts an entry of
+  Bob's that points at Alice's book. When the code joins one user's data to another collection,
+  make the foreign record point at the caller's data, or the join hides the leak.
+- **A sum can hide a wrong term.** The first percent-only-entry test summed to the same total
+  with the fallback replaced by 0 (30 + 120 and 0 + 150). Put the case under test where a wrong
+  value changes the result, and break it to check.
+- **Home stats are tested at two levels.** `homeStats.test.js` drives the pure builder with a
+  fixed `now` (year edges, weeks left, the quote's day); `stats.test.js` goes through HTTP and
+  the database (isolation, query validation, documents saved before v3). The HTTP tests cannot
+  fix the clock, so they use the current year and ranges rather than exact `weeksLeft`.
 - **A test nobody has seen fail is a guess.** Break the behaviour it covers (remove the
   ownership filter, drop `.strict()`, restore the old `401`) and confirm exactly that test
   goes red.

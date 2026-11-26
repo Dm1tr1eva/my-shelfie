@@ -172,8 +172,15 @@ in steps, each on its own branch:
    Tabs, the stats line, the view toggle and series notes are gone from the library; `/wishlist`
    keeps the v2 shelves in `components/wishlist.tsx` without the tabs, `/next` is unchanged —
    [designs/v3-library.md](designs/v3-library.md)
-5. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page and
-   endpoint, home and `/api/stats`
+5. ✅ **Home stats API, 2026-11-26** — `GET /api/stats?year=` answers every block of Home in
+   one request: read this year, pages from the progress log, waiting on the shelf, series
+   complete, the goal ring with weeks left, books per month, currently reading, genres, series
+   waiting for their next book, "Very much", a quote of the day and new on the shelf. UTC
+   calendar; "Finished" stays two existing calls with a local `finishedAt`. Server only —
+   [designs/v3-home-stats-api.md](designs/v3-home-stats-api.md),
+   [features/home-stats.md](features/home-stats.md)
+6. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page and
+   endpoint, the Home screen
 
 ## Course submission MVP — done 2026-10-09
 

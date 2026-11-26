@@ -1,12 +1,13 @@
 # Feature: reading progress and the year goal
 
-**Last verified against code:** 2026-11-19
+**Last verified against code:** 2026-11-26
 
 ## What it does
 
 Stores where the reader is in a book, as a log of dated entries, and how many books she means
 to read this year. Both feed the v3 Home page ("Mark page", "Where are you now?", "Finished",
-the goal ring and "Pages this year"), which is not built yet: this is the API only. Design:
+the goal ring and "Pages this year"); the numbers Home shows are derived by `GET /api/stats`
+([home-stats.md](home-stats.md)). Design:
 [../designs/v3-data-model.md](../designs/v3-data-model.md).
 
 ## Invariants
@@ -57,8 +58,11 @@ absent until set.
   the client holds. The query under Recovery removes them.
 - **Changing a book's `pages` does not recompute old entries.** The latest entry is what shows,
   and the next one uses the new count.
-- **A progress entry does not change the reading status.** "Finished" on Home will send the
-  entry and the status change separately. Open question in the design doc.
+- **A progress entry does not change the reading status.** "Finished" on Home sends the 100%
+  entry and then `PATCH`es the book to `read` with `finishedAt` as the reader's local
+  `YYYY-MM-DD` — decided in [../designs/v3-home-stats-api.md](../designs/v3-home-stats-api.md):
+  the client knows the reader's day, the server would stamp a UTC one. If the `PATCH` fails
+  after the entry, the book shows 100% and stays `reading` until the client retries.
 - **One goal, no history.** Nothing in the design shows past goals; a map of year → books can
   replace the field if that changes.
 - **No rate limit.** Each tap on "Mark page" is one entry; a few a day per book is the scale.
