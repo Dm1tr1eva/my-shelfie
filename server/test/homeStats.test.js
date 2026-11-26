@@ -186,6 +186,19 @@ describe("home stats", () => {
       assert.equal(stats({ books: [novel], entries }).pagesRead, 240);
     });
 
+    it("starts a re-read from page 0 when a lower entry follows the last page", () => {
+      const novel = book({ pages: 400 });
+      const entries = [
+        entry(novel, "2025-06-01", { page: 400, percent: 100 }),
+        entry(novel, "2026-02-01", { page: 50, percent: 12 }),
+        entry(novel, "2026-02-10", { page: 200, percent: 50 }),
+        entry(novel, "2026-02-20", { page: 400, percent: 100 }),
+      ];
+
+      assert.equal(stats({ year: 2025, books: [novel], entries }).pagesRead, 400);
+      assert.equal(stats({ year: 2026, books: [novel], entries }).pagesRead, 400);
+    });
+
     it("reads an entry without a page as the share of the book's current pages", () => {
       const novel = book({ pages: 300 });
       const entries = [

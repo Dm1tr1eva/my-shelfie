@@ -63,6 +63,11 @@ function pageOf(entry, pages) {
   return entry.page ?? Math.round((entry.percent * pages) / 100);
 }
 
+function pagesBetween(previous, page, pages) {
+  const start = previous >= pages && page < previous ? 0 : previous;
+  return Math.max(0, page - start);
+}
+
 function pagesRead(books, entries, year) {
   const counted = new Map(
     books.filter((book) => book.pages && book.format !== "audio").map((book) => [book.id, book]),
@@ -78,7 +83,7 @@ function pagesRead(books, entries, year) {
 
     const page = pageOf(entry, book.pages);
     if (entry.date >= from) {
-      total += Math.max(0, page - (previous.get(bookId) ?? 0));
+      total += pagesBetween(previous.get(bookId) ?? 0, page, book.pages);
     }
     previous.set(bookId, page);
   }
