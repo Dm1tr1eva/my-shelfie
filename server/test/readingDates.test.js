@@ -109,6 +109,17 @@ describe("reading dates set by the status", () => {
     assert.equal(read.finishedAt, "2024-02-20T00:00:00.000Z");
   });
 
+  it("keeps the start date of a book that has no finish date when it starts again", async () => {
+    const alice = await signIn("alice@example.com");
+    const book = await addBook(alice, { status: "reading", startedAt: "2025-03-01" });
+
+    await patchBook(alice, book.id, { status: "dropped" });
+    const again = await patchBook(alice, book.id, { status: "reading" });
+
+    assert.equal(again.startedAt, "2025-03-01T00:00:00.000Z");
+    assert.equal(again.finishedAt, undefined);
+  });
+
   it("keeps both dates when the book goes back from read to reading or to want", async () => {
     const alice = await signIn("alice@example.com");
     const book = await addBook(alice, {
