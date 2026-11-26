@@ -23,10 +23,12 @@ function WhereAreYou({
   book,
   onClose,
   onFinish,
+  finishing,
 }: {
   book: ReadingBook;
   onClose: () => void;
   onFinish: () => void;
+  finishing: boolean;
 }) {
   const t = useT();
   const { recordProgress } = useHomeActions();
@@ -129,14 +131,19 @@ function WhereAreYou({
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onClick={onFinish} disabled={saving} className="btn-outline">
+        <button
+          type="button"
+          onClick={onFinish}
+          disabled={saving || finishing}
+          className="btn-outline"
+        >
           {t(book.format === "audio" ? "dashboard.reading.listened" : "dashboard.reading.finished")}
         </button>
         <div className="flex gap-2">
           <button type="button" onClick={onClose} className="btn-outline border-transparent">
             {t("dashboard.where.cancel")}
           </button>
-          <button type="submit" disabled={!valid || saving} className="btn-primary">
+          <button type="submit" disabled={!valid || saving || finishing} className="btn-primary">
             {t("dashboard.where.save")}
           </button>
         </div>
@@ -226,6 +233,7 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
           type="button"
           aria-expanded={open}
           aria-controls={open ? popoverId : undefined}
+          disabled={finishing}
           onClick={() => setOpen((value) => !value)}
           className="btn-outline max-sm:px-4 max-sm:text-sm"
         >
@@ -248,6 +256,7 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
                 setOpen(false);
                 finish();
               }}
+              finishing={finishing}
             />
           </Popover>
         )}
