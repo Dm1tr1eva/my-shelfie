@@ -55,7 +55,7 @@ export const book: Localized<typeof en> = {
   notFound: { title: "Книгу не знайдено", back: "Назад до бібліотеки" },
   loadFailed: {
     title: "Не вдалося завантажити книгу",
-    text: "Перевірте з’єднання та спробуйте ще раз.",
+    text: "Перевір з’єднання та спробуй ще раз.",
   },
   controls: {
     ownership: "Де ця книга",
@@ -88,11 +88,11 @@ export const book: Localized<typeof en> = {
   },
   genres: {
     label: "Жанри",
-    choose: "Оберіть жанри",
-    addOwn: "Додайте власний жанр",
+    choose: "Обери жанри",
+    addOwn: "Додай власний жанр",
     add: "Додати",
     limit: "Не більше {max} жанрів.",
-    hint: "Оберіть зі списку або додайте власний.",
+    hint: "Обери зі списку або додай власний.",
   },
   shopLinks: {
     legend: "Посилання",

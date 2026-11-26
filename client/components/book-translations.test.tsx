@@ -129,7 +129,7 @@ describe("book screens in other languages", () => {
     }
 
     renderApp(<Harness />);
-    fireEvent.click(screen.getByRole("button", { name: /Оберіть жанри/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Обери жанри/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: "Фентезі" }));
 
     expect(chosen.at(-1)).toEqual(["Fantasy"]);
