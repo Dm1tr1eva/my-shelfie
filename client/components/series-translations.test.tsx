@@ -87,8 +87,23 @@ describe("the series page in other languages", () => {
 
     const dialog = screen.getByRole("alertdialog", { name: "Видалити серію «Saga of Ash»?" });
     expect(dialog).toHaveAccessibleDescription(
-      "Її книги залишаться в бібліотеці як окремі. Скасувати це буде неможливо.",
+      "Книжки залишаться в бібліотеці як окремі, і до них перейдуть жанри та тропи серії. Скасувати це буде неможливо.",
     );
     expect(within(dialog).getByRole("button", { name: "Скасувати" })).toHaveFocus();
+  });
+
+  it("says in Russian that the books keep the series' genres and tropes", async () => {
+    act(() => setLocale("ru"));
+    serveSeries();
+    renderApp(<SeriesPage id="saga" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Редактировать серию" }));
+    fireEvent.click(screen.getByRole("button", { name: "Удалить серию" }));
+
+    expect(
+      screen.getByRole("alertdialog", { name: "Удалить серию «Saga of Ash»?" }),
+    ).toHaveAccessibleDescription(
+      "Книги останутся в библиотеке как отдельные, и к ним перейдут жанры и тропы серии. Отменить это будет нельзя.",
+    );
   });
 });

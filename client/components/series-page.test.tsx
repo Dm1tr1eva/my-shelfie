@@ -569,7 +569,9 @@ describe("SeriesPage", () => {
 
       fireEvent.click(within(form).getByRole("button", { name: "Delete series" }));
       const dialog = screen.getByRole("alertdialog", { name: "Delete the series “Roots of Ash”?" });
-      expect(dialog).toHaveAccessibleDescription(/Its books stay in your library/);
+      expect(dialog).toHaveAccessibleDescription(
+        "The books stay in your library as standalone books and take the series' genres and tropes. This cannot be undone.",
+      );
       expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
 
       fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));

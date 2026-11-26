@@ -55,7 +55,7 @@ export const series = {
     delete: {
       button: "Delete series",
       title: "Delete the series “{title}”?",
-      text: "Its books stay in your library as standalone books. This cannot be undone.",
+      text: "The books stay in your library as standalone books and take the series' genres and tropes. This cannot be undone.",
       cancel: "Cancel",
       confirm: "Delete",
       failed: "Could not delete the series. Try again.",
