@@ -1,6 +1,6 @@
 # Feature: auth
 
-**Last verified against code:** 2026-11-19
+**Last verified against code:** 2026-11-26
 
 ## What it does
 
@@ -43,9 +43,13 @@ route keeps `requireAuth` (`401` on a missing or invalid cookie). Both share one
 
 ## Shape
 
-Backend: `controllers/authController.js` still calls the `User` model directly (two layers,
-not three) — unlike `books`, not yet migrated; see `CLAUDE.md`'s applicability note. Like every
-controller it catches nothing: a validation failure is a `400` from `validation/validate.js`,
+Backend, three layers since 2026-11-26: `controllers/authController.js` (validation, the
+`409` / `401` answers, the session cookie, `dto/userDto.js` for `{ id, email, name }`) →
+`services/authService.js` (the taken-email check, bcrypt hashing and comparison, signing the
+7-day JWT) → `repositories/userRepository.js` (`findByEmail`, `findById`, `create`, beside the
+year goal's methods). No controller imports a model. The email is looked up exactly as the
+schema leaves it — trimmed, not lower-cased — as before the move. Like every controller it
+catches nothing: a validation failure is a `400` from `validation/validate.js`,
 anything unexpected reaches the central handler, which answers `500` with the route's text
 (`Registration failed`, `Login failed`, `Failed to fetch the current user`) —
 [central-error-handler.md](../designs/central-error-handler.md). One difference kept from before:
@@ -97,8 +101,9 @@ use. Development takes the same route, so a cookie bug shows locally. Whether th
 
 ## Trade-offs accepted
 
-- **`authController.js` is still two layers**, not three. Out of scope for the frontend-auth
-  PR; migrates when auth is next touched substantially, same as the note in `CLAUDE.md`.
+- **Emails are compared as typed.** `Alice@example.com` and `alice@example.com` are two
+  accounts, as they always were; lower-casing would change who can sign in to an existing
+  account, so it waits for a decision of its own.
 - **No CSRF token.** The cookie is `SameSite=Lax`, set explicitly (and `Secure` in
   production), which blocks the classic cross-site form-post CSRF shape. A `Lax` cookie is
   still sent on top-level GET navigations, which is acceptable because no GET endpoint changes

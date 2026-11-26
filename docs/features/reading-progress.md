@@ -39,8 +39,8 @@ Progress is part of the books module: `controllers/progressController.js` →
 `services/progressService.js` (ownership check through `bookRepository`, page/percent rules) →
 `repositories/progressRepository.js`. `bookService.deleteBook` removes the entries through the
 same repository. The goal has its own small module — `controllers/yearGoalController.js` →
-`services/yearGoalService.js` → `repositories/userRepository.js` — so the `auth` controller is
-untouched and still imports `User` directly (its migration waits until it is next changed).
+`services/yearGoalService.js` → `repositories/userRepository.js`, which `auth` shares since
+2026-11-26.
 
 ## Data
 

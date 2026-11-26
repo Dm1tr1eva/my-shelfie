@@ -161,8 +161,10 @@ in steps, each on its own branch:
    [designs/v3-tokens-shell.md](designs/v3-tokens-shell.md)
 3. ✅ **One central error handler, 2026-11-19** — controllers stop catching, each route names
    its `500` text, one Zod formatter, JSON for a body that is too large or not JSON; every other
-   message unchanged. New endpoints are written this way. Follow-up: move `auth` to a repository —
-   [designs/central-error-handler.md](designs/central-error-handler.md)
+   message unchanged. New endpoints are written this way. Follow-up done 2026-11-26: `auth`
+   goes through a service and `userRepository`, texts and answers unchanged —
+   [designs/central-error-handler.md](designs/central-error-handler.md),
+   [features/auth.md](features/auth.md)
 4. ✅ **Library, 2026-11-19** — one library of owned and wanted books: a shelf per series with
    `#N` covers, dimmed wanted books, one dashed tile per run of missing numbers, a `+N more` tile
    past one row (seven slots from 64rem, four below), standalone books wrapping onto further
