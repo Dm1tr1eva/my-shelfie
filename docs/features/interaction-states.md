@@ -15,9 +15,15 @@ rule is in `CLAUDE.md` ("UI states and motion"); this page is what is in place.
 - The focus ring is always visible from the keyboard: `:focus-visible` draws a 2px navy outline
   (light on navy surfaces, `focus-visible:outline-page`), and below 768px the page keeps
   `6rem` of scroll padding above the floating tab bar so a focused element is never under it.
-- Durations and easings come only from the motion tokens; `app/motion-rules.test.ts` fails on
-  a hand-picked `duration-[…]`, `ease-[…]` or `delay-[…]`, and on an `animate-*` that is not a
-  token (Tailwind's own `spin`, `ping`, `pulse`, `bounce` are allowed).
+- Durations and easings come only from the motion tokens. `app/motion-rules.test.ts` fails on
+  an arbitrary or numeric Tailwind duration, delay or easing (`duration-[…]`, `duration-300`,
+  `delay-75`, `ease-in-out`, `ease-linear`), on `transition…` or `animation…` in an inline
+  `style`, on a time or a `cubic-bezier` in `globals.css` outside `@theme` (the reduced-motion
+  block excepted), on an `animate-*` that is not a token (Tailwind's own `spin`, `ping`,
+  `pulse`, `bounce` are allowed), and when the reduced-motion block stops applying to `*`,
+  `::before` and `::after`.
+- A panel, dialog, popover or toast never stays half-gone: if its parent keeps it after the
+  closing animation, it comes back and can be closed again.
 - With `prefers-reduced-motion: reduce` every transition and animation lasts 1ms: changes are
   instant, and `animationend` still fires, so a closing panel still closes.
 
@@ -45,9 +51,15 @@ hover and pressed looks.
 
 **Closing** (`client/lib/use-exit.ts`): `useExit(ref, onDone)` returns `leaving`, `leave` and
 `onAnimationEnd`. `leave()` switches the element to its `-out` animation and calls `onDone` when
-it ends; when the element has no animation (jsdom, or no CSS) it calls `onDone` at once.
-`Drawer` (× , Escape, scrim), `ConfirmDialog` (Cancel, Escape, scrim), the popover card
-(Escape, a click outside) and `Toast` (its timer, ×) close through it.
+that animation ends (only its own: a child's `animationend` bubbling up is ignored; asking
+twice calls `onDone` once); with no animation (jsdom, no CSS) it calls `onDone` at once. If
+`onDone` returns `true` the parent is removing the element on its own time (a navigation) and it
+stays in its last frame; otherwise it returns to its open state, so a parent that keeps it never
+leaves an invisible layer over the page. `Drawer` (×, Escape, scrim), `ConfirmDialog` (Cancel,
+Escape, scrim), the popover card (Escape, a click outside) and `Toast` (its timer, ×) close
+through it. `Drawer` also takes `beforeClose`, asked before the animation starts: the book panel
+passes its "save what is unsaved" there, so a failed save keeps the panel open with its error
+instead of sliding it away first, and its `onClose` navigates and returns `true`.
 
 **Opening**: `Drawer` slides up as a sheet below 768px and in from the right above, with the
 scrim fading; dialogs and popovers pop in from their origin; the account menu and the select
@@ -59,6 +71,12 @@ and tag-input lists pop in; toasts rise; the series details expand with a fade o
   Retry unmount at once, because what the reader looks at next is the result.
 - **The account menu and the list boxes close instantly.** The menu is a native `<details>`;
   animating its close needs script for one rarely used menu.
+- **A kept element slides back in.** When a parent keeps a closed drawer, dialog or popover,
+  it replays its opening animation; nothing in the app keeps one today (the book panel asks
+  `beforeClose` first).
+- **A close that navigates trusts the navigation.** The book panel's `onClose` returns `true`,
+  so if `router.back()` never landed the panel would stay in its last frame; no such case is
+  known.
 - **Pressed is opacity for most controls.** One rule covers every link and button; a control
   that needs another look sets its own `active:` class.
 - **The add-a-book flow is not covered here**: its modal is being rebuilt in its own branch,
