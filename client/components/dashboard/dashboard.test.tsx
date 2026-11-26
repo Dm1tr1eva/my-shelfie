@@ -525,6 +525,33 @@ describe("Home after sign-in", () => {
     fireEvent.pointerEnter(april.closest("li")!, { pointerType: "mouse" });
     expect(within(chart).getByRole("region", { name: "April · 1 book" })).toBeInTheDocument();
     fireEvent.pointerLeave(april.closest("ul")!.parentElement!, { pointerType: "mouse" });
+    await waitFor(() => expect(within(chart).queryByRole("region")).not.toBeInTheDocument());
+  });
+
+  it("keeps a month's card open while the mouse moves from its bar to the card, and pins it on a click", async () => {
+    serve(fullStats());
+    await renderHome();
+    const chart = screen.getByRole("region", { name: "Read per month" });
+    const september = within(chart).getByRole("button", { name: "September, 2 books" });
+    const area = september.closest("ul")!.parentElement!;
+
+    fireEvent.pointerEnter(september.closest("li")!, { pointerType: "mouse" });
+    fireEvent.pointerLeave(area, { pointerType: "mouse" });
+    fireEvent.pointerEnter(area, { pointerType: "mouse" });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(within(chart).getByRole("region", { name: "September · 2 books" })).toBeInTheDocument();
+
+    fireEvent.click(september);
+    expect(september).toHaveAttribute("aria-expanded", "true");
+    fireEvent.pointerLeave(area, { pointerType: "mouse" });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(within(chart).getByRole("region", { name: "September · 2 books" })).toBeInTheDocument();
+
+    fireEvent.click(september);
+    expect(within(chart).queryByRole("region")).not.toBeInTheDocument();
+
+    fireEvent.click(september);
+    fireEvent.pointerDown(screen.getByRole("heading", { name: "Welcome back" }));
     expect(within(chart).queryByRole("region")).not.toBeInTheDocument();
   });
 
