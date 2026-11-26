@@ -15,8 +15,12 @@ async function findLatestPerBook(userId) {
   ]);
 }
 
+async function findAllForUser(userId) {
+  return ProgressEntry.find({ userId }).sort({ date: 1, _id: 1 });
+}
+
 async function deleteForBook(userId, bookId) {
   await ProgressEntry.deleteMany({ userId, bookId });
 }
 
-module.exports = { create, findLatestPerBook, deleteForBook };
+module.exports = { create, findLatestPerBook, findAllForUser, deleteForBook };

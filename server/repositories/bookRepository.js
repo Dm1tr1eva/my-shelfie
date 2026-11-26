@@ -64,6 +64,12 @@ async function deleteOneForUser(userId, id) {
   return Book.findOneAndDelete({ _id: id, userId });
 }
 
+async function findAllForUser(userId) {
+  return Book.find({ userId })
+    .select("-description -notes -review -annotation -links -tropes -moods")
+    .sort({ createdAt: -1, _id: -1 });
+}
+
 async function findForNextToBuy(userId) {
   return Book.find({
     userId,
@@ -118,6 +124,7 @@ module.exports = {
   findOneForUser,
   updateOneForUser,
   deleteOneForUser,
+  findAllForUser,
   findForNextToBuy,
   findBySeries,
   countBySeries,

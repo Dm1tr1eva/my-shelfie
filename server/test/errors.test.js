@@ -10,6 +10,7 @@ const googleBooksService = require("../services/googleBooksService");
 const libraryService = require("../services/libraryService");
 const progressService = require("../services/progressService");
 const seriesService = require("../services/seriesService");
+const statsService = require("../services/statsService");
 const yearGoalService = require("../services/yearGoalService");
 const { useTestApp } = require("./helpers/app");
 
@@ -145,6 +146,12 @@ const ROUTE_FAILURES = [
     body: { year: 2026, books: 12 },
     breaks: [yearGoalService, "setYearGoal"],
     error: "Failed to save the goal",
+  },
+  {
+    method: "GET",
+    path: "/api/stats",
+    breaks: [statsService, "homeStats"],
+    error: "Failed to fetch stats",
   },
 ];
 
