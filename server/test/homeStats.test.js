@@ -506,7 +506,7 @@ describe("home stats", () => {
           ownership: "wanted",
           coverUrl: "https://example.com/c1.jpg",
         }),
-        book({ seriesId: calm.id, seriesNumber: 1, ownership: "wanted" }),
+        book({ seriesId: calm.id, seriesNumber: 1, ownership: "wanted", desire: "high" }),
         book({ title: "Someday", ownership: "wanted", desire: "someday" }),
         book({ title: "Owned high", desire: "high" }),
       ];
