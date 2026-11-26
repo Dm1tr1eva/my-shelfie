@@ -490,7 +490,7 @@ describe("Home after sign-in", () => {
     const april = within(chart).getByRole("button", { name: "April, 1 book" });
     fireEvent.pointerEnter(april.closest("li")!, { pointerType: "mouse" });
     expect(within(chart).getByRole("region", { name: "April · 1 book" })).toBeInTheDocument();
-    fireEvent.pointerLeave(april.closest("li")!, { pointerType: "mouse" });
+    fireEvent.pointerLeave(april.closest("ul")!.parentElement!, { pointerType: "mouse" });
     expect(within(chart).queryByRole("region")).not.toBeInTheDocument();
   });
 

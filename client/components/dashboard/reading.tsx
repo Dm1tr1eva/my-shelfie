@@ -236,11 +236,16 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
           aria-expanded={open}
           aria-controls={open ? popoverId : undefined}
           onClick={() => setOpen((value) => !value)}
-          className="btn-outline"
+          className="btn-outline max-sm:px-4 max-sm:text-sm"
         >
           {t(audio ? "dashboard.reading.markProgress" : "dashboard.reading.markPage")}
         </button>
-        <button type="button" onClick={finish} disabled={finishing} className="btn-primary">
+        <button
+          type="button"
+          onClick={finish}
+          disabled={finishing}
+          className="btn-primary max-sm:px-4 max-sm:text-sm"
+        >
           {t(audio ? "dashboard.reading.listened" : "dashboard.reading.finished")}
         </button>
         {open && (

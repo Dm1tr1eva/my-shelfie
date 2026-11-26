@@ -23,14 +23,14 @@ export function Section({
         <h2
           id={id}
           tabIndex={-1}
-          className="font-serif text-xl font-semibold outline-none sm:text-2xl"
+          className="font-serif text-xl font-semibold outline-none lg:text-[22px]"
         >
           {title}
         </h2>
         {more && (
           <Link
             href={more.href}
-            className="inline-flex min-h-10 items-center gap-1 rounded-pill border border-slate px-3 text-sm font-semibold text-navy hover:bg-beige"
+            className="inline-flex min-h-10 items-center gap-0.5 whitespace-nowrap rounded-pill border border-slate pl-2.5 pr-1.5 text-xs font-semibold text-navy hover:bg-beige"
           >
             {more.label}
             <ChevronRightIcon size={16} />
