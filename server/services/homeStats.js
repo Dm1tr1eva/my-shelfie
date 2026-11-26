@@ -181,9 +181,10 @@ function waitingForContinuation(series, groups) {
 }
 
 function hasMissingNumber(series, books) {
-  if (!series.totalBooks) return false;
   const recorded = new Set(numbersOf(books));
-  return wholeNumbersUpTo(series.totalBooks).some((number) => !recorded.has(number));
+  const expected = series.expected.map((entry) => entry.number);
+  const last = Math.max(series.totalBooks ?? 0, ...recorded, ...expected);
+  return wholeNumbersUpTo(last).some((number) => !recorded.has(number));
 }
 
 function coverOf(books) {

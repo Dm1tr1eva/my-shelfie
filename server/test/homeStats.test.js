@@ -585,6 +585,29 @@ describe("home stats", () => {
       ]);
     });
 
+    it("counts a gap below the highest known number of a series without a size, as the wishlist does", () => {
+      const gap = series({ title: "Gap", desire: "high" });
+      const announced = series({
+        title: "Announced",
+        desire: "high",
+        expected: [{ number: 3, source: "manual" }],
+      });
+      const books = [
+        book({ seriesId: gap.id, seriesNumber: 1 }),
+        book({ seriesId: gap.id, seriesNumber: 3 }),
+        book({ seriesId: announced.id, seriesNumber: 1 }),
+        book({ seriesId: announced.id, seriesNumber: 2 }),
+      ];
+
+      assert.deepEqual(
+        stats({ books, series: [gap, announced] }).veryMuch.map((item) => [item.title, item.group]),
+        [
+          ["Gap", "continue"],
+          ["Announced", "continue"],
+        ],
+      );
+    });
+
     it("leaves out a started series with nothing left to want", () => {
       const done = series({ desire: "high", totalBooks: 2 });
       const unsized = series({ desire: "high" });
