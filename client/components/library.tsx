@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
@@ -25,7 +24,7 @@ import {
 } from "@/lib/filters";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
-import { readLibraryParams, writeLibraryParams, type LibraryParams } from "@/lib/library-params";
+import { useAddressParams } from "@/lib/use-address-params";
 import { useSeriesList } from "@/lib/series";
 import { libraryShelves, rowsOf, shelfRow, type SeriesShelf } from "@/lib/shelves";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -67,10 +66,7 @@ export function Library() {
   const books = useBooks();
   const seriesList = useSeriesList();
   const columns = useShelfColumns();
-  const searchParams = useSearchParams();
-  const [{ query, filters }, setParams] = useState<LibraryParams>(() =>
-    readLibraryParams(searchParams),
-  );
+  const [{ query, filters }, show] = useAddressParams();
   const [panelOpen, setPanelOpen] = useState(false);
   const filterButton = useRef<HTMLButtonElement>(null);
 
@@ -102,16 +98,6 @@ export function Library() {
       label: panelChipLabel(key, value, { t, domain }),
     })),
   );
-
-  function show(next: LibraryParams) {
-    setParams(next);
-    const search = writeLibraryParams(next.query, next.filters);
-    window.history.replaceState(
-      null,
-      "",
-      search ? `${window.location.pathname}?${search}` : window.location.pathname,
-    );
-  }
 
   function retry() {
     books.reload();

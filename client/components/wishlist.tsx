@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
@@ -12,7 +11,7 @@ import type { DesireLevel } from "@/lib/catalogue-constants";
 import { activeFilterCount, filterPanelGroups, panelChipLabel, type Filters } from "@/lib/filters";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
-import { readLibraryParams, writeLibraryParams, type LibraryParams } from "@/lib/library-params";
+import { useAddressParams } from "@/lib/use-address-params";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import {
   WISHLIST_FILTER_KEYS,
@@ -76,10 +75,7 @@ export function Wishlist() {
   const domain = useDomain();
   const { user, status } = useRequireAuth();
   const wishlist = useWishlist();
-  const searchParams = useSearchParams();
-  const [{ query, filters }, setParams] = useState<LibraryParams>(() =>
-    readLibraryParams(searchParams, WISHLIST_FILTER_KEYS),
-  );
+  const [{ query, filters }, show] = useAddressParams(WISHLIST_FILTER_KEYS);
   const [panelOpen, setPanelOpen] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
@@ -102,16 +98,6 @@ export function Wishlist() {
   const pills = WISHLIST_FILTER_KEYS.flatMap((key) =>
     filters[key].map((value) => ({ key, value, label: panelChipLabel(key, value, labels) })),
   );
-
-  function show(next: LibraryParams) {
-    setParams(next);
-    const search = writeLibraryParams(next.query, next.filters);
-    window.history.replaceState(
-      null,
-      "",
-      search ? `${window.location.pathname}?${search}` : window.location.pathname,
-    );
-  }
 
   function changed(row: Row, desire: DesireLevel) {
     setFailure(null);
