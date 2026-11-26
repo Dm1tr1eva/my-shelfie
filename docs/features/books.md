@@ -1,6 +1,6 @@
 # Feature: books
 
-**Last verified against code:** 2026-11-19
+**Last verified against code:** 2026-11-26
 
 ## What it does
 
@@ -146,15 +146,18 @@ client.
   books" by title. A series shelf holds its books by number (unnumbered last) and one dashed gap
   tile per run of missing whole numbers, counted up to the largest of `totalBooks`, the highest
   book number and the highest `expected` number; the gap opens `/add?series=…&number=<first>`.
-  A half number (#2.5) is a book and never fills a gap. Seven slots a row from 1024 px, four
-  below (`matchMedia`); a longer series shows one slot fewer and a "+N more" tile (N books and
-  missing numbers) to `/series/[id]`; standalone books wrap onto as many shelves as they need.
+  A half number (#2.5) is a book and never fills a gap. Seven slots a row from 64rem (1024 px
+  at the default font size), four below — `matchMedia` asks the same query as Tailwind's `lg:`,
+  so the count and the grid never disagree; a series of seven slots shows whole, a longer one
+  shows one slot fewer and a "+N more" tile (N books and missing numbers) to `/series/[id]`; standalone books wrap onto as many shelves as they need.
   The series header (title, author, status, `SeriesSegments`) is one link to the series page.
   A tile is a cover, a two-line title and one meta line: status and rating for an owned book,
   "In wishlist" with a dimmed cover for a wanted one; below 768 px the text is for screen
   readers only. Search matches title, author or series title. The filter button opens
   `FilterPanel` in a `Drawer` (side panel 420 px from 768 px, bottom sheet below; Esc, scrim and
-  × close it, focus moves in and back): I have, Status, Format, Genre, Age (only when some book
+  × close it, focus moves in and back; the portal is mounted only in the browser, so a server
+  render draws nothing): I have, Status (books you have only: a wanted book shows no status, so it never matches
+  one), Format, Genre, Age (only when some book
   has one), Tropes (with search), Author, Series status (with "Standalone books"), Link
   language, Link type, Rating (5, 4, 3 and lower, none). Genre, Tropes and Author fold after
   four. The choices are a draft until "Show N books", whose count follows it; Reset empties the
@@ -166,7 +169,9 @@ client.
 - `/wishlist` — `components/wishlist.tsx`, the v2 shelves until the Wishlist step: wanted
   books only, series groups from `lib/catalogue.ts` with "own n of m", a list or a cover grid
   (the choice kept in `localStorage`, `lib/use-view-mode.ts`), the v2 filter bar. Since
-  2026-11-19 it has no My library / Wishlist tabs; its heading is "Wishlist".
+  2026-11-19 it has no My library / Wishlist tabs; its heading is "Wishlist". The `"library"`
+  tab of `buildLibraryView` (and its gap slots) is no longer used by any screen, only by
+  `lib/catalogue.test.ts`; the Wishlist step removes it with the v2 shelves.
 - `/books/[id]` — `components/book-page.tsx`: edits are a local draft, saved together from a
   "You have unsaved changes" bar that sends only the fields that changed; deleting asks
   `window.confirm`

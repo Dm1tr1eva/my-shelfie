@@ -164,7 +164,7 @@ in steps, each on its own branch:
    [designs/central-error-handler.md](designs/central-error-handler.md)
 4. ✅ **Library, 2026-11-19** — one library of owned and wanted books: a shelf per series with
    `#N` covers, dimmed wanted books, one dashed tile per run of missing numbers, a `+N more` tile
-   past one row (seven slots from 1024 px, four below), standalone books wrapping onto further
+   past one row (seven slots from 64rem, four below), standalone books wrapping onto further
    shelves; `SeriesSegments` (at most ten, then `+N`); search by title, author or series; a
    filter panel in a reusable `Drawer` (side panel / bottom sheet) with the decision-37 groups
    that have data, removable filter pills and a count on the button. Tabs, the stats line, the
