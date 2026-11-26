@@ -5,7 +5,9 @@ import type { Series } from "./series";
 
 export type SegmentState = "owned" | "wanted" | "missing";
 
-export type SeriesSlot = { kind: "book"; book: Book } | { kind: "gap"; from: number; to: number };
+export type GapSlot = { kind: "gap"; from: number; to: number; expectedYear?: number };
+
+export type SeriesSlot = { kind: "book"; book: Book } | GapSlot;
 
 export type SeriesShelf = {
   series: Series;
@@ -39,6 +41,16 @@ function slotSize(slot: SeriesSlot) {
   return slot.kind === "gap" ? slot.to - slot.from + 1 : 1;
 }
 
+function gapOf(series: Series, from: number, to: number): GapSlot {
+  const years = series.expected
+    .filter((entry) => entry.number >= from && entry.number <= to)
+    .flatMap((entry) => (entry.expectedYear === undefined ? [] : [entry.expectedYear]));
+
+  return years.length > 0
+    ? { kind: "gap", from, to, expectedYear: Math.min(...years) }
+    : { kind: "gap", from, to };
+}
+
 export function seriesSlots(series: Series, books: Book[]) {
   const taken = new Set(books.map((book) => book.seriesNumber).filter(isWholeNumber));
   const highest = Math.max(
@@ -54,7 +66,7 @@ export function seriesSlots(series: Series, books: Book[]) {
     const missing = number <= highest && !taken.has(number);
     if (missing && start === undefined) start = number;
     if (!missing && start !== undefined) {
-      slots.push({ kind: "gap", from: start, to: number - 1 });
+      slots.push(gapOf(series, start, number - 1));
       start = undefined;
     }
   }

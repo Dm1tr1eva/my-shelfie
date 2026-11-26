@@ -7,6 +7,8 @@ export const library = {
     notInCatalogue: "Not in the catalogue",
     add: "+ add",
     gapLabel: "Add {range} to {series}, not in the catalogue",
+    gapLabelWithYear: "Add {range} to {series}, not in the catalogue, not before {year}",
+    notBefore: "Not before {year}",
     more: "more",
     moreLabel: "{count} more in {series}",
   },

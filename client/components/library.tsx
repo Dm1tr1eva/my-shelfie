@@ -60,12 +60,7 @@ function SeriesShelfView({ shelf, columns }: { shelf: SeriesShelf; columns: numb
           slot.kind === "book" ? (
             <LibraryBookTile key={slot.book.id} book={slot.book} />
           ) : (
-            <LibraryGapTile
-              key={`gap-${slot.from}`}
-              series={series}
-              from={slot.from}
-              to={slot.to}
-            />
+            <LibraryGapTile key={`gap-${slot.from}`} series={series} gap={slot} />
           ),
         )}
         {more > 0 && <LibraryMoreTile series={series} count={more} />}

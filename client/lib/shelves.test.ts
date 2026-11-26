@@ -49,6 +49,26 @@ describe("seriesSlots", () => {
     expect(describeSlots(slots)).toEqual(["One", "gap 2-3"]);
   });
 
+  it("gives a gap the earliest expected year among its numbers, and none when no year is known", () => {
+    const { slots } = seriesSlots(
+      series({
+        totalBooks: 8,
+        expected: [
+          { number: 5, expectedYear: 2028, source: "manual" },
+          { number: 4, expectedYear: 2027, source: "ai" },
+          { number: 7, source: "manual" },
+        ],
+      }),
+      [book({ seriesNumber: 1 }), book({ seriesNumber: 6 })],
+    );
+    const gaps = slots.filter((slot) => slot.kind === "gap");
+
+    expect(gaps).toEqual([
+      { kind: "gap", from: 2, to: 5, expectedYear: 2027 },
+      { kind: "gap", from: 7, to: 8 },
+    ]);
+  });
+
   it("keeps a half number and an unnumbered book as books without letting them fill a gap", () => {
     const { slots, segments } = seriesSlots(series({ totalBooks: 3 }), [
       book({ title: "Side story", seriesNumber: 1.5 }),

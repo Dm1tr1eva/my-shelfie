@@ -134,6 +134,31 @@ describe("Library", () => {
     expect(within(shelf).getAllByRole("link", { name: /^Add #/ })).toHaveLength(1);
   });
 
+  it("tells when a missing book is expected, if the series knows", async () => {
+    const announced = series({
+      id: "saga",
+      title: "Saga of Ash",
+      totalBooks: 6,
+      expected: [{ number: 4, expectedYear: 2027, source: "manual" }],
+    });
+    serve(SHELF, [announced]);
+    renderApp(<Library />);
+
+    const shelf = await screen.findByRole("region", { name: "Saga of Ash" });
+    const gap = within(shelf).getByRole("link", {
+      name: "Add #3–6 to Saga of Ash, not in the catalogue, not before 2027",
+    });
+    expect(within(gap).getByText("Not before 2027")).toBeInTheDocument();
+  });
+
+  it("says no year on a gap whose numbers have none", async () => {
+    serve();
+    renderApp(<Library />);
+
+    const shelf = await screen.findByRole("region", { name: "Saga of Ash" });
+    expect(within(shelf).queryByText(/Not before/)).not.toBeInTheDocument();
+  });
+
   it("on a narrow screen shows three slots and a more tile counting the rest of the series", async () => {
     serve(numberedBooks(6));
     renderApp(<Library />);

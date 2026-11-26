@@ -9,7 +9,7 @@ import type { Book } from "@/lib/books";
 import { isOwned } from "@/lib/catalogue";
 import { useT } from "@/lib/i18n";
 import type { Series } from "@/lib/series";
-import type { SegmentState } from "@/lib/shelves";
+import type { GapSlot, SegmentState } from "@/lib/shelves";
 
 export const SHELF_COLUMNS = "grid-cols-4 lg:grid-cols-7";
 
@@ -58,21 +58,35 @@ export function LibraryBookTile({ book, showNumber = true }: { book: Book; showN
   );
 }
 
-export function LibraryGapTile({ series, from, to }: { series: Series; from: number; to: number }) {
+export function LibraryGapTile({ series, gap }: { series: Series; gap: GapSlot }) {
   const t = useT();
+  const { from, to, expectedYear } = gap;
   const range = rangeText(from, to);
 
   return (
     <li>
       <Link
         href={`/add?series=${series.id}&number=${from}`}
-        aria-label={t("library.shelf.gapLabel", { range, series: series.title })}
+        aria-label={
+          expectedYear === undefined
+            ? t("library.shelf.gapLabel", { range, series: series.title })
+            : t("library.shelf.gapLabelWithYear", {
+                range,
+                series: series.title,
+                year: expectedYear,
+              })
+        }
         className="flex aspect-[2/3] w-full flex-col items-center justify-center gap-1.5 rounded-cover border-[1.5px] border-dashed border-burgundy bg-burgundy/5 px-1 text-center text-burgundy"
       >
         <span className="num text-base md:text-xl">{range}</span>
         <span className="hidden text-xs font-semibold md:block">
           {t("library.shelf.notInCatalogue")}
         </span>
+        {expectedYear !== undefined && (
+          <span className="hidden text-[11px] text-burgundy md:block">
+            {t("library.shelf.notBefore", { year: expectedYear })}
+          </span>
+        )}
         <span className="hidden h-7 items-center rounded-full bg-burgundy px-3 text-xs font-bold text-card md:inline-flex">
           {t("library.shelf.add")}
         </span>

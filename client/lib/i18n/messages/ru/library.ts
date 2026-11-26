@@ -10,6 +10,8 @@ export const library: Localized<typeof en> = {
     notInCatalogue: "Нет в каталоге",
     add: "+ добавить",
     gapLabel: "Добавить {range} в «{series}», нет в каталоге",
+    gapLabelWithYear: "Добавить {range} в «{series}», нет в каталоге, не раньше {year}",
+    notBefore: "Не раньше {year}",
     more: "ещё",
     moreLabel: "Ещё {count} в серии «{series}»",
   },
