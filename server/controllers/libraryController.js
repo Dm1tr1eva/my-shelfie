@@ -1,5 +1,5 @@
 const libraryService = require("../services/libraryService");
-const { nextToBuyQuerySchema } = require("../validation/librarySchemas");
+const { nextToBuyQuerySchema, wishlistQuerySchema } = require("../validation/librarySchemas");
 const { validate } = require("../validation/validate");
 
 async function nextToBuy(req, res) {
@@ -9,9 +9,16 @@ async function nextToBuy(req, res) {
   res.json({ items });
 }
 
+async function wishlist(req, res) {
+  validate(wishlistQuerySchema, req.query, "query");
+
+  const groups = await libraryService.wishlist(req.userId);
+  res.json({ groups });
+}
+
 async function listTropes(req, res) {
   const tropes = await libraryService.listTropes(req.userId);
   res.json({ tropes });
 }
 
-module.exports = { nextToBuy, listTropes };
+module.exports = { nextToBuy, wishlist, listTropes };

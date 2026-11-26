@@ -117,6 +117,12 @@ const ROUTE_FAILURES = [
   },
   {
     method: "GET",
+    path: "/api/wishlist",
+    breaks: [libraryService, "wishlist"],
+    error: "Failed to build the list",
+  },
+  {
+    method: "GET",
     path: "/api/tropes",
     breaks: [libraryService, "listTropes"],
     error: "Failed to fetch tropes",

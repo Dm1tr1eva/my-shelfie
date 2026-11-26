@@ -9,4 +9,6 @@ const nextToBuyQuerySchema = z.object({
   seriesStatus: z.enum(SERIES_STATUSES).optional(),
 });
 
-module.exports = { nextToBuyQuerySchema };
+const wishlistQuerySchema = z.object({}).strict();
+
+module.exports = { nextToBuyQuerySchema, wishlistQuerySchema };

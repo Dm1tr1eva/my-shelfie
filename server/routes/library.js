@@ -12,6 +12,12 @@ router.get(
   libraryController.nextToBuy,
 );
 router.get(
+  "/wishlist",
+  requireAuth,
+  failsWith("Failed to build the list"),
+  libraryController.wishlist,
+);
+router.get(
   "/tropes",
   requireAuth,
   failsWith("Failed to fetch tropes"),
