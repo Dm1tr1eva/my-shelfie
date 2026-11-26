@@ -149,6 +149,27 @@ resolved.
 
 ---
 
+## UI states and motion
+
+A control without states looks broken to a mouse, invisible to a keyboard and dead to a finger;
+adding them later means finding every copy. So they ship with the component.
+
+- **Every interactive element ships with hover, `focus-visible`, active and disabled states.**
+  Reuse the shared classes (`.btn-*`, `.field`, `.link`) and the base styles before writing
+  new ones; a hover that only works through a child (`group-hover`) is fine.
+- **Focus is always visible from the keyboard** and never ends up under something fixed (the
+  floating tab bar, a sticky header). Never `outline-none` without a replacement.
+- **Things that appear or disappear move smoothly**: panels, sheets, dialogs, popovers, toasts,
+  expanding sections, switched tabs. Use the motion tokens in `client/app/globals.css`
+  (`--duration-*`, `--ease-*`, `animate-*`), never a hand-picked `duration-[173ms]`; a test
+  fails on one. Closing animates too (`useExit`), except a close caused by the action itself
+  (Apply, Save, Delete), where the result is what the reader looks at.
+- **`prefers-reduced-motion` turns movement off**: changes become instant. The base styles do
+  this globally; do not fight them with `!important`.
+- Details and what is in place: `docs/features/interaction-states.md`.
+
+---
+
 ## API and data
 
 - Explicit response DTOs; **never return a database model**. Secrets and tokens must have no
