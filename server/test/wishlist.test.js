@@ -136,6 +136,26 @@ describe("wishlist groups", () => {
     assert.deepEqual(titlesIn(groups, "continue"), ["Saga"]);
   });
 
+  it("counts an owned book without a number as owned when grouping a series", () => {
+    const started = series({ title: "Started" });
+    const done = series({ title: "Done" });
+    const unnumberedOwned = (of) => book({ seriesId: of.id, ownership: "owned" });
+
+    const groups = buildWishlist({
+      series: [started, done],
+      books: [unnumberedOwned(started), wanted(started, 2), unnumberedOwned(done)],
+    });
+
+    assert.deepEqual(titlesIn(groups, "continue"), ["Started"]);
+    assert.deepEqual(statesOf(rowOf(groups, started.id)), [
+      [1, "missing"],
+      [2, "wanted"],
+      [null, "owned"],
+    ]);
+    assert.deepEqual(titlesIn(groups, "newSeries"), []);
+    assert.equal(rowOf(groups, done.id), undefined);
+  });
+
   it("puts a series you own nothing of under New series, with or without books", () => {
     const wantedOnly = series({ title: "Wanted only" });
     const empty = series({ title: "Empty" });
@@ -287,6 +307,19 @@ describe("wishlist segments", () => {
       { number: 5e6, state: "missing" },
       { number: 1e7, state: "wanted" },
     ]);
+  });
+
+  it("gives a fractional expected number its own segment and fills the whole numbers below it", () => {
+    const saga = series({ title: "Saga", expected: [{ number: 2.5, source: "ai" }] });
+
+    const groups = buildWishlist({ series: [saga], books: [owned(saga, 1)] });
+
+    assert.deepEqual(statesOf(rowOf(groups, saga.id)), [
+      [1, "owned"],
+      [2, "missing"],
+      [2.5, "missing"],
+    ]);
+    assert.deepEqual(titlesIn(groups, "continue"), ["Saga"]);
   });
 
   it("draws an expected number that already has a book in that book's state", () => {
