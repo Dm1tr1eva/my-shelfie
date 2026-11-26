@@ -22,8 +22,8 @@ session is known, so the public page would flash; `/dashboard` waits for the ses
 app page. Nothing in the nav is active.
 
 **Data:** one SWR key, `/api/stats`. Saving progress, a goal or "Finished" revalidates it and
-the library keys, so the numbers and the library agree. `components/dashboard/` holds five
-files (tiles, reading, goal, months, the small lists) reusing `BookCover` and
+the library keys. `components/dashboard/` holds a file each for tiles, reading, goal, months
+and the small lists, reusing `BookCover` and
 `SeriesSegments`; `lib/stats.ts` the types, the hook and the actions.
 
 **Popover** (`components/popover.tsx`): a non-modal card under its trigger from 768 px; below,

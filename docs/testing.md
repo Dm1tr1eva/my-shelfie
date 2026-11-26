@@ -65,6 +65,12 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 
 ## Client (`client/**/*.test.tsx`, Vitest + Testing Library, `fetch` mocked)
 
+- **A date rule needs a time zone where it can fail.** `localDate` passed with `toISOString`
+  on a machine in UTC; `lib/stats.test.ts` sets `process.env.TZ` to a zone on each side of UTC
+  inside the test, so it fails wherever it runs.
+- **jsdom keeps `pointerType`.** `fireEvent.pointerEnter(el, { pointerType: "touch" })` reaches
+  the handler with that type, so "hover opens only for a mouse" is testable; the month-card test
+  saw it fail when the check was removed.
 - **`swr`'s `isLoading` is ambiguous.** It is `false` both while the key is still `null`
   (session not checked yet, nothing fetched) and after real data has arrived, so
   `waitFor(() => isLoading === false)` can pass before anything loaded. Render `useAuth()`

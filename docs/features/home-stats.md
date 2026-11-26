@@ -132,6 +132,34 @@ books go through `toBookDto` with their series so genres and legacy defaults mat
 the API) → `services/homeStats.js`, a pure function that builds the response field by field and
 is unit tested without a database. Errors are not caught; the central handler answers them.
 
+## Frontend consumer
+
+`/dashboard` is Home after sign-in: login, registration and the signed-in logo lead there, `/`
+stays the public page, nothing in the nav is active. Design:
+[../designs/v3-home.md](../designs/v3-home.md).
+
+- `client/lib/stats.ts`: the response types, `useHomeStats()` (one SWR key, `/api/stats`) and
+  `useHomeActions()` — `recordProgress`, `finishBook` (`POST /api/progress` with 100%, then
+  `PATCH` with `status: read` and the browser's local date as `finishedAt`) and `saveGoal`
+  (`PUT /api/year-goal`). Each revalidates the stats key and every library key.
+- `client/components/dashboard/`: `dashboard.tsx` lays the blocks out (one column below 768 px,
+  tiles 2 × 2; two columns from 768; the mockup's grid from 1024), `tiles.tsx`, `reading.tsx`
+  (Currently reading and "Where are you now?": Pages or Percent — Pages only for a book with
+  `pages` that is not an audiobook —, +10 / +25 / +50 capped at the end, Save; an audiobook's
+  buttons read "Mark progress" and "Listened"), `goal.tsx` (the ring, "Change goal" / "Set a
+  goal": − / number / +, 1–1,000, quick 12 · 24 · 36 · 52, "N books left in M weeks, about K a
+  week" with K rounded up, "Goal reached" at zero), `months.tsx` (a month with books is a
+  button; hover with a mouse, a click or a tap opens its card, Esc closes it; the card is
+  clamped inside the chart), `lists.tsx` (genres, waiting, very much, quote, new on the shelf;
+  four covers below 768 px, six above) and `section.tsx`.
+- `client/components/popover.tsx`: a non-modal card under its button from 768 px, the same
+  content in `Drawer` below. First control focused, Esc or a click outside closes, focus back
+  to the button, which carries `aria-expanded` and `aria-controls`.
+- Every block has its own empty line; a load shows a skeleton with a status line, a failure
+  `ErrorState` with Try again. The `500` texts of stats, progress and the goal are translated
+  (`client/lib/i18n/server-errors.ts`); texts live under `dashboard` in en / ru / uk.
+- The Very much bar shows owned numbers first: the API sends counts, not each number's state.
+
 ## Data
 
 No collection of its own. Reads `books` (index `{ userId, createdAt }`, newest first, without

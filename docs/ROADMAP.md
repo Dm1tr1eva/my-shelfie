@@ -208,8 +208,13 @@ in steps, each on its own branch:
    moves it to `reading`, and the reading-dates rule sets `startedAt`; other statuses and
    wishlist books are left alone, and 100% does not mark a book read —
    [features/reading-progress.md](features/reading-progress.md)
-10. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
-   the Home screen
+10. ✅ **Home after sign-in, 2026-11-26** — `/dashboard` draws `GET /api/stats`: four tiles,
+   currently reading with "Where are you now?" (pages or percent, quick steps) and "Finished",
+   the goal ring and its editor, read per month with a card per month, genres, waiting for
+   continuation, very much, the quote of the day and new on the shelf, each with an empty state.
+   Login, registration and the signed-in logo go there; `/` stays public —
+   [designs/v3-home.md](designs/v3-home.md), [features/home-stats.md](features/home-stats.md)
+11. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page
 
 ## Course submission MVP — done 2026-10-09
 
