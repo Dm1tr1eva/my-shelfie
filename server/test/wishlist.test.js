@@ -273,6 +273,20 @@ describe("wishlist segments", () => {
     ]);
   });
 
+  it("orders the segments numerically past nine, not as text", () => {
+    const saga = series({ totalBooks: 12 });
+
+    const groups = buildWishlist({
+      series: [saga],
+      books: [owned(saga, 10), owned(saga, 2), wanted(saga, 11.5)],
+    });
+
+    assert.deepEqual(
+      rowOf(groups, saga.id).segments.map((segment) => segment.number),
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11.5, 12],
+    );
+  });
+
   it("fills up to the highest expected number when it is above the size", () => {
     const saga = series({ totalBooks: 2, expected: [{ number: 4, source: "ai" }] });
 
