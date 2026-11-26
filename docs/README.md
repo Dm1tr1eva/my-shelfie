@@ -109,6 +109,9 @@ in a browser after a change to auth or CORS (see `docs/features/auth.md`).
   `node index.js`), and the globs it matches are its own watch settings, never input from a
   request. Revisit when `nodemon` moves to `minimatch` 11.
 
+`npm audit` in `client/` was cleared on the same day with nothing left: Next.js 16.4.5 (the first
+patch past nine advisories in 16.3.8) and the dev tools inside their existing ranges.
+
 When updating, prefer the smallest fixed version that has been out for a couple of weeks over a
 release from the last few days, and run the whole server suite: `express` 5 and `mongoose` sit
 under every route.
