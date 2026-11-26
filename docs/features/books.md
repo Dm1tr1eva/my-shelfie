@@ -225,8 +225,9 @@ client.
     grey, Rating, Started, Finished; Read: Rating, Started, Finished. A wanted book shows no
     status and none of those. Progress is the latest entry of `GET /api/progress` for the
     book (0% without one), shown as a bar and a percent and never entered here; entering it is
-    Home's job. Dates are "Pick a date" until set, a native date field while editing, and
-    have a clear button.
+    Home's job. The rating is five stars; pressing the chosen one again clears it. Dates are
+    "Pick a date" until set, a native date field while editing (Enter or leaving it saves,
+    Escape cancels), and have a clear button.
   - Annotation: an auto-growing field for a standalone book. A series book shows the series'
     annotation read-only, because the API returns that one as the book's `annotation`.
   - Links: one row per link (kind, domain, every language code, an open button, a remove
