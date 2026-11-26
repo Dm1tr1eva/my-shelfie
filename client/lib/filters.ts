@@ -1,6 +1,6 @@
 import { LINK_KINDS, LINK_LANGUAGES, STATUSES, type Book, type BookStatus } from "./books";
-import { translator, type Translate } from "./i18n";
-import { englishDomain, type Domain } from "./i18n/domain";
+import type { Translate } from "./i18n";
+import type { Domain } from "./i18n/domain";
 import type { AgeRating, Format, SeriesStatus } from "./catalogue-constants";
 import { SERIES_STATUSES, type Series } from "./series";
 
@@ -16,17 +16,6 @@ export type FilterKey =
   | "language"
   | "kind"
   | "rating";
-
-export type BarFilterKey = "genre" | "trope" | "status" | "author" | "language" | "kind";
-
-export const FILTER_KEYS: BarFilterKey[] = [
-  "genre",
-  "trope",
-  "status",
-  "author",
-  "language",
-  "kind",
-];
 
 export const LIBRARY_FILTER_KEYS: FilterKey[] = [
   "have",
@@ -71,18 +60,7 @@ export const STANDALONE = "standalone";
 
 export type Subject = { book?: Book; series?: Series };
 
-export type FilterOption = { value: string; label: string; count: number; badge?: string };
-
-export type FilterGroup = {
-  key: BarFilterKey;
-  label: string;
-  options: FilterOption[];
-  searchable: boolean;
-};
-
 export type FilterLabels = { t: Translate; domain: Domain };
-
-const ENGLISH_LABELS: FilterLabels = { t: translator("en"), domain: englishDomain };
 
 export function activeFilterCount(filters: Filters) {
   return LIBRARY_FILTER_KEYS.reduce((sum, key) => sum + filters[key].length, 0);
@@ -147,11 +125,6 @@ export function matchesFilters(subject: Subject, filters: Filters, except?: Filt
   return matchesValues(subject, valuesOf, filters, except);
 }
 
-export function applyFilters<T>(items: T[], subjectOf: (item: T) => Subject, filters: Filters) {
-  if (activeFilterCount(filters) === 0) return items;
-  return items.filter((item) => matchesFilters(subjectOf(item), filters));
-}
-
 function labelOf(key: FilterKey, value: string, { domain }: FilterLabels) {
   if (key === "status") {
     return SERIES_STATUSES.includes(value as SeriesStatus)
@@ -173,72 +146,6 @@ function labelOf(key: FilterKey, value: string, { domain }: FilterLabels) {
 function badgeOf(key: FilterKey, value: string) {
   if (key !== "language") return undefined;
   return LINK_LANGUAGES.find((language) => language.value === value)?.badge;
-}
-
-function orderOf(key: FilterKey, values: string[]) {
-  if (key === "status") return SERIES_STATUSES.filter((value) => values.includes(value));
-  if (key === "language") {
-    return LINK_LANGUAGES.map((language) => language.value as string).filter((value) =>
-      values.includes(value),
-    );
-  }
-  if (key === "kind") {
-    return LINK_KINDS.map((kind) => kind.value as string).filter((value) => values.includes(value));
-  }
-  return null;
-}
-
-export function buildFilterGroups<T>(
-  items: T[],
-  subjectOf: (item: T) => Subject,
-  filters: Filters,
-  labels: FilterLabels = ENGLISH_LABELS,
-): FilterGroup[] {
-  const subjects = items.map(subjectOf);
-
-  return FILTER_KEYS.map((key) => {
-    const present = new Set<string>(filters[key]);
-    for (const subject of subjects) {
-      for (const value of valuesOf(subject, key)) present.add(value);
-    }
-
-    const counts = new Map<string, number>([...present].map((value) => [value, 0]));
-    for (const subject of subjects) {
-      if (!matchesFilters(subject, filters, key)) continue;
-      for (const value of new Set(valuesOf(subject, key))) {
-        counts.set(value, (counts.get(value) ?? 0) + 1);
-      }
-    }
-
-    const fixed = orderOf(key, [...present]);
-    const values =
-      fixed ??
-      [...present].sort(
-        (a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0) || a.localeCompare(b),
-      );
-
-    return {
-      key,
-      label: labels.t(`library.filters.group.${key}`),
-      searchable: key === "trope" || key === "author",
-      options: values.map((value) => ({
-        value,
-        label: labelOf(key, value, labels),
-        badge: badgeOf(key, value),
-        count: counts.get(value) ?? 0,
-      })),
-    };
-  });
-}
-
-export function chipLabel(key: FilterKey, value: string, labels: FilterLabels = ENGLISH_LABELS) {
-  const label = labelOf(key, value, labels);
-  if (key === "language" || key === "status" || key === "kind") {
-    return labels.t(`library.filters.chip.${key}`, {
-      value: key === "language" ? (badgeOf(key, value) ?? label) : label,
-    });
-  }
-  return label;
 }
 
 export type PanelOption = { value: string; label: string };

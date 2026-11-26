@@ -39,7 +39,6 @@ export const shell = {
   titles: {
     library: "Library",
     wishlist: "Wishlist",
-    next: "Next to buy",
     add: "Add a book",
     details: "Add details",
     book: "Book",

@@ -1,13 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildLibraryView,
-  gapNumbersOf,
-  highestNumberOf,
-  ownedNumbersOf,
-  shelfStats,
-} from "./catalogue";
+import { gapNumbersOf, highestNumberOf, ownedNumbersOf } from "./catalogue";
 import type { Book, Ownership } from "./books";
-import type { Series } from "./series";
 
 let counter = 0;
 
@@ -28,25 +21,6 @@ function book(overrides: Partial<Book> & { title?: string } = {}): Book {
     moods: [],
     quotes: [],
     links: [],
-    createdAt: "",
-    updatedAt: "",
-    ...overrides,
-  };
-}
-
-function series(overrides: Partial<Series> = {}): Series {
-  counter += 1;
-  return {
-    id: `series-${counter}`,
-    title: `Series ${counter}`,
-    status: "ongoing",
-    ownedCount: 0,
-    wantedCount: 0,
-    ageRating: "none",
-    desire: "normal",
-    expected: [],
-    genres: [],
-    tropes: [],
     createdAt: "",
     updatedAt: "",
     ...overrides,
@@ -105,137 +79,5 @@ describe("series numbers", () => {
     expect(gapNumbersOf([book({ seriesNumber: 1 }), book({ seriesNumber: 2 })])).toEqual([]);
     expect(gapNumbersOf([book({ seriesNumber: 1 })])).toEqual([]);
     expect(gapNumbersOf([])).toEqual([]);
-  });
-});
-
-describe("library view", () => {
-  it("groups owned books by series and keeps standalone books apart", () => {
-    const zed = series({ title: "Zed" });
-    const apple = series({ title: "Apple" });
-    const books = [
-      book({ title: "Zed 1", seriesId: zed.id, seriesNumber: 1 }),
-      book({ title: "Apple 1", seriesId: apple.id, seriesNumber: 1 }),
-      book({ title: "Alone" }),
-    ];
-
-    const view = buildLibraryView(books, [zed, apple], "library");
-
-    expect(view.groups.map((group) => group.series.title)).toEqual(["Apple", "Zed"]);
-    expect(view.standalone.map((item) => item.title)).toEqual(["Alone"]);
-  });
-
-  it("draws a gap slot between owned books, with the wishlist book that fills it", () => {
-    const saga = series({ title: "Saga" });
-    const books = [
-      book({ title: "One", seriesId: saga.id, seriesNumber: 1 }),
-      book({ title: "Three", seriesId: saga.id, seriesNumber: 3 }),
-      book({ title: "Two", seriesId: saga.id, seriesNumber: 2, ownership: "wanted" }),
-    ];
-
-    const [group] = buildLibraryView(books, [saga], "library").groups;
-
-    expect(
-      group.slots.map((slot) => (slot.kind === "gap" ? `gap ${slot.number}` : slot.book.title)),
-    ).toEqual(["One", "gap 2", "Three"]);
-    const gap = group.slots[1];
-    expect(gap.kind === "gap" && gap.wantedBook?.title).toBe("Two");
-    expect(group.ownedCount).toBe(2);
-    expect(group.total).toBe(3);
-    expect(group.gaps).toEqual([2]);
-  });
-
-  it("shows only wanted books on the wishlist, including series you own nothing of", () => {
-    const started = series({ title: "Started" });
-    const unstarted = series({ title: "Unstarted" });
-    const books = [
-      book({ title: "Own", seriesId: started.id, seriesNumber: 1 }),
-      book({ title: "Want 2", seriesId: started.id, seriesNumber: 2, ownership: "wanted" }),
-      book({ title: "Want U1", seriesId: unstarted.id, seriesNumber: 1, ownership: "wanted" }),
-      book({ title: "Want alone", ownership: "wanted" }),
-    ];
-
-    const view = buildLibraryView(books, [started, unstarted], "wishlist");
-
-    expect(view.groups.map((group) => group.series.title)).toEqual(["Started", "Unstarted"]);
-    expect(view.groups[0].slots).toHaveLength(1);
-    expect(view.standalone.map((item) => item.title)).toEqual(["Want alone"]);
-  });
-
-  it("searches title and author, and stops drawing gaps while searching", () => {
-    const saga = series({ title: "Saga" });
-    const books = [
-      book({ title: "Dracula", author: "Stoker", seriesId: saga.id, seriesNumber: 1 }),
-      book({ title: "Other", author: "Someone", seriesId: saga.id, seriesNumber: 3 }),
-      book({ title: "Hobbit", author: "Tolkien" }),
-    ];
-
-    const byAuthor = buildLibraryView(books, [saga], "library", "stoker");
-    const none = buildLibraryView(books, [saga], "library", "zzz");
-
-    expect(byAuthor.groups).toHaveLength(1);
-    expect(byAuthor.groups[0].slots.every((slot) => slot.kind === "book")).toBe(true);
-    expect(byAuthor.standalone).toEqual([]);
-    expect(none.groups).toEqual([]);
-    expect(none.standalone).toEqual([]);
-  });
-
-  it("treats a book whose series is unknown as standalone", () => {
-    const books = [book({ title: "Orphan", seriesId: "gone", seriesNumber: 2 })];
-
-    const view = buildLibraryView(books, [], "library");
-
-    expect(view.standalone.map((item) => item.title)).toEqual(["Orphan"]);
-  });
-});
-
-describe("series size", () => {
-  it("counts a series by its stated size when that is larger than the books on record", () => {
-    const saga = series({ title: "Saga", totalBooks: 5 });
-    const books = [book({ seriesId: saga.id, seriesNumber: 2 })];
-
-    const [group] = buildLibraryView(books, [saga], "library").groups;
-
-    expect(group.total).toBe(5);
-    expect(group.ownedCount).toBe(1);
-  });
-
-  it("grows past a stated size when a higher number is recorded", () => {
-    const saga = series({ title: "Saga", totalBooks: 3 });
-    const books = [book({ seriesId: saga.id, seriesNumber: 6 })];
-
-    const [group] = buildLibraryView(books, [saga], "library").groups;
-
-    expect(group.total).toBe(6);
-  });
-});
-
-describe("group order", () => {
-  it("puts the series with the most recently added book first, then by title", () => {
-    const old = series({ title: "Old", createdAt: "2026-01-01T00:00:00Z" });
-    const fresh = series({ title: "Fresh", createdAt: "2026-01-02T00:00:00Z" });
-    const grown = series({ title: "Grown", createdAt: "2026-01-03T00:00:00Z" });
-    const books = [
-      book({ seriesId: old.id, seriesNumber: 1, createdAt: "2026-01-01T00:00:00Z" }),
-      book({ seriesId: fresh.id, seriesNumber: 1, createdAt: "2026-02-01T00:00:00Z" }),
-      book({ seriesId: grown.id, seriesNumber: 1, createdAt: "2026-01-03T00:00:00Z" }),
-      book({ seriesId: old.id, seriesNumber: 2, createdAt: "2026-03-01T00:00:00Z" }),
-    ];
-
-    const view = buildLibraryView(books, [old, fresh, grown], "library");
-
-    expect(view.groups.map((group) => group.series.title)).toEqual(["Old", "Fresh", "Grown"]);
-  });
-});
-
-describe("shelf stats", () => {
-  it("counts owned, wishlist and read books", () => {
-    const books = [
-      book({ status: "read" }),
-      book({ status: "reading" }),
-      book({ ownership: "wanted" }),
-      book({ ownership: "wanted", status: "read" }),
-    ];
-
-    expect(shelfStats(books)).toEqual({ owned: 2, wishlist: 2, read: 1 });
   });
 });

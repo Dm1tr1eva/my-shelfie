@@ -3,7 +3,6 @@ import type { library as en } from "../en/library";
 
 export const library: Localized<typeof en> = {
   title: "Библиотека",
-  search: "Поиск по моим книгам",
   searchAll: "Название, автор или серия",
   shelf: {
     notPartOfSeries: "Не входят в серию",
@@ -35,22 +34,6 @@ export const library: Localized<typeof en> = {
     },
     chip: { age: "Возраст: {value}", language: "Язык ссылки: {value}" },
   },
-  stats: "{owned} в библиотеке · {wishlist} в вишлисте · {read} прочитано",
-  summary: {
-    books: {
-      one: "{count} книга",
-      few: "{count} книги",
-      many: "{count} книг",
-      other: "{count} книги",
-    },
-    inGroups: {
-      one: "в {count} группе",
-      few: "в {count} группах",
-      many: "в {count} группах",
-      other: "в {count} группах",
-    },
-    withGroups: "{books} {groups}",
-  },
   loadError: {
     title: "Не удалось загрузить книги",
     text: "Проверь подключение и попробуй ещё раз.",
@@ -65,34 +48,17 @@ export const library: Localized<typeof en> = {
     title: "Твоя библиотека пуста",
     text: "Добавь книги, которые у тебя есть или которые хочется прочитать, и они соберутся здесь, полка за полкой.",
   },
-  emptyWishlist: {
-    title: "Твой вишлист пуст",
-    text: "Книги, которые ты хочешь, будут ждать здесь, сгруппированные по сериям.",
-  },
   standalone: {
     title: "Отдельные книги",
-    subtitle: {
-      one: "Не входят в серию · {count} книга",
-      few: "Не входят в серию · {count} книги",
-      many: "Не входят в серию · {count} книг",
-      other: "Не входят в серию · {count} книги",
-    },
   },
-  noLinks: "Ссылок пока нет",
   rating: "Оценка: {rating} из 5",
-  openSeries: "Открыть серию",
   progress: {
     own: "Есть {owned} из {total}",
     ownWithBooks: "Есть {owned} из {total}: книги {numbers}",
   },
-  view: { label: "Вид", grid: "Сетка", list: "Список" },
   filters: {
     title: "Фильтры",
     withCount: "Фильтры · {count}",
-    close: "Закрыть",
-    clear: "Сбросить",
-    clearAll: "Сбросить всё",
-    apply: "Применить",
     nothingFound: "Ничего не найдено.",
     more: "ещё {count}",
     show: {
@@ -102,33 +68,10 @@ export const library: Localized<typeof en> = {
       other: "Показать {count} книги",
     },
     remove: "Убрать фильтр «{label}»",
-    findIn: "Поиск: {group}",
-    group: {
-      genre: "Жанр",
-      trope: "Троп",
-      status: "Статус серии",
-      author: "Автор",
-      language: "Язык магазина",
-      kind: "Тип ссылки",
-    },
-    searchInGroup: {
-      genre: "Найти жанр",
-      trope: "Найти троп",
-      status: "Найти статус серии",
-      author: "Найти автора",
-      language: "Найти язык магазина",
-      kind: "Найти тип ссылки",
-    },
     searchForOne: {
-      genre: "Найти жанр",
       trope: "Найти троп",
-      status: "Найти статус серии",
-      author: "Найти автора",
-      language: "Найти язык магазина",
-      kind: "Найти тип ссылки",
     },
     chip: {
-      language: "Язык магазина: {value}",
       status: "Серия: {value}",
       kind: "Ссылка: {value}",
     },

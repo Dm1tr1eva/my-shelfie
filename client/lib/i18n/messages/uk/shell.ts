@@ -42,7 +42,6 @@ export const shell: Localized<typeof en> = {
   titles: {
     library: "Бібліотека",
     wishlist: "Вішліст",
-    next: "Що взяти далі",
     add: "Додати книгу",
     details: "Деталі книги",
     book: "Книга",

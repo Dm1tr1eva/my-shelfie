@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, screen, within } from "@testing-library/react";
 import { book, booksResponse, mockApi, renderApp, series } from "@/test/helpers";
-import { resetLocale, setLocale, translator } from "@/lib/i18n";
-import { makeDomain } from "@/lib/i18n/domain";
-import { NO_FILTERS, buildFilterGroups, chipLabel } from "@/lib/filters";
-import { FilterBar } from "./filter-bar";
+import { resetLocale, setLocale } from "@/lib/i18n";
 import { Library } from "./library";
 
 vi.mock("next/navigation", () => ({
@@ -26,11 +23,6 @@ function serve() {
     if (path.startsWith("/api/books")) return booksResponse(SHELF);
     if (path === "/api/series") return { body: { series: [saga] } };
   });
-}
-
-function labelsFor(locale: "ru" | "uk") {
-  const t = translator(locale);
-  return { t, domain: makeDomain(t) };
 }
 
 describe("Library in Russian and Ukrainian", () => {
@@ -91,58 +83,5 @@ describe("Library in Russian and Ukrainian", () => {
 
     expect(screen.getByText("Нічого не знайдено")).toBeInTheDocument();
     expect(screen.getByText("У цьому списку немає нічого за запитом «zzz».")).toBeInTheDocument();
-  });
-
-  it("builds filter group names, option names and chips in the chosen language", () => {
-    const ukrainian = labelsFor("uk");
-    const russian = labelsFor("ru");
-    const items = [
-      book({
-        id: "a",
-        links: [{ kind: "online", languages: ["uk"], url: "https://example.com/a" }],
-      }),
-    ];
-    const subjectOf = (item: (typeof items)[number]) => ({ book: item });
-
-    const groups = buildFilterGroups(items, subjectOf, NO_FILTERS, ukrainian);
-    const kind = groups.find((group) => group.key === "kind");
-
-    expect(kind?.label).toBe("Тип посилання");
-    expect(kind?.options[0].label).toBe("Читати онлайн");
-    expect(chipLabel("status", "ongoing", russian)).toBe("Серия: Выходит");
-    expect(chipLabel("language", "uk", russian)).toBe("Язык магазина: UK");
-    expect(chipLabel("kind", "online", ukrainian)).toBe("Посилання: Читати онлайн");
-  });
-
-  it("translates the filter bar, its sheet and the removable chips", () => {
-    act(() => setLocale("ru"));
-    render(
-      <FilterBar
-        groups={[
-          {
-            key: "genre",
-            label: "Жанр",
-            searchable: false,
-            options: [{ value: "Fantasy", label: "Фэнтези", count: 2 }],
-          },
-        ]}
-        filters={{ ...NO_FILTERS, genre: ["Fantasy"], status: ["ongoing"] }}
-        onChange={() => {}}
-        countWith={() => 5}
-        summary="5 книг"
-      />,
-    );
-
-    expect(screen.getByRole("button", { name: "Фильтры · 2" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Убрать фильтр «Серия: Выходит»" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Сбросить всё" })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "Фильтры · 2" }));
-
-    const sheet = screen.getByRole("dialog", { name: "Фильтры" });
-    expect(within(sheet).getByRole("button", { name: "Показать 5 книг" })).toBeInTheDocument();
-    expect(within(sheet).getByRole("button", { name: "Закрыть" })).toBeInTheDocument();
   });
 });

@@ -148,7 +148,6 @@ describe("AppFrame", () => {
     ["/wishlist", "Wishlist"],
     ["/", "nothing"],
     ["/books/one", "nothing"],
-    ["/next", "nothing"],
   ])("on %s highlights %s", async (path, current) => {
     route.pathname = path;
     mockApi(() => undefined);

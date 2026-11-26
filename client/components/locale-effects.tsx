@@ -9,7 +9,6 @@ const TITLES: { match: (path: string) => boolean; key: MessageKey }[] = [
   { match: (path) => path === "/dashboard", key: "dashboard.title" },
   { match: (path) => path === "/library", key: "shell.titles.library" },
   { match: (path) => path === "/wishlist", key: "shell.titles.wishlist" },
-  { match: (path) => path === "/next", key: "shell.titles.next" },
   { match: (path) => path === "/add", key: "shell.titles.add" },
   { match: (path) => /^\/add\/[^/]+\/details$/.test(path), key: "shell.titles.details" },
   { match: (path) => /^\/books\/[^/]+$/.test(path), key: "shell.titles.book" },

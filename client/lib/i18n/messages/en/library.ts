@@ -1,6 +1,5 @@
 export const library = {
   title: "Library",
-  search: "Search my books",
   searchAll: "Title, author or series",
   shelf: {
     notPartOfSeries: "Not part of a series",
@@ -32,12 +31,6 @@ export const library = {
     },
     chip: { age: "Age: {value}", language: "Link language: {value}" },
   },
-  stats: "{owned} owned · {wishlist} on wishlist · {read} read",
-  summary: {
-    books: { one: "{count} book", other: "{count} books" },
-    inGroups: { one: "in {count} group", other: "in {count} groups" },
-    withGroups: "{books} {groups}",
-  },
   loadError: {
     title: "Could not load your books",
     text: "Check your connection and try again.",
@@ -52,63 +45,25 @@ export const library = {
     title: "Your library is empty",
     text: "Add the books you have and the ones you want, and they will gather here, shelf by shelf.",
   },
-  emptyWishlist: {
-    title: "Your wishlist is empty",
-    text: "Books you want to buy will wait here, grouped by series.",
-  },
   standalone: {
     title: "Standalone books",
-    subtitle: {
-      one: "Not part of a series · {count} book",
-      other: "Not part of a series · {count} books",
-    },
   },
-  noLinks: "No links yet",
   rating: "Rated {rating} out of 5",
-  openSeries: "Open series",
   progress: {
     own: "Own {owned} of {total}",
     ownWithBooks: "Own {owned} of {total}: books {numbers}",
   },
-  view: { label: "View", grid: "Grid", list: "List" },
   filters: {
     title: "Filters",
     withCount: "Filters · {count}",
-    close: "Close",
-    clear: "Clear",
-    clearAll: "Clear all",
-    apply: "Apply",
     nothingFound: "Nothing found.",
     more: "+{count} more",
     show: { one: "Show {count} book", other: "Show {count} books" },
     remove: "Remove filter {label}",
-    findIn: "Find in {group}",
-    group: {
-      genre: "Genre",
-      trope: "Trope",
-      status: "Series status",
-      author: "Author",
-      language: "Shop language",
-      kind: "Link type",
-    },
-    searchInGroup: {
-      genre: "Find in genre",
-      trope: "Find in trope",
-      status: "Find in series status",
-      author: "Find in author",
-      language: "Find in shop language",
-      kind: "Find in link type",
-    },
     searchForOne: {
-      genre: "Find a genre",
       trope: "Find a trope",
-      status: "Find a series status",
-      author: "Find an author",
-      language: "Find a shop language",
-      kind: "Find a link type",
     },
     chip: {
-      language: "Shop language: {value}",
       status: "Series: {value}",
       kind: "Link: {value}",
     },
