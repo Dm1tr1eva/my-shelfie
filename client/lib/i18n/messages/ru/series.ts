@@ -49,7 +49,6 @@ export const series: Localized<typeof en> = {
       titleRequired: "У серии должно быть название.",
       age: "Возраст",
       ageNone: "Не указан",
-      genre: "Жанр",
       tropes: "Тропы",
       annotation: "Аннотация",
       cancel: "Отменить",

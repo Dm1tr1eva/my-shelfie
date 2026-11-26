@@ -3,10 +3,10 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useSWRConfig } from "swr";
 import type { ToastMessage } from "@/components/toast";
-import { apiFetch, ApiError } from "./api";
+import { apiFetch } from "./api";
 import { bookKey, isLibraryKey, type Book, type BookChanges } from "./books";
 import { useT } from "./i18n";
-import { translateServerError } from "./i18n/server-errors";
+import { failureText } from "./i18n/server-errors";
 
 type Flush = () => Promise<boolean>;
 type Register = (key: string, flush: Flush | null) => void;
@@ -90,10 +90,7 @@ export function useBookAutosave(id: string) {
           }
           show({
             tone: "error",
-            text:
-              error instanceof ApiError && error.status < 500
-                ? translateServerError(error.message, t)
-                : t("book.panel.saveFailed"),
+            text: failureText(error, t, t("book.panel.saveFailed")),
             onRetry: () => void save(changes, options),
           });
           return false;

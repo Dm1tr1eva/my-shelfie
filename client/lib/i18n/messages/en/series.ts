@@ -46,7 +46,6 @@ export const series = {
       titleRequired: "The series needs a title.",
       age: "Age",
       ageNone: "Not set",
-      genre: "Genre",
       tropes: "Tropes",
       annotation: "Annotation",
       cancel: "Cancel",

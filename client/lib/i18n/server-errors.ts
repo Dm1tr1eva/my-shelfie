@@ -51,6 +51,12 @@ export function translateServerError(message: string, t: Translate): string {
   return message;
 }
 
+export function failureText(error: unknown, t: Translate, fallback: string): string {
+  return error instanceof ApiError && error.status < 500
+    ? translateServerError(error.message, t)
+    : fallback;
+}
+
 export function translateError(error: unknown, t: Translate): string {
   return translateServerError(error instanceof ApiError ? error.message : "Request failed", t);
 }
