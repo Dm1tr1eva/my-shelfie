@@ -7,6 +7,7 @@ const MAX_TOKENS = 8000;
 const MAX_SEARCHES = 5;
 const MAX_CONTINUATIONS = 1;
 const TIMEOUT_MS = 45000;
+const ANTHROPIC_API_URL = "https://api.anthropic.com";
 const EFFORT = "medium";
 const TOLERATED_SEARCH_ERRORS = new Set(["max_uses_exceeded"]);
 
@@ -36,7 +37,7 @@ function createDefaultClient() {
   if (!apiKey) {
     throw new SeriesLookupNotConfiguredError();
   }
-  return new Anthropic({ apiKey, maxRetries: 0, timeout: TIMEOUT_MS });
+  return new Anthropic({ apiKey, baseURL: ANTHROPIC_API_URL, maxRetries: 0, timeout: TIMEOUT_MS });
 }
 
 function searchResultBlocks(content) {

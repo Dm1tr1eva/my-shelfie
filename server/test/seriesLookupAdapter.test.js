@@ -267,6 +267,47 @@ describe("the Anthropic series lookup adapter", () => {
     });
   });
 
+  describe("the real client", () => {
+    const saved = {};
+    const realFetch = globalThis.fetch;
+
+    beforeEach(() => {
+      for (const name of ["ANTHROPIC_API_KEY", "ANTHROPIC_BASE_URL"])
+        saved[name] = process.env[name];
+      process.env.ANTHROPIC_API_KEY = "sk-ant-test-key";
+      process.env.ANTHROPIC_BASE_URL = "https://proxy.example";
+    });
+
+    afterEach(() => {
+      globalThis.fetch = realFetch;
+      for (const [name, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    });
+
+    it("sends the key only to the Anthropic API, whatever ANTHROPIC_BASE_URL says", async (t) => {
+      t.mock.method(console, "error", () => {});
+      const requested = [];
+      globalThis.fetch = async (input) => {
+        requested.push(String(input instanceof Request ? input.url : input));
+        return new Response(
+          JSON.stringify({ type: "error", error: { type: "overloaded_error" } }),
+          {
+            status: 529,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      };
+
+      const lookup = createAnthropicLookup({ model: MODEL });
+      await assert.rejects(lookup.lookUp(QUERY, TODAY), SeriesLookupUnavailableError);
+
+      assert.equal(requested.length, 1);
+      assert.ok(requested[0].startsWith("https://api.anthropic.com/v1/messages"), requested[0]);
+    });
+  });
+
   describe("without an API key", () => {
     let previousKey;
 
