@@ -136,35 +136,52 @@ export function useDraft(
   const [value, setValue] = useState(serverValue);
   const [seen, setSeen] = useState(serverValue);
   const [editing, setEditing] = useState(false);
-  const sent = useRef<{ value: string; done: Promise<boolean> } | null>(null);
+  const [version, setVersion] = useState(0);
+  const sent = useRef<{ value: string; version: number; done: Promise<boolean> } | null>(null);
+  const latest = useRef<Flush>(() => Promise.resolve(true));
+  const discarded = useRef(false);
 
   if (serverValue !== seen) {
     setSeen(serverValue);
+    setVersion(version + 1);
     if (!editing) setValue(serverValue);
   }
 
   const flush = useCallback((): Promise<boolean> => {
     if (value === serverValue) return Promise.resolve(true);
-    if (sent.current?.value === value) return sent.current.done;
+    if (sent.current?.value === value && sent.current.version === version) {
+      return sent.current.done;
+    }
     const done = commit(value);
-    const attempt = { value, done };
+    const attempt = { value, version, done };
     sent.current = attempt;
     void done.then((ok) => {
       if (!ok && sent.current === attempt) sent.current = null;
     });
     return done;
-  }, [commit, serverValue, value]);
+  }, [commit, serverValue, value, version]);
 
   useEffect(() => {
+    latest.current = flush;
     register(key, flush);
   }, [flush, key, register]);
 
-  useEffect(() => () => register(key, null), [key, register]);
+  useEffect(
+    () => () => {
+      register(key, null);
+      if (!discarded.current) void latest.current();
+    },
+    [key, register],
+  );
 
   const reset = useCallback(() => {
     setValue(serverValue);
     setEditing(false);
   }, [serverValue]);
 
-  return { value, setValue, editing, setEditing, flush, reset };
+  const discard = useCallback(() => {
+    discarded.current = true;
+  }, []);
+
+  return { value, setValue, editing, setEditing, flush, reset, discard };
 }
