@@ -691,7 +691,7 @@ describe("BookPanel", () => {
       await open(book({ id: "b1", title: "Ash" }));
 
       fireEvent.click(screen.getByRole("button", { name: /Choose genres/ }));
-      fireEvent.keyDown(screen.getByRole("checkbox", { name: "Fantasy" }), { key: "Escape" });
+      fireEvent.keyDown(document.body, { key: "Escape" });
 
       expect(screen.queryByRole("checkbox", { name: "Fantasy" })).not.toBeInTheDocument();
       await new Promise((resolve) => setTimeout(resolve, 50));

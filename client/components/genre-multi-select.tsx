@@ -35,17 +35,20 @@ export function GenreMultiSelect({
 
     function close(event: MouseEvent | KeyboardEvent) {
       if (event instanceof KeyboardEvent) {
-        if (event.key === "Escape") setOpen(false);
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setOpen(false);
+        }
         return;
       }
       if (root.current && !root.current.contains(event.target as Node)) setOpen(false);
     }
 
     document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", close);
+    document.addEventListener("keydown", close, true);
     return () => {
       document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", close);
+      document.removeEventListener("keydown", close, true);
     };
   }, [open]);
 
@@ -71,16 +74,7 @@ export function GenreMultiSelect({
   }
 
   return (
-    <div
-      ref={root}
-      className="relative flex flex-col gap-1"
-      onKeyDown={(event) => {
-        if (event.key === "Escape" && open) {
-          event.preventDefault();
-          setOpen(false);
-        }
-      }}
-    >
+    <div ref={root} className="relative flex flex-col gap-1">
       <span className="font-semibold">{t("book.genres.label")}</span>
 
       <button

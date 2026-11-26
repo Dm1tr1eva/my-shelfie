@@ -129,7 +129,7 @@ export function StarRating({
             aria-label={t("book.controls.rate", { star })}
             aria-pressed={value === star}
             onClick={() => onChange(compact && value === star ? undefined : star)}
-            className="inline-flex h-11 w-11 items-center justify-center text-burgundy"
+            className={`inline-flex h-11 items-center justify-center text-burgundy ${compact ? "w-9" : "w-11"}`}
           >
             <StarIcon size={26} filled={value !== undefined && star <= value} />
           </button>
