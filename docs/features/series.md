@@ -51,6 +51,46 @@ The Library has its own rule ([v3-library.md](../designs/v3-library.md)): every 
 or wanted, is missing, and each run of them is one dashed gap tile, which shows the earliest
 `expectedYear` its numbers have in `expected` ("Not before 2027").
 
+## The series page
+
+`/series/[id]` is `components/series-page.tsx`, the v3 page
+([../designs/v3-series-page.md](../designs/v3-series-page.md)), reading `GET /api/series/:id`.
+
+- **Header, read-only.** The title in Playfair with the age (`AgeChip`, "16+", named "Age 16+")
+  kept on one line with the title's last word, so the two wrap together; the author and the
+  outline status chip; Genre and Tropes rows; the series annotation. A navy card says how many
+  are owned ("2 of 6 owned") with `SeriesSegments` stretched across it; the count is the
+  library's: every book of the series, unnumbered ones included, and every missing number.
+  Below 768 px the card is a strip, and genre, tropes and annotation fold behind a round
+  "Show more" button on the card's bottom edge.
+- **My note** (`series-note.tsx`) is edited in place: its pencil, or "Add a note", turns it into
+  a field; leaving the field saves it (`PATCH` of `note`, `null` when emptied) with a "Saved"
+  toast and Undo; Escape drops the change; a failure keeps the typed text and shows an error
+  toast with Retry.
+- **Edit mode** (`series-edit.tsx`), behind the pencil next to the title: Title, Author, Status
+  (four segments), Books in the series (1–200, or empty to clear it), Age (Not set, 12+, 16+,
+  18+), Genre, Tropes and Annotation, then "Delete series" on the left and Cancel and Done on
+  the right. Done checks the title (not blank) and the count, then sends every field in one
+  `PATCH` and closes; a refused save stays in the form with the reason. Cancel, and Escape on a
+  phone, drop the changes. From 768 px the form replaces the header card and keeps the progress
+  card and the note beside it; below, it is a near full-screen sheet (`Drawer`). "Delete series"
+  asks in `ConfirmDialog` (its books stay in the library as standalone books, as `DELETE` does)
+  and then goes to `/library`. There is no co-author field (the model has one `author`) and no
+  "Fill empty fields with AI" yet.
+- **Expected numbers are shown, not edited.** A run of missing numbers is one row with the
+  earliest `expectedYear` of its numbers and that entry's source ("From your note: not before
+  2027", "According to FantLab", "AI estimate"). The list itself is written by series lookup,
+  not by hand, until a later step decides otherwise.
+- **Books** (`series-books.tsx`): the slots of `seriesSlots` (`lib/shelves.ts`, shared with the
+  library), by number, unnumbered books last. A book row is one link to `/books/[id]`, which opens
+  the book panel over the page: `#N` (on the cover below 768 px), the cover, the title, one meta
+  line (the status in the format's words and the format, or only "In wishlist" for a wanted book)
+  and, for a book being read, a progress bar from `GET /api/progress`. A gap row shows `#4–6`, a
+  dashed cover, "Not in the catalogue yet" and a round `+` to `/add?series=…&number=<first>`
+  (the add modal is the next step).
+- **States:** a skeleton while loading, "Series not found" for a `404`, "Could not load this
+  series" with Try again, and "No books in this series yet" with "Add a book" for an empty series.
+
 ## Data
 
 `Series` (`server/models/series.js`): `userId`, `title`, `author`, `status`
@@ -84,6 +124,12 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
   far below that.
 - **No uniqueness on series titles.** Two series may share a title; the author tells them
   apart by author and notes.
+- **The progress card counts unnumbered books**, as the library's segments do, so "2 of 6"
+  can include a book with no number.
+- **Expected numbers cannot be corrected by hand** on the series page until lookup or a later
+  step adds it.
+- **At 768 px every trope shows**; the mockup's "+2" fold is not built.
+- **Done sends every field**, not only the changed ones; one person edits a series.
 - **Genres and tropes live on the series; the annotation stays the book's.** A book with a
   `seriesId` is returned with the series' values in `genres` and `tropes` (the overlay is
   `toBookDto(book, series)`); the values stored on the book are kept and come back if it leaves

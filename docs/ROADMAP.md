@@ -223,7 +223,14 @@ in steps, each on its own branch:
    no longer returns the series' in its place), a standalone book its genres and tropes; autosave
    with an Undo toast, a shared `Toast` and `ConfirmDialog`; the book page and its Save bar are
    gone — [designs/v3-book-panel.md](designs/v3-book-panel.md)
-12. ⬜ The following steps: the series page, the add modal
+12. ✅ **Series page, 2026-11-26** — a read-only header (title with the age glued to its last
+   word, author, status, genre, tropes, annotation), a navy "2 of 6 owned" card with segments and
+   My note edited in place with Undo; on a phone a strip and a "more" button; an edit mode behind
+   the pencil (title, author, status, count, age, genre, tropes, annotation, Delete series with a
+   confirmation, Cancel / Done), a sheet on a phone; roomy book rows into the book panel and one
+   row per run of missing numbers with the expected year and its source —
+   [designs/v3-series-page.md](designs/v3-series-page.md)
+13. ⬜ The following steps: the add modal
 
 ## Course submission MVP — done 2026-10-09
 

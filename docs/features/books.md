@@ -293,12 +293,9 @@ client.
   [../designs/book-format.md](../designs/book-format.md). The details step also asks for the
   reading status and the rating of a book that is in the library (not of a wishlist book), and
   sends each only when it changed.
-- On the series page "Add a note" and "Edit note" open the edit form, scroll it into view and put
-  the cursor in the note; "Edit series" puts it in the title.
-- On the series page the note is edited with a proper outline button ("Add a note" or "Edit
-  note", with a pencil icon).
-- `/series/[id]` — `components/series-page.tsx`. `/next`, the old Next to buy, redirects
-  permanently to `/wishlist` since the v3 Wishlist step
+- `/series/[id]` — `components/series-page.tsx`, the v3 series page described in
+  [series.md](series.md). `/next`, the old Next to buy, redirects permanently to `/wishlist`
+  since the v3 Wishlist step
 - Labels (`components/chips.tsx`, the v3 rules of one form per meaning): an owned book shows its
   reading status as a dot and a word (`StatusDot`: To read, Reading, Read, Dropped; «В планах» /
   «У планах» in Russian and Ukrainian); a wanted book on the series page and in list rows shows
