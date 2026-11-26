@@ -3,6 +3,7 @@ require("dotenv").config({ quiet: true });
 const { describe, it, before, after, beforeEach } = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("node:http");
+const jwt = require("jsonwebtoken");
 
 const app = require("../app");
 const User = require("../models/user");
@@ -181,6 +182,63 @@ describe("auth API", () => {
 
     assert.equal(response.status, 200);
     assert.equal(response.body, null);
+  });
+
+  it("signs each user in as themself and answers with exactly their id, email and name", async () => {
+    const register = (email, name) =>
+      api("/api/auth/register", { method: "POST", body: { email, password: PASSWORD, name } });
+    const alice = await register("alice@example.com", "Alice");
+    const bob = await register("bob@example.com", "Bob");
+
+    const login = await api("/api/auth/login", {
+      method: "POST",
+      body: { email: "bob@example.com", password: PASSWORD },
+    });
+    const cookie = login.setCookie.map((value) => value.split(";")[0]).join("; ");
+    const me = await api("/api/auth/me", { cookie });
+
+    assert.deepEqual(alice.body, { id: alice.body.id, email: "alice@example.com", name: "Alice" });
+    assert.deepEqual(bob.body, { id: bob.body.id, email: "bob@example.com", name: "Bob" });
+    assert.notEqual(alice.body.id, bob.body.id);
+    assert.deepEqual(login.body, bob.body);
+    assert.deepEqual(me.body, bob.body);
+  });
+
+  it("answers a wrong password and an unknown email with the same 401 and no session", async () => {
+    await api("/api/auth/register", {
+      method: "POST",
+      body: { email: "alice@example.com", password: PASSWORD, name: "Alice" },
+    });
+
+    for (const body of [
+      { email: "alice@example.com", password: "not-the-password" },
+      { email: "nobody@example.com", password: PASSWORD },
+    ]) {
+      const response = await api("/api/auth/login", { method: "POST", body });
+
+      assert.equal(response.status, 401, body.email);
+      assert.deepEqual(response.body, { error: "Invalid email or password" });
+      assert.deepEqual(response.setCookie, []);
+    }
+  });
+
+  it("names a taken email in the exact words the client translates", async () => {
+    const body = { email: "alice@example.com", password: PASSWORD, name: "Alice" };
+    await api("/api/auth/register", { method: "POST", body });
+
+    const again = await api("/api/auth/register", { method: "POST", body });
+
+    assert.equal(again.status, 409);
+    assert.deepEqual(again.body, { error: "User already exists" });
+  });
+
+  it("keeps a session for seven days, in the cookie and in the token", async () => {
+    const cookie = (await loginCookies("alice@example.com"))[0];
+    const token = cookie.split(";")[0].replace("token=", "");
+    const { iat, exp } = jwt.decode(token);
+
+    assert.match(cookie, /Max-Age=604800/);
+    assert.equal(exp - iat, 7 * 24 * 60 * 60);
   });
 
   it("sets the session cookie HttpOnly and SameSite=Lax, without Secure outside production", async () => {
