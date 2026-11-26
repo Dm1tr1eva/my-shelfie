@@ -218,9 +218,10 @@ in steps, each on its own branch:
    page it was opened from through an intercepting `@panel` route, and over the library on a
    direct visit; cover with "Change cover", rename in place, Have/Want, three formats with
    duration for audiobooks, status-dependent rows with progress shown from the log, links with
-   several languages, moods, recommend, quotes, my note; autosave with an Undo toast, a shared
-   `Toast` and `ConfirmDialog`; the book page and its Save bar are gone —
-   [designs/v3-book-panel.md](designs/v3-book-panel.md)
+   several languages, moods, recommend, quotes, my note; every book its own annotation (the API
+   no longer returns the series' in its place), a standalone book its genres and tropes; autosave
+   with an Undo toast, a shared `Toast` and `ConfirmDialog`; the book page and its Save bar are
+   gone — [designs/v3-book-panel.md](designs/v3-book-panel.md)
 12. ⬜ The following steps: the series page, the add modal, the wishlist page
 
 ## Course submission MVP — done 2026-10-09
