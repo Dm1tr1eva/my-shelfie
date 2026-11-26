@@ -1,6 +1,6 @@
 # Feature: series, ownership and "next to buy"
 
-**Last verified against code:** 2026-11-19
+**Last verified against code:** 2026-11-26
 
 ## What it does
 
@@ -72,7 +72,8 @@ it" is a `PATCH` of the book's `ownership` to `owned`; the book then leaves the 
 Without `totalBooks` a number with no record cannot appear here. The Library has its own,
 wider rule ([v3-library.md](../designs/v3-library.md)): every whole number up to the largest of
 `totalBooks`, the highest book number and the highest `expected` number that has no book, owned
-or wanted, is missing, and each run of them is one dashed gap tile.
+or wanted, is missing, and each run of them is one dashed gap tile, which shows the earliest
+`expectedYear` its numbers have in `expected` ("Not before 2027").
 
 ## Data
 

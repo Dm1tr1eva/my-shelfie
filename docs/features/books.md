@@ -143,29 +143,46 @@ client.
 - `/library` — `components/library.tsx`, the v3 library
   ([../designs/v3-library.md](../designs/v3-library.md)), derived in `lib/shelves.ts`. Every
   book, owned and wanted, on one page: a shelf per series (newest first), then "Standalone
-  books" by title. A series shelf holds its books by number (unnumbered last) and one dashed gap
-  tile per run of missing whole numbers, counted up to the largest of `totalBooks`, the highest
-  book number and the highest `expected` number; the gap opens `/add?series=…&number=<first>`.
-  A half number (#2.5) is a book and never fills a gap. Seven slots a row from 64rem (1024 px
-  at the default font size), four below — `matchMedia` asks the same query as Tailwind's `lg:`,
-  so the count and the grid never disagree; a series of seven slots shows whole, a longer one
-  shows one slot fewer and a "+N more" tile (N books and missing numbers) to `/series/[id]`; standalone books wrap onto as many shelves as they need.
-  The series header (title, author, status, `SeriesSegments`) is one link to the series page.
-  A tile is a cover, a two-line title and one meta line: status and rating for an owned book,
-  "In wishlist" with a dimmed cover for a wanted one; below 768 px the text is for screen
-  readers only. Search matches title, author or series title. The filter button opens
-  `FilterPanel` in a `Drawer` (side panel 420 px from 768 px, bottom sheet below; Esc, scrim and
-  × close it, focus moves in and back; the portal is mounted only in the browser, so a server
-  render draws nothing): I have, Status (books you have only: a wanted book shows no status, so it never matches
-  one), Format, Genre, Age (only when some book
-  has one), Tropes (with search), Author, Series status (with "Standalone books"), Link
-  language, Link type, Rating (5, 4, 3 and lower, none). Genre, Tropes and Author fold after
-  four. The choices are a draft until "Show N books", whose count follows it; Reset empties the
-  draft, closing drops it. Applied filters show as removable navy pills under the title and as
-  a count on the button. Under a search or a filter a series keeps its gap tiles, shows only
-  its matching books and disappears when none match; segments always describe the whole series.
-  No tabs, stats line, view toggle or series notes, as in the v3 handoff. Filters are not kept
-  across a reload or a visit to a book.
+  books" by title. A series shelf holds its books by number (unnumbered last) and one dashed
+  gap tile per run of missing whole numbers, counted up to the largest of `totalBooks`, the
+  highest book number and the highest `expected` number; the gap opens
+  `/add?series=…&number=<first>`. When `Series.expected` gives a year for any number of the
+  run, the tile says "Not before <the earliest of them>" from 768 px (and in its accessible
+  name at every width); the source is left to the series page. A half number (#2.5) is a book
+  and never fills a gap. Seven slots a row from 64rem (1024 px at the default font size), four
+  below — `matchMedia` asks the same query as Tailwind's `lg:`, so the count and the grid
+  never disagree; a series of seven slots shows whole, a longer one shows one slot fewer and a
+  "+N more" tile (N books and missing numbers) to `/series/[id]`; standalone books wrap onto
+  as many shelves as they need. The series header (title, author, status, `SeriesSegments`) is
+  one link to the series page. A tile is a cover, a two-line title and one meta line: status
+  and rating for an owned book, "In wishlist" with a dimmed cover for a wanted one; below 768
+  px the text is for screen readers only. Search matches title, author or series title. The
+  filter button opens `FilterPanel` in a `Drawer` (side panel 420 px from 768 px, bottom sheet
+  below; Esc, scrim and × close it, focus moves in and back; the portal is mounted only in the
+  browser, so a server render draws nothing): I have, Status, Format, Genre, Age (only when
+  some book has one), Tropes (with search), Author, Series status (with "Standalone books"),
+  Link language, Link type, Rating (5, 4, 3 and lower, none). Status and Rating match books
+  you have only: a wanted book shows neither, so it never matches one. Genre, Tropes and
+  Author fold after four. The choices are a draft until "Show N books", whose count follows
+  it; Reset empties the draft, closing drops it. Applied filters show as removable navy pills
+  under the title and as a count on the button. Under a search or a filter a series shows only
+  its matching books and disappears when none match; segments always describe the whole
+  series. Gap tiles stay under a search and under the series-wide groups (genre, tropes, age,
+  series status, author — a series book carries its series' genres, tropes and age) and hide
+  as soon as a group about single books is on (I have, Status, Format, Rating, Link language,
+  Link type, `BOOK_FILTER_KEYS` in `lib/filters.ts`): a missing book has none of those. The
+  search and the applied filters are kept in the address (`lib/library-params.ts`): `q` and
+  one parameter per group, repeated per value, in the panel's order
+  (`/library?q=ash&have=wanted&genre=Fantasy`). The page reads them once with
+  `useSearchParams` (inside a `Suspense` boundary in `app/library/page.tsx`, which a static
+  page using it needs for the production build) and writes every change — typing, "Show N
+  books", Reset, removing a pill — with `history.replaceState`, so a reload or a way back from
+  a book or a series restores them and typing adds no history entries. Unknown parameters,
+  values outside a fixed group's list (I have, Status, Format, Age, Series status, Rating,
+  Link language and type), empty values, repeats and values over 200 characters are dropped
+  without an error; free values (genre, trope, author) are kept as they are, and one the
+  library no longer has shows as a pill that removes it. No tabs, stats line, view toggle or
+  series notes, as in the v3 handoff.
 - `/wishlist` — `components/wishlist.tsx`, the v2 shelves until the Wishlist step: wanted
   books only, series groups from `lib/catalogue.ts` with "own n of m", a list or a cover grid
   (the choice kept in `localStorage`, `lib/use-view-mode.ts`), the v2 filter bar. Since

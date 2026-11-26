@@ -167,9 +167,10 @@ in steps, each on its own branch:
    past one row (seven slots from 64rem, four below), standalone books wrapping onto further
    shelves; `SeriesSegments` (at most ten, then `+N`); search by title, author or series; a
    filter panel in a reusable `Drawer` (side panel / bottom sheet) with the decision-37 groups
-   that have data, removable filter pills and a count on the button. Tabs, the stats line, the
-   view toggle and series notes are gone from the library; `/wishlist` keeps the v2 shelves in
-   `components/wishlist.tsx` without the tabs, `/next` is unchanged —
+   that have data, removable filter pills and a count on the button; search and filters kept in
+   the address; a gap tile shows the expected year and hides under a filter on single books.
+   Tabs, the stats line, the view toggle and series notes are gone from the library; `/wishlist`
+   keeps the v2 shelves in `components/wishlist.tsx` without the tabs, `/next` is unchanged —
    [designs/v3-library.md](designs/v3-library.md)
 5. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page and
    endpoint, home and `/api/stats`
