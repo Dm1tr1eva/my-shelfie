@@ -54,7 +54,7 @@ export function HomeContent() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="bg-navy text-page">
+      <section className="bg-navy text-page [&_:focus-visible]:outline-page">
         <div className="mx-auto grid w-full max-w-5xl grid-cols-[minmax(0,1fr)] items-end gap-10 px-4 pt-12 sm:px-8 sm:pt-16 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14">
           <div className="flex flex-col gap-6 pb-10 lg:pb-20">
             <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-mist">

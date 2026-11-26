@@ -179,8 +179,8 @@
   }
 
   :where(a[href], button, summary, input, select, textarea, [role="button"], [role="option"]) {
-    transition-property: color, background-color, border-color, outline-color, box-shadow, opacity,
-      text-decoration-color, transform;
+    transition-property:
+      color, background-color, border-color, box-shadow, opacity, text-decoration-color, transform;
     transition-duration: var(--duration-fast);
     transition-timing-function: var(--ease-standard);
   }
