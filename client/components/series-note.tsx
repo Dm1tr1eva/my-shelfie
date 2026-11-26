@@ -4,9 +4,8 @@ import { useCallback, useId, useRef, useState } from "react";
 import { AutoTextarea } from "@/components/auto-textarea";
 import { EditIcon } from "@/components/icons";
 import type { ToastMessage } from "@/components/toast";
-import { ApiError } from "@/lib/api";
 import { useT } from "@/lib/i18n";
-import { translateServerError } from "@/lib/i18n/server-errors";
+import { failureText } from "@/lib/i18n/server-errors";
 import { useSeriesActions, type Series } from "@/lib/series";
 import { useDraft } from "@/lib/use-book-autosave";
 
@@ -17,7 +16,7 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
   const areaId = useId();
   const { updateSeries } = useSeriesActions();
   const [editing, setEditing] = useState(false);
-  const pencil = useRef<HTMLButtonElement>(null);
+  const opener = useRef<HTMLButtonElement>(null);
 
   const send = useCallback(
     async function send(note: string | null, undo: string | null | undefined): Promise<boolean> {
@@ -36,10 +35,7 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
       } catch (error) {
         show({
           tone: "error",
-          text:
-            error instanceof ApiError && error.status < 500
-              ? translateServerError(error.message, t)
-              : t("series.page.note.failed"),
+          text: failureText(error, t, t("series.page.note.failed")),
           onRetry: () => void send(note, undo),
         });
         return false;
@@ -83,7 +79,7 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
         </h2>
         {!editing && series.note && (
           <button
-            ref={pencil}
+            ref={opener}
             type="button"
             aria-label={t("series.page.note.edit")}
             onClick={open}
@@ -106,8 +102,9 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
+              draft.reset();
               setEditing(false);
-              window.setTimeout(() => pencil.current?.focus());
+              window.setTimeout(() => opener.current?.focus());
             }
           }}
           className="rounded-control border border-mist bg-card px-3 py-2 text-[15px] leading-relaxed"
@@ -115,7 +112,12 @@ export function SeriesNote({ series, show }: { series: Series; show: Show }) {
       ) : series.note ? (
         <p className="whitespace-pre-line text-[15px] leading-relaxed">{series.note}</p>
       ) : (
-        <button type="button" onClick={open} className="self-start text-sm font-semibold text-navy">
+        <button
+          ref={opener}
+          type="button"
+          onClick={open}
+          className="self-start text-sm font-semibold text-navy"
+        >
           {t("series.page.note.add")}
         </button>
       )}

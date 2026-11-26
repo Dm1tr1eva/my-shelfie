@@ -28,11 +28,11 @@ function TitleWithAge({ series, id }: { series: Series; id: string }) {
   return (
     <h1 id={id} className="text-[30px] font-semibold leading-[1.1] md:text-[38px] lg:text-[44px]">
       {words.length > 0 && `${words.join(" ")} `}
-      <span className="whitespace-nowrap">
+      <span>
         {last}
         {age !== "none" && (
           <>
-            {" "}
+            {" "}
             <AgeChip age={age} />
           </>
         )}
@@ -105,6 +105,7 @@ function SeriesView({ series, books }: { series: Series; books: Book[] }) {
   const titleId = useId();
   const wide = useMediaQuery("(min-width: 48rem)");
   const [editing, setEditing] = useState(false);
+  const inline = editing && wide;
   const [more, setMore] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const counter = useRef(0);
@@ -132,16 +133,17 @@ function SeriesView({ series, books }: { series: Series; books: Book[] }) {
 
   return (
     <div className="flex flex-col gap-5 md:gap-6">
-      {editing && wide ? (
-        <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_300px]">
+      <section
+        aria-labelledby={inline ? undefined : titleId}
+        className={
+          inline
+            ? "grid gap-6 md:grid-cols-[minmax(0,1fr)_230px] lg:grid-cols-[minmax(0,1fr)_300px]"
+            : "card relative grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_230px] md:gap-x-6 md:gap-y-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:p-8"
+        }
+      >
+        {inline ? (
           <SeriesEdit series={series} onClose={closeEditing} sheet={false} />
-          {side}
-        </div>
-      ) : (
-        <section
-          aria-labelledby={titleId}
-          className="card relative grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_230px] md:gap-x-6 md:gap-y-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:p-8"
-        >
+        ) : (
           <div className="flex min-w-0 flex-col gap-5 md:col-start-1 md:row-start-1">
             <div className="flex items-start gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -162,29 +164,31 @@ function SeriesView({ series, books }: { series: Series; books: Book[] }) {
               </button>
             </div>
           </div>
-          <div className="md:col-start-2 md:row-span-2 md:row-start-1">{side}</div>
+        )}
+        <div className={inline ? "" : "md:col-start-2 md:row-span-2 md:row-start-1"}>{side}</div>
+        {!inline && (
           <div
             id={detailsId}
             className={`min-w-0 md:col-start-1 md:row-start-2 md:block ${more ? "" : "hidden"}`}
           >
             <Details series={series} />
           </div>
-          {hasDetails && (
-            <button
-              type="button"
-              aria-expanded={more}
-              aria-controls={detailsId}
-              aria-label={more ? t("series.page.less") : t("series.page.more")}
-              onClick={() => setMore((current) => !current)}
-              className="absolute -bottom-4 left-1/2 inline-flex h-8 w-12 -translate-x-1/2 items-center justify-center rounded-pill border border-mist bg-card text-navy md:hidden"
-            >
-              <span className={more ? "rotate-180" : ""}>
-                <ChevronDownIcon size={18} />
-              </span>
-            </button>
-          )}
-        </section>
-      )}
+        )}
+        {!inline && hasDetails && (
+          <button
+            type="button"
+            aria-expanded={more}
+            aria-controls={detailsId}
+            aria-label={more ? t("series.page.less") : t("series.page.more")}
+            onClick={() => setMore((current) => !current)}
+            className="absolute -bottom-4 left-1/2 inline-flex h-8 w-12 -translate-x-1/2 items-center justify-center rounded-pill border border-mist bg-card text-navy md:hidden"
+          >
+            <span className={more ? "rotate-180" : ""}>
+              <ChevronDownIcon size={18} />
+            </span>
+          </button>
+        )}
+      </section>
 
       {editing && !wide && <SeriesEdit series={series} onClose={closeEditing} sheet />}
       <SeriesBooks series={series} slots={slots} />
