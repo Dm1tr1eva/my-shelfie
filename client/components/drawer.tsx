@@ -3,10 +3,8 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "@/components/icons";
+import { FOCUSABLE } from "@/lib/focusable";
 import { useT } from "@/lib/i18n";
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function subscribeToNothing() {
   return () => {};

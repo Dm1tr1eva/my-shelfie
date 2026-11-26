@@ -7,7 +7,7 @@ import { Muted, Section } from "@/components/dashboard/section";
 import { Popover } from "@/components/popover";
 import { useLocale, useT } from "@/lib/i18n";
 import { translateError } from "@/lib/i18n/server-errors";
-import { useHomeActions, type ReadingBook } from "@/lib/stats";
+import { seriesLabel, useHomeActions, type ReadingBook } from "@/lib/stats";
 
 const STEPS = [10, 25, 50];
 
@@ -203,8 +203,7 @@ function ReadingRow({ book, headingId }: { book: ReadingBook; headingId: string 
             {book.title}
           </Link>
           <p className="text-sm text-muted">
-            {book.series &&
-              `${book.series.title}${book.series.number !== undefined ? ` #${book.series.number}` : ""} · `}
+            {book.series && `${seriesLabel(book.series)} · `}
             {book.author}
           </p>
           <div className="flex items-center gap-3">

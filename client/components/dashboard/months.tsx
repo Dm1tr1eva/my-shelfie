@@ -6,7 +6,7 @@ import { BookCover } from "@/components/book-cover";
 import { Muted, Section } from "@/components/dashboard/section";
 import { StarIcon } from "@/components/icons";
 import { useLocale, useT } from "@/lib/i18n";
-import type { HomeStats } from "@/lib/stats";
+import { seriesLabel, type HomeStats } from "@/lib/stats";
 
 function capitalized(text: string) {
   return text.charAt(0).toLocaleUpperCase() + text.slice(1);
@@ -59,8 +59,7 @@ function MonthCard({
                 {book.title}
               </Link>
               <p className="flex items-center gap-1 text-xs text-muted">
-                {book.series &&
-                  `${book.series.title}${book.series.number !== undefined ? ` #${book.series.number}` : ""}`}
+                {book.series && seriesLabel(book.series)}
                 {book.series && book.rating !== undefined && " · "}
                 {book.rating !== undefined && (
                   <span

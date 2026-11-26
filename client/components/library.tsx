@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
 import { FilterPanel } from "@/components/filter-panel";
@@ -28,22 +28,13 @@ import { useDomain } from "@/lib/i18n/domain";
 import { readLibraryParams, writeLibraryParams, type LibraryParams } from "@/lib/library-params";
 import { useSeriesList } from "@/lib/series";
 import { libraryShelves, rowsOf, shelfRow, type SeriesShelf } from "@/lib/shelves";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 const WIDE_SHELF = "(min-width: 64rem)";
 
-function subscribeToWidth(onChange: () => void) {
-  const query = window.matchMedia(WIDE_SHELF);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
 function useShelfColumns() {
-  const wide = useSyncExternalStore(
-    subscribeToWidth,
-    () => window.matchMedia(WIDE_SHELF).matches,
-    () => false,
-  );
+  const wide = useMediaQuery(WIDE_SHELF);
   return wide ? 7 : 4;
 }
 

@@ -71,6 +71,10 @@ export type HomeStats = {
 
 export type Position = { page: number } | { percent: number };
 
+export function seriesLabel(series: SeriesRef) {
+  return series.number === undefined ? series.title : `${series.title} #${series.number}`;
+}
+
 export function localDate(now = new Date()) {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;

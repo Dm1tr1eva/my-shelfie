@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef } from "react";
 import { Drawer } from "@/components/drawer";
+import { FOCUSABLE } from "@/lib/focusable";
+import { useMediaQuery } from "@/lib/use-media-query";
 
 const WIDE = "(min-width: 48rem)";
-
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const ALIGN = {
   start: "left-0",
@@ -19,20 +18,6 @@ const ARROW = {
   center: "left-1/2 -ml-1.5",
   end: "right-8",
 };
-
-function subscribeToWidth(onChange: () => void) {
-  const query = window.matchMedia(WIDE);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-function useWide() {
-  return useSyncExternalStore(
-    subscribeToWidth,
-    () => window.matchMedia(WIDE).matches,
-    () => false,
-  );
-}
 
 function PopoverCard({
   id,
@@ -108,7 +93,7 @@ export function Popover({
   align?: keyof typeof ALIGN;
   children: React.ReactNode;
 }) {
-  const wide = useWide();
+  const wide = useMediaQuery(WIDE);
 
   if (!wide) {
     return (
