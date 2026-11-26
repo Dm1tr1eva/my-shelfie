@@ -27,7 +27,7 @@ import {
 } from "@/lib/use-book-autosave";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
-export type CloseBy = "back" | "library";
+type CloseBy = "back" | "library";
 
 function PanelHeader({ book, series }: { book?: Book; series?: Series }) {
   const t = useT();

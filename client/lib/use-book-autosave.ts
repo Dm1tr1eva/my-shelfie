@@ -11,7 +11,7 @@ import { translateServerError } from "./i18n/server-errors";
 type Flush = () => Promise<boolean>;
 type Register = (key: string, flush: Flush | null) => void;
 
-export function withChanges(book: Book, changes: BookChanges): Book {
+function withChanges(book: Book, changes: BookChanges): Book {
   const next: Record<string, unknown> = { ...book };
   for (const [key, value] of Object.entries(changes)) {
     if (value === null) delete next[key];

@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { apiFetch } from "./api";
 import { useAuth } from "./auth-context";
 
-export type ProgressEntry = {
+type ProgressEntry = {
   id: string;
   bookId: string;
   date: string;
