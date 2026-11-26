@@ -182,14 +182,15 @@ in steps, each on its own branch:
    calendar; "Finished" stays two existing calls with a local `finishedAt`. Server only —
    [designs/v3-home-stats-api.md](designs/v3-home-stats-api.md),
    [features/home-stats.md](features/home-stats.md)
-6. 🟡 **Wishlist, server half done 2026-11-26** — `GET /api/wishlist` answers three groups
-   (Continue a series, New series, Standalone books) ordered by desire, each series row with its
-   segments and cover, each row with the values the browser filters on. Desire changes through
-   the existing `PATCH` routes. Left for the client half: the page with its search and filters
-   (its `500` text needs no new translation), then delete `/api/next-to-buy`,
-   `services/nextToBuy.js` and its tests, and rename `findForNextToBuy`. Gaps are filled no
-   further than 999, so an old number in the millions cannot stall the server —
+6. ✅ **Wishlist, 2026-11-26** — `GET /api/wishlist` answers three groups (Continue a series,
+   New series, Standalone books) ordered by desire, each series row with its segments and
+   cover, each row with the values the browser filters on; gaps are filled no further than 999.
+   `/wishlist` draws them as rows with a desire pill that cycles (one `PATCH` once the taps
+   stop, rows keep their order until the next load), the library's search, filter panel and
+   address. Next to buy is gone: `/next` redirects to `/wishlist`, `GET /api/next-to-buy` and
+   the v2 shelves, filter bar and view toggle are deleted —
    [designs/v3-wishlist-api.md](designs/v3-wishlist-api.md),
+   [designs/v3-wishlist-page.md](designs/v3-wishlist-page.md),
    [features/wishlist.md](features/wishlist.md)
 7. 🟨 **Add a book: series detection** — server half done 2026-11-26: `POST /api/series/lookup`
    asks Claude Haiku 5.5 with web search which series a book belongs to, with its number, the
@@ -222,7 +223,7 @@ in steps, each on its own branch:
    no longer returns the series' in its place), a standalone book its genres and tropes; autosave
    with an Undo toast, a shared `Toast` and `ConfirmDialog`; the book page and its Save bar are
    gone — [designs/v3-book-panel.md](designs/v3-book-panel.md)
-12. ⬜ The following steps: the series page, the add modal, the wishlist page
+12. ⬜ The following steps: the series page, the add modal
 
 ## Course submission MVP — done 2026-10-09
 

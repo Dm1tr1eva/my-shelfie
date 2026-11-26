@@ -22,7 +22,8 @@ Design and the reasons for an own small layer instead of a library:
   «Додай», «Увійди», «Спробуй ще раз»; «твоя полка», «твоя полиця»), the privacy page included.
   No form may reveal a gender: a past tense about the reader is rephrased without a subject
   («Вход в аккаунт не выполнен», «выбранная тобой книга», «спасибо за терпение»). No word for
-  buying («купить», «купити»): Next to buy reads «Что взять дальше» / «Що взяти далі». The rule
+  buying («купить», «купити»): the wishlist's desire levels are «Очень хочу», «Хочу»,
+  «Когда-нибудь» / «Дуже хочу», «Хочу», «Колись». The rule
   comes from the v3 handoff's `copy.md`; English is unaffected.
 
 ## Shape
@@ -37,8 +38,8 @@ Design and the reasons for an own small layer instead of a library:
   genres, the six preset moods (stored in English like default genres) and Would recommend.
 - `lib/i18n/server-errors.ts`: maps the exact English messages of the API that a screen can show
   to translated text; an unknown message is shown as it comes.
-- Areas: `shell`, `domain`, `home`, `auth`, `library`, `book`, `add`, `series` (with Next to buy
-  under `series.next`), `privacy`, `errors`.
+- Areas: `shell`, `domain`, `home`, `auth`, `library`, `book`, `add`, `series`, `privacy`,
+  `errors`, `wishlist`.
 - `components/language-switch.tsx` is the control; `components/locale-effects.tsx` sets
   `<html lang>` and the tab title from the path through `lib/use-document-title.ts`, which keeps
   that title while the path and the language stay the same (see the trade-offs). The not-found

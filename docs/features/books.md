@@ -139,7 +139,7 @@ the terms it honours: [google-books-search.md](../designs/google-books-search.md
 
 `client/lib/books.ts`: `useBooks()` and `useBook(id)` (`swr` hooks) read; `useBookActions()`
 creates, updates and deletes, then revalidates every library key (`/api/books`,
-`/api/series`, `/api/next-to-buy`, `/api/tropes`) through the current `SWRConfig` cache. After a
+`/api/series`, `/api/wishlist`, `/api/tropes`) through the current `SWRConfig` cache. After a
 delete the deleted book's own key is left alone — refetching it would answer `404` and put an
 error in the browser console.
 
@@ -193,12 +193,9 @@ client.
   values (genre, trope, author) are kept as they are, and one the library no longer has shows
   as a pill that removes it. No tabs, stats line, view toggle or series notes, as in the v3
   handoff.
-- `/wishlist` — `components/wishlist.tsx`, the v2 shelves until the Wishlist step: wanted
-  books only, series groups from `lib/catalogue.ts` with "own n of m", a list or a cover grid
-  (the choice kept in `localStorage`, `lib/use-view-mode.ts`), the v2 filter bar. Since
-  2026-11-19 it has no My library / Wishlist tabs; its heading is "Wishlist". The `"library"`
-  tab of `buildLibraryView` (and its gap slots) is no longer used by any screen, only by
-  `lib/catalogue.test.ts`; the Wishlist step removes it with the v2 shelves.
+- `/wishlist` — `components/wishlist.tsx`: three groups of rows from `GET /api/wishlist` with a
+  desire pill that cycles, search and the library's filter panel —
+  [wishlist.md](wishlist.md), [../designs/v3-wishlist-page.md](../designs/v3-wishlist-page.md).
 - `/books/[id]` — the v3 book panel, `components/book-panel.tsx`
   ([../designs/v3-book-panel.md](../designs/v3-book-panel.md)). A cover, a tile or a row link
   anywhere in the app is a soft navigation that the root `@panel` slot intercepts
@@ -260,7 +257,7 @@ client.
     it another way (the browser's Back, a link) sends such a field as the panel goes; a
     cancelled quote form is dropped. A text typed again after an Undo is sent again, even when
     it equals what was saved before. After a
-    save or a delete every library key (`/api/books…`, `/api/series…`, `/api/next-to-buy`,
+    save or a delete every library key (`/api/books…`, `/api/series…`, `/api/wishlist`,
     `/api/tropes`) is revalidated, so the page underneath shows the change.
   - `components/toast.tsx` and `components/confirm-dialog.tsx` are shared for the series page.
     Escape inside the panel closes only the innermost thing that handles it (a list, a form,
@@ -276,11 +273,10 @@ client.
   no series starts the series field from its own title, with its author ready in the "new
   series" form, so a series named after its first book is one click (an existing series of
   that name is offered instead of a duplicate)
-- Wishlist shows standalone books first, then series by the time their latest book
-  was added, newest on top. A book of a series has "Add a book to this series" (search opened for
+- A book of a series has "Add a book to this series" (search opened for
   the next number); "Where to get it" shows for a wishlist book only: its links grouped by what they lead to
   (Paper, E-book, Audio, Free e-book download, Read online — no "buy", as in the v3
-  handoff), each with a badge per language of the link, and the same five kinds as a chip on every link in Next to buy and as a "Link type" filter —
+  handoff), each with a badge per language of the link, and the same five kinds as a "Link type" filter —
   [../designs/link-kinds.md](../designs/link-kinds.md). A link carries `languages`, an array;
   the book panel picks several; the details step still chooses one language and writes a
   one-element array, and changing the language of a link with several there replaces them with
@@ -291,7 +287,7 @@ client.
   mark is a `role="img"` labelled "Paper book", "E-book" or "Audiobook", so the format is also in
   words. A full-width cover narrower than 80 px (the phone library) leaves the mark out, as the
   v3 375 mockup does, so it cannot cover the `#N` pill. It shows in
-  the library tiles and rows, the series page, Next to buy, the book panel and the details step;
+  the library tiles and rows, the series page, the wishlist rows, the book panel and the details step;
   not on search results. The format is a three-option select in the book panel and a two-option
   radio group, paper or e-book, "Format", on the details step (sent only when changed) —
   [../designs/book-format.md](../designs/book-format.md). The details step also asks for the
@@ -301,21 +297,18 @@ client.
   the cursor in the note; "Edit series" puts it in the title.
 - On the series page the note is edited with a proper outline button ("Add a note" or "Edit
   note", with a pencil icon).
-- `/next` — `components/next-to-buy.tsx`; `/series/[id]` — `components/series-page.tsx`.
-  Since the v3 shell (2026-11-19) `/next` has no nav item; it works by URL until the Wishlist
-  step replaces it — [../designs/v3-tokens-shell.md](../designs/v3-tokens-shell.md)
+- `/series/[id]` — `components/series-page.tsx`. `/next`, the old Next to buy, redirects
+  permanently to `/wishlist` since the v3 Wishlist step
 - Labels (`components/chips.tsx`, the v3 rules of one form per meaning): an owned book shows its
   reading status as a dot and a word (`StatusDot`: To read, Reading, Read, Dropped; «В планах» /
   «У планах» in Russian and Ukrainian); a wanted book on the series page and in list rows shows
   the bookmark pill "In wishlist" (`WishlistLabel`); series status is an outline pill, a link
   language a one-colour outline code, a number `#N` in Inter tabular figures, on covers a white
   pill top-left
-- Filters on Wishlist and Next to buy (`lib/filters.ts`, `components/filter-bar.tsx`): genre,
-  trope, series status, author and shop language. Values within a group are OR, groups are AND, and each option's count is
-  taken among the books that match the other groups. From 768 px each group is a button with a
-  checkbox popover (Clear / Apply) and removable chips; below it a "Filters · n" button opens a
-  bottom sheet of pills applied by "Show n books". Wishlist filters the loaded list;
-  Next to buy fetches the list once and filters in the browser.
+- Filters on the Library and the Wishlist share `lib/filters.ts`, `components/filter-panel.tsx`
+  and `components/catalogue-toolbar.tsx` (search, the filter button, removable pills); values
+  within a group are OR, groups are AND, and both pages filter in the browser —
+  [../designs/v3-library.md](../designs/v3-library.md), [wishlist.md](wishlist.md).
 - Loading shows `components/skeleton.tsx` with a visible status line; a failed load shows
   `ErrorState` with "Try again" (the hooks expose `reload`); a missing book or series shows
   `NotFound` with a way back.
@@ -326,7 +319,7 @@ client.
   has (case-insensitive); the text is kept. Each tag is one frame holding its text and a round
   remove button, so the button plainly belongs to that tag.
 - The series state is chosen with pills (`SeriesStatePills`): "Still coming out", "Finished",
-  "Don't know". Chips and the Next to buy filter show Ongoing, Complete, Unknown.
+  "Don't know". Chips and the filters show Ongoing, Complete, Unknown.
 
 **Search.** `/add` calls `GET /api/books/search` on submit (three characters at least) and
 keeps nothing between searches — no SWR cache, because the results may not be stored. Below the

@@ -1,13 +1,12 @@
-# Feature: series, ownership and "next to buy"
+# Feature: series and ownership
 
 **Last verified against code:** 2026-11-26
 
 ## What it does
 
 Turns the shelf into a catalogue. A book is either owned or wanted; a book can belong to a
-series with a number; a series has its own status and note. On top of that, "next to buy" answers
-the question the author asks before spending money: which book should I buy next, series by
-series. Design and reasons: [library-and-wishlist.md](../designs/library-and-wishlist.md).
+series with a number; a series has its own status and note. What is wanted next, series by
+series, is the wishlist ([wishlist.md](wishlist.md)). Design and reasons: [library-and-wishlist.md](../designs/library-and-wishlist.md).
 
 ## Invariants
 
@@ -36,7 +35,6 @@ Everything requires a session (`401` otherwise).
 | `GET /api/series/:id` | `200` with `{ series, books }`; books by number, unnumbered last. `404` for a missing, foreign or malformed id. |
 | `PATCH /api/series/:id` | `200` with the updated series. `null` clears `author`, `note`, `totalBooks` and `annotation`; `null` for `ageRating`, `desire` or `expected` answers `400`. `404` as above. |
 | `DELETE /api/series/:id` | `204`. The books are kept and unlinked. `404` as above. |
-| `GET /api/next-to-buy` | `200` with `{ items }`. Filters: `language` (`ru`, `uk`, `en`, `other`; a link matches when any of its languages does), `genre`, `trope`, `seriesStatus`. `400` on an unknown value. The page does not send them: it fetches once and filters several values per group in the browser. |
 | `GET /api/wishlist` | The v3 wishlist in three groups, see [wishlist.md](wishlist.md). |
 | `GET /api/tropes` | `200` with `{ tropes }`: the user's own tropes, each once, sorted. Feeds suggestions in the tag input. |
 | `GET /api/books` | Gains `?ownership=owned\|wanted`, `?seriesId=`, `?genre=`, `?trope=` and `?q=` (a case-insensitive text match on title and author, treated as plain text). `400` on an invalid value. |
@@ -46,36 +44,9 @@ Everything requires a session (`401` otherwise).
 `annotation`. The arrays `genres`, `tropes` and `links` are replaced as a whole, and an empty
 array clears them.
 
-## "Next to buy"
+## Missing numbers
 
-Being replaced by the grouped wishlist ([wishlist.md](wishlist.md), `GET /api/wishlist`). Both
-answer until the client half of v3 step 7 stops calling `/api/next-to-buy`; that step deletes
-the route, `services/nextToBuy.js` and its tests.
-
-Computed in `services/nextToBuy.js` as a pure function over the user's series and the books
-that are wanted or belong to a series:
-
-1. For each series of which the user owns **at least one** book, take **all** its wanted books.
-   A series she owns nothing of is left out; it is not "started".
-2. A wanted book is a **gap** when its number is below the highest number she owns in that
-   series (own #1 and #3 → #2 is a gap). A wanted book with no number is never a gap.
-3. A wanted book that belongs to no series (or whose series is gone) is a standalone item.
-4. Keep an item if its book matches the filters: a link in the language, the genre, the trope;
-   and for `seriesStatus`, if its series has that status (standalone items then drop out).
-5. Order: gaps first; then the other series books, series by title and books by number
-   (unnumbered last); then standalone books, newest first.
-
-Each item is `{ type: "series" | "standalone", series?, book, gap }`, or, for a number of a
-series whose size is known, `{ type: "missing", series, number, gap }` with no book. "I bought
-it" is a `PATCH` of the book's `ownership` to `owned`; the book then leaves the list on its own.
-
-6. For a series she has started and whose `totalBooks` is set, every whole number from 1 to
-   `totalBooks` with no book record at all is a `missing` item. It is a gap when it is below
-   her highest owned number. The language, genre and trope filters drop `missing` items (there
-   is nothing to match); `seriesStatus` keeps them. They sort among the series' books by number.
-
-Without `totalBooks` a number with no record cannot appear here. The Library has its own,
-wider rule ([v3-library.md](../designs/v3-library.md)): every whole number up to the largest of
+The Library has its own rule ([v3-library.md](../designs/v3-library.md)): every whole number up to the largest of
 `totalBooks`, the highest book number and the highest `expected` number that has no book, owned
 or wanted, is missing, and each run of them is one dashed gap tile, which shows the earliest
 `expectedYear` its numbers have in `expected` ("Not before 2027").
@@ -109,7 +80,8 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
 
 - **Counts come from one aggregation per list request**, not stored on the series, so they can
   never disagree with the books. At a few hundred books this is cheap.
-- **The wanted-books query is capped at 1,000.** A personal wishlist is far below that.
+- **The wishlist's query is capped at 2,000 books** (`findForWishlist`). A personal shelf is
+  far below that.
 - **No uniqueness on series titles.** Two series may share a title; the author tells them
   apart by author and notes.
 - **Genres and tropes live on the series; the annotation stays the book's.** A book with a
@@ -124,11 +96,8 @@ Design: [../designs/custom-genres.md](../designs/custom-genres.md).
   through the API is born merged, so tags an author removes are not brought back. Design:
   [series-tags.md](../designs/series-tags.md).
 - **A trope cannot be true of one book of a series only.**
-- **A series you have not started never shows up.** A new wishlist series appears in "Next
-  to buy" only after you own one of its books, as the design intends.
 - **A missing number has no title.** Only the count of the series is stored, not its list of
-  titles, so `missing` items say "Book 4" until the book is added. Fetching titles belongs to
-  the AI stage.
+  titles, so a gap says "#4" until the book is added. Fetching titles belongs to the AI stage.
 - **An expected number stays when its book arrives.** `expected` is not cleaned when a book with
   that number is added; whoever reads it skips numbers that have a book.
 - **The size is the author's word.** It is not checked against anything; a book numbered above

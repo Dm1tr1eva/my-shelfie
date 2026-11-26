@@ -7,9 +7,10 @@
 Answers "what do I want to get next" in the three groups the v3 Wishlist page draws: series to
 continue, series not started yet, and books outside any series, each ordered by how much the
 reader wants them. One request carries everything a row needs, segments included, so the page
-draws and filters without further calls. It replaces "Next to buy"
-([series.md](series.md)) once the client half of v3 step 7 lands; until then both endpoints
-answer. This is the API only. Design: [../designs/v3-wishlist-api.md](../designs/v3-wishlist-api.md).
+draws and filters without further calls. It replaced "Next to buy": `/next` redirects here
+permanently, and `GET /api/next-to-buy` is gone. Designs:
+[../designs/v3-wishlist-api.md](../designs/v3-wishlist-api.md),
+[../designs/v3-wishlist-page.md](../designs/v3-wishlist-page.md).
 
 ## Invariants
 
@@ -37,7 +38,7 @@ Requires a session (`401` otherwise).
 
 | Method and path | Answers |
 |---|---|
-| `GET /api/wishlist` | `200` with `{ groups }`. `400` with `query: Unrecognized key: "…"` for any query parameter. `500 Failed to build the list` on an unexpected failure, the text Next to buy already uses. |
+| `GET /api/wishlist` | `200` with `{ groups }`. `400` with `query: Unrecognized key: "…"` for any query parameter. `500 Failed to build the list` on an unexpected failure, a text the client translates. |
 
 A series row: `{ type: "series", id, title, author?, status, desire, coverUrl?, segments,
 genres, tropes, linkLanguages, linkKinds }`. A book row: `{ type: "book", id, title, author,
@@ -87,11 +88,35 @@ Search and filters run in the browser over this response. The desire level chang
 Code: `services/wishlist.js` (a pure function over the book and series DTOs),
 `libraryService.wishlist`, `libraryController.wishlist`, `routes/library.js`.
 
+## The page
+
+`/wishlist` (`components/wishlist.tsx`, `wishlist-row.tsx`, `desire-pill.tsx`,
+`lib/wishlist.ts`):
+
+- The three groups in the server's order, each with a count badge; inside a group the
+  server's order too. An empty group keeps its heading, `0` and a line saying what lands
+  there; an empty wishlist is one empty state with "Add a book". Loading shows a skeleton, a
+  failed load an error with "Try again".
+- A row: a 64px cover (a book's carries its format mark), title, author, `SeriesSegments` for a
+  series, the desire pill and a round arrow. The arrow is the one link, to `/series/[id]` or
+  `/books/[id]`, named "title, author" and stretched over the row; the pill sits above it.
+  Below 768px the pill goes under the segments.
+- The desire pill cycles Very much → Want → Someday on each tap and shows the new level at
+  once. One `PATCH` (`/api/series/:id` or `/api/books/:id`, `{ desire }`) goes out 400 ms after
+  the last tap, or at once with `keepalive` when the page is left; only the newest answer
+  counts. A failure restores the saved level and shows an alert. The wishlist cache is updated
+  in place and the other library keys refetched, so rows keep their order until the next load
+  (SWR does not refetch on focus here). A live region announces each change.
+- Search (title or author) and the library's filter panel: Genre, Tropes, Author, Series status
+  (with "Standalone books"), Link language, Link type, with removable pills. Both live in the
+  address as on the library (`q`, one parameter per group); groups the page does not have are
+  dropped when read. Under search or filters empty groups hide; nothing at all shows "No books
+  match". The panel's button reads "Show N results".
+
 ## Data
 
-Owns nothing. Reads `books` through `bookRepository.findForNextToBuy` (wanted books and books in
-a series, capped at 2,000) and `series` through `seriesService.listDocs`, the same inputs as
-Next to buy.
+Owns nothing. Reads `books` through `bookRepository.findForWishlist` (wanted books and books in
+a series, capped at 2,000) and `series` through `seriesService.listDocs`.
 
 ## Trade-offs accepted
 
@@ -103,6 +128,9 @@ Next to buy.
 - **No format, reading status, rating or "Have" filter values**: a series row has no single
   format, and the rest describe owned books. Age is not sent either: the client has no age
   filter yet.
+- **Rows keep their order after a desire change** until the next load, so a row does not move
+  between two taps.
+- **A change is lost if the tab dies** within 400 ms of the tap, before `keepalive` can send it.
 - **Gaps stop at 999.** A number in the millions stored by mistake before the request limit
   once took two seconds and then a `500` (`Set maximum size exceeded`), and the one replica
   serves everyone; now it stays a single segment and nothing past 999 is filled in. A series
