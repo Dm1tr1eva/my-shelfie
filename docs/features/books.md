@@ -205,8 +205,11 @@ client.
   (`app/@panel/(.)books/[id]`): the panel opens over the page it came from, the address becomes
   `/books/<id>`, and closing (×, Escape, a click on the scrim) is `router.back()`, so the page
   underneath, its scroll, search and library filters stay as they were and the focus goes back
-  to the cover that opened it. `@panel/default`, `@panel/page` and `@panel/[...rest]` render
-  nothing, so following a link out of the panel (the series name in its header) closes it. A
+  to the cover that opened it. `@panel/default` renders nothing, and the
+  panel renders nothing once `usePathname()` is no longer `/books/<id>`, so following a link out
+  of the panel (the series name in its header) closes it. The Next guide closes a modal with a
+  catch-all `@panel/[...catchAll]` page instead; that slot matched every address, and an unknown
+  one answered `200` with an empty page instead of `404` (checked with `next start`, 2026-11-26). A
   direct visit or a reload of `/books/<id>` renders the library with the panel open
   (`app/books/[id]/page.tsx`); closing it replaces the address with `/library`. The panel is
   the `Drawer` at 460 px from 768 px and 500 px from 1024 px over a lighter scrim

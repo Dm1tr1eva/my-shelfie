@@ -3,8 +3,6 @@ import { render, screen } from "@testing-library/react";
 import BookRoute from "./page";
 import BookPanelOverPage from "../../@panel/(.)books/[id]/page";
 import NoPanel from "../../@panel/default";
-import NoPanelElsewhere from "../../@panel/[...rest]/page";
-import NoPanelAtHome from "../../@panel/page";
 
 vi.mock("@/components/library", () => ({
   Library: () => <main>The library</main>,
@@ -33,9 +31,7 @@ describe("book routes", () => {
     expect(screen.getByRole("dialog", { name: "Book b1, closes by back" })).toBeInTheDocument();
   });
 
-  it("draws no panel on any other page", () => {
+  it("draws no panel when the page is loaded at another address", () => {
     expect(NoPanel()).toBeNull();
-    expect(NoPanelElsewhere()).toBeNull();
-    expect(NoPanelAtHome()).toBeNull();
   });
 });

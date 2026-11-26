@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useId, useRef, useState } from "react";
 import { AutoTextarea } from "@/components/auto-textarea";
 import { BookCover } from "@/components/book-cover";
@@ -352,6 +352,7 @@ function PanelContent({
 export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
   const t = useT();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, status } = useRequireAuth();
   const { book, error, isLoading, reload } = useBook(id);
   const { series: seriesList } = useSeriesList();
@@ -370,7 +371,7 @@ export function BookPanel({ id, closeBy }: { id: string; closeBy: CloseBy }) {
     else closing.current = false;
   }, [close, flushAll]);
 
-  if (status !== "authenticated" || !user) return null;
+  if (status !== "authenticated" || !user || pathname !== `/books/${id}`) return null;
 
   const notFound = error instanceof ApiError && error.status === 404;
   const series = book?.seriesId ? seriesList.find((item) => item.id === book.seriesId) : undefined;

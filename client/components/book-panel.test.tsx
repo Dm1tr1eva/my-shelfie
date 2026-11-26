@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { SWRConfig } from "swr";
+import { AuthProvider } from "@/lib/auth-context";
 import { book, choose, mockApi, renderApp, series, type Call } from "@/test/helpers";
 import type { Book } from "@/lib/books";
 import { BookPanel } from "./book-panel";
 
 const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }));
+const location = vi.hoisted(() => ({ pathname: "/books/b1" }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
+  usePathname: () => location.pathname,
 }));
 
 const saga = series({ id: "saga", title: "Saga of Ash" });
@@ -69,6 +73,7 @@ describe("BookPanel", () => {
   beforeEach(() => {
     router.back.mockReset();
     router.replace.mockReset();
+    location.pathname = "/books/b1";
   });
 
   afterEach(() => {
@@ -569,6 +574,7 @@ describe("BookPanel", () => {
 
   describe("states and closing", () => {
     it("says the book is not there when the API answers 404", async () => {
+      location.pathname = "/books/gone";
       mockApi(({ path }) => {
         if (path === "/api/books/gone") return { status: 404, body: { error: "Book not found" } };
         if (path === "/api/series") return { body: { series: [] } };
@@ -647,6 +653,22 @@ describe("BookPanel", () => {
       fireEvent.blur(area);
 
       await waitFor(() => expect(patches(calls)).toEqual([{ annotation: "A quiet book." }]));
+    });
+
+    it("goes away when a link inside it leads to another page", async () => {
+      serve(book({ id: "b1", title: "Ash" }));
+      const panel = <BookPanel id="b1" closeBy="back" />;
+      const { rerender } = renderApp(panel);
+      await screen.findByRole("heading", { name: "Ash" });
+
+      location.pathname = "/series/saga";
+      rerender(
+        <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+          <AuthProvider>{panel}</AuthProvider>
+        </SWRConfig>,
+      );
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
     it("closes back to the page underneath with Escape", async () => {

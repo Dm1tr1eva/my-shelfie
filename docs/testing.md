@@ -93,6 +93,11 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   reads a value from a client module in `lib/`; such shared constants live in
   `lib/catalogue-constants.ts`, which has no directive.
 
+- **A catch-all in a parallel slot swallows 404s.** `app/@panel/[...rest]/page.tsx`, as the Next
+  guide suggests for closing a modal, made `/nonexistent` answer `200` (2026-11-26). Neither
+  Vitest nor `next dev` showed it; `next build` listed a `/[...rest]` route, and `curl` against
+  `next start` gave the status. After touching route files, check an unknown address that way.
+
 - **A loading state can be gone before the assertion.** `findByText("Loading the book…")`
   resolved with the skeleton, and by the next line the mocked `fetch` had answered and the
   skeleton was detached, so `toBeInTheDocument()` failed (2026-11-26). Hold the response with the

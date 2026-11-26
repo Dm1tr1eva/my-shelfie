@@ -11,6 +11,7 @@ import { TagInput } from "./tag-input";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/books/w1",
 }));
 
 const LISTENING = book({
