@@ -22,7 +22,7 @@ book and series endpoints. Design: [../designs/series-lookup.md](../designs/seri
 - The cache holds no user id ([ADR 0001](../adr/0001-shared-reference-data.md)).
 - A fresh series entry is never overwritten: a later answer for the same series only replaces
   an entry whose `expiresAt` has passed.
-- An answer is at most 100 books, and every name and title at most 200 characters, so the
+- An answer is at most 60 books and 5 sources, and every name and title at most 150 characters, so the
   endpoint cannot relay long text from the model.
 - A user makes at most `SERIES_LOOKUP_DAILY_LIMIT` model calls a UTC day; cache hits are free,
   and a server without a key answers `503` before anything is counted.
@@ -40,7 +40,8 @@ parsed answer or `null`, `reason` says why it is `null`. `prompt.js` and `answer
 provider; a second adapter reuses them and adds one entry to the provider's map.
 
 **The Anthropic adapter** (`anthropicAdapter.js`): model `SERIES_LOOKUP_MODEL` (default
-`claude-haiku-5-5`), effort `medium`, `max_tokens` 8000, tool `web_search_20260318` with
+`claude-haiku-5-5`), effort `medium`, `max_tokens` 4000 (thinking and search queries count;
+the trial's largest lookup used 3182, its median 1699), tool `web_search_20260318` with
 `allowed_callers: ["direct"]` and `max_uses: 5`, no SDK retries, 45 s timeout. The JSON is read
 from the text after the last search block. One `pause_turn` is continued by sending the paused
 content back, with the same tool: the API counts the searches of earlier requests in a continued
@@ -127,7 +128,7 @@ at the existing entry and keeps the number from the answer.
   later lookups of any title it lists by the same author. It cannot replace a fresh entry. Others
   see it only as a suggestion with its sources; Recovery deletes it. A standalone answer is only
   served for the exact same input.
-- **The endpoint relays model text within the answer's size limits**: up to 100 titles of 200
+- **The endpoint relays model text within the answer's size limits**: up to 60 titles of 150
   characters, after the prompt asked for book data. Anything longer, or not shaped as an answer,
   is `unknown`; the daily limit bounds how often.
 - **The per-user limit does not stop many accounts.** The monthly spend limit set in the Claude

@@ -2,8 +2,8 @@
 
 ## Problem
 
-Google Books has no series data (`services/googleBooksService.js:6`), so the v3 add flow
-(handoff decisions 26–28) cannot offer "#1 in series · 6 books". Decided with the author:
+Google Books has no series data (`services/googleBooksService.js:6`), so the add flow
+(handoff decisions 26–28) cannot offer "#1 in series". Decided with the author:
 Google Books, Open Library and Wikidata found 7 of 40 test series (0 of 15 Russian or
 Ukrainian); FantLab is rejected; Claude Haiku 5.5 with web search found 38 of 40, ~$0.027 and
 ~9 s a lookup.
@@ -15,7 +15,7 @@ a second provider.
 
 ## Scale assumptions
 
-A handful of users, tens of lookups a day, one instance, open registration.
+Few users, tens of lookups a day, one instance, open registration.
 
 ## Approach
 
@@ -30,35 +30,36 @@ returns a validated answer or `null`; prompt and answer schema are shared. The o
 
 **The call.** `web_search_20260318` with `allowed_callers: ["direct"]` (the measured setup),
 `max_uses: 5`, effort `medium`, no SDK retry, 45 s timeout. Structured outputs exclude
-citations, so the model writes JSON text, validated by Zod. Invalid JSON, `refusal`,
-`max_tokens`, a search error, or a turn still paused after one continuation → `unknown`. An SDK
-error → `502`.
+citations, so the model writes JSON only, validated by strict Zod: ≤ 60 books, names ≤ 150
+characters, ≤ 5 sources (trial maxima: 11, 55, 5). Otherwise, `refusal`, `max_tokens`, a search
+error or a second pause → `unknown`, uncached; an SDK error → `502`.
 
-**Budget, not retries.** The long-series miss was three searches for fourteen books. Five cost
-≤ $0.02 more; a retry repeats the budget and doubles the wait.
+**`max_tokens` 4000.** Output tokens include hidden thinking and search queries: trial average
+1815, median 1699, maximum 3182, JSON ≤ 1338 characters. A cap of 2000 would cut 13 of 40
+lookups, 3000 two, 3500 none.
 
-**Prompt fixes** from the trial: a title that is also the series name gets the book's number;
-a shared world is not a series; no book without a source, no placeholder titles; announced
-books need a source (Litnet counts); long series: find a whole bibliography. Today's date is
-given; the input is JSON data.
+**Budget, not retries.** Three searches missed a fourteen-book series. Five cost ≤ $0.02 more;
+a retry doubles the wait.
 
-**Sources are checked**: only URLs its searches returned survive; a series left with none is
-`low`.
+**Prompt fixes** from the trial: a title that is also the series name gets its number; a
+shared world is not a series; no unsourced books or placeholder titles; announced books need a
+source (Litnet counts); long series: find a whole bibliography. Today's date is given.
+
+**Sources are checked**: only URLs its searches returned survive; none left → `low`.
 
 **Cache shared by all users** ([ADR 0001](../adr/0001-shared-reference-data.md)):
-`series_lookups` (per series) and `series_lookup_books` (hash of the normalised input → series
-and number, or standalone). On a book miss, a fresh series listing the title by the same author
-answers without the model. `expiresAt` with a TTL index: 30 days if unreleased, ongoing or
-unknown, else 180. Failures are not cached.
+`series_lookups` (per series and edition language, never overwritten while fresh) and
+`series_lookup_books` (input hash → series and number, or standalone). A fresh series listing
+the title by the same author answers without the model. TTL: 7 days for `low`, 180 for a
+finished series, else 30.
 
 **Cost guard.** Trigger: open registration and a paid call per lookup; a client loop or script
 spends without bound. Defence: a per-user daily cap of model calls
 (`SERIES_LOOKUP_DAILY_LIMIT`, default 30; cache hits free), one atomic upsert; over it `429`.
-Many accounts are bounded by the monthly spend limit set in the Claude Console.
+Many accounts: the monthly spend limit in the Claude Console.
 
-**Eval.** `scripts/series-lookup-eval.js` runs the real adapter on a reference file, only with
-`--run` and a key. The trial's list stays out of this public repository (a personal reading
-list).
+**Eval.** `scripts/series-lookup-eval.js`, only with `--run` and a key. The trial's list
+stays out of this public repository (a personal reading list).
 
 ## Trade-offs accepted
 
@@ -72,9 +73,8 @@ list).
 
 ## Cost
 
-SDK dependency; config, three models, two repositories, adapter files, service, controller,
-route, DTO, validation, eval script, ADR, feature doc, ~40 tests. Edited:
-`index.js`, `.env.example`, deploy notes, privacy texts. Render needs `ANTHROPIC_API_KEY`.
+SDK dependency; three models, two repositories, adapter files, service, route, eval script,
+ADR, feature doc, ~90 tests. Edited: `index.js`, `.env.example`, deploy notes, privacy texts. Render needs `ANTHROPIC_API_KEY`.
 ~$0.03 a model call.
 
 ## Open questions
