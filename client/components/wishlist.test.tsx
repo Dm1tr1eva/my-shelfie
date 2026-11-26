@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { mockApi, renderApp, type Call } from "@/test/helpers";
+import { useBookActions } from "@/lib/books";
 import { resetLocale, setLocale } from "@/lib/i18n";
 import type { WishlistBookRow, WishlistGroup, WishlistSeriesRow } from "@/lib/wishlist";
 import { Wishlist } from "./wishlist";
@@ -9,6 +10,15 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => new URLSearchParams(window.location.search),
 }));
+
+function MarkLooseRead() {
+  const { updateBook } = useBookActions();
+  return (
+    <button type="button" onClick={() => void updateBook("loose", { status: "read" })}>
+      Mark read elsewhere
+    </button>
+  );
+}
 
 function seriesRow(overrides: Partial<WishlistSeriesRow> = {}): WishlistSeriesRow {
   return {
@@ -261,6 +271,48 @@ describe("Wishlist", () => {
     fireEvent.click(screen.getByRole("button", { name: "Remove filter Fantasy" }));
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
     expect(window.location.search).toBe("");
+  });
+
+  it("counts only rows that also match the search on the panel's button", async () => {
+    serve();
+    renderApp(<Wishlist />);
+    fireEvent.change(await screen.findByRole("searchbox"), { target: { value: "solo" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+
+    expect(
+      within(screen.getByRole("dialog", { name: "Filters" })).getByRole("button", {
+        name: "Show 1 result",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("filters a series by its own author", async () => {
+    serve();
+    renderApp(<Wishlist />);
+    fireEvent.click(await screen.findByRole("button", { name: "Filters" }));
+    const panel = screen.getByRole("dialog", { name: "Filters" });
+
+    fireEvent.click(within(panel).getByRole("button", { name: "A. Writer" }));
+    fireEvent.click(within(panel).getByRole("button", { name: "Show 1 result" }));
+
+    expect(screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Saga of Ash",
+    ]);
+  });
+
+  it("loads the wishlist again when a book is changed elsewhere in the app", async () => {
+    const calls = serve();
+    renderApp(
+      <>
+        <Wishlist />
+        <MarkLooseRead />
+      </>,
+    );
+    await screen.findByRole("heading", { name: "Loose Leaf" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark read elsewhere" }));
+
+    await waitFor(() => expect(wishlistReads(calls)).toBe(2));
   });
 
   it("restores the search and filters from the address and ignores groups the page does not have", async () => {
