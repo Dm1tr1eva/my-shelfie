@@ -117,6 +117,7 @@ describe("AppFrame", () => {
     );
 
     expect(await screen.findByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/");
     expect(screen.queryByRole("link", { name: "Wishlist" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Next to buy" })).not.toBeInTheDocument();
   });
@@ -246,7 +247,7 @@ describe("AppFrame", () => {
     );
   });
 
-  it("sends a signed-in user to the home page from the logo", async () => {
+  it("sends a signed-in user to Home from the logo", async () => {
     route.pathname = "/library";
     mockApi(() => undefined);
     renderApp(
@@ -259,7 +260,7 @@ describe("AppFrame", () => {
 
     const logos = screen.getAllByRole("link", { name: "My Shelfie" });
     expect(logos.length).toBeGreaterThan(0);
-    for (const logo of logos) expect(logo).toHaveAttribute("href", "/");
+    for (const logo of logos) expect(logo).toHaveAttribute("href", "/dashboard");
   });
 
   it("marks the section you are in as the current page", async () => {
@@ -338,7 +339,7 @@ describe("MobileHeader", () => {
     renderApp(<MobileHeader />);
 
     expect(await screen.findByLabelText("Account")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "My Shelfie" })).toHaveAttribute("href", "/dashboard");
   });
 
   it.each(["/series/saga", "/books/one", "/add", "/add/one/details"])(

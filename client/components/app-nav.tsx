@@ -20,7 +20,7 @@ export function AppNav() {
   return (
     <header className="hidden bg-navy text-page md:block">
       <div className="mx-auto flex h-[68px] w-full max-w-5xl items-center justify-between gap-4 px-8">
-        <Logo />
+        <Logo href="/dashboard" />
 
         <nav aria-label={t("shell.nav.main")}>
           <ul className="flex items-center gap-1.5">

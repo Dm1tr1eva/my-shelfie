@@ -120,7 +120,7 @@ describe("RegisterForm", () => {
     fillValid();
     submit();
 
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/dashboard"));
     expect(calls[0]).toEqual({
       method: "POST",
       path: "/api/auth/register",

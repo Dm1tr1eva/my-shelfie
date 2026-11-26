@@ -28,7 +28,7 @@ export function LoginForm() {
     setPending(true);
     try {
       await login(email.trim(), password);
-      router.push("/library");
+      router.push("/dashboard");
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 401

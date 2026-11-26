@@ -24,7 +24,7 @@ export function MobileHeader() {
         </Link>
       ) : (
         <>
-          <Logo />
+          <Logo href="/dashboard" />
           <AccountMenu />
         </>
       )}

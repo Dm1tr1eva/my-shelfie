@@ -74,7 +74,7 @@ export function RegisterForm() {
     setPending(true);
     try {
       await register(values.email.trim(), values.password, values.name.trim());
-      router.push("/library");
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setErrors({

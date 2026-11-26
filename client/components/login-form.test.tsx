@@ -90,7 +90,7 @@ describe("LoginForm", () => {
     fill("Password", "secret123");
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
-    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/library"));
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/dashboard"));
     expect(calls).toContainEqual({
       method: "POST",
       path: "/api/auth/login",
