@@ -7,6 +7,7 @@ import { Library } from "./library";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(window.location.search),
 }));
 
 const saga = series({ id: "saga", title: "Saga of Ash", author: "A. Writer", totalBooks: 6 });
@@ -61,6 +62,7 @@ function numberedBooks(count: number) {
 describe("Library", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    window.history.replaceState(null, "", "/");
     vi.mocked(window.matchMedia).mockImplementation(
       (query: string) =>
         ({
@@ -230,6 +232,80 @@ describe("Library", () => {
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByRole("region", { name: "Saga of Ash" })).toBeInTheDocument();
+  });
+
+  describe("address", () => {
+    it("restores the search and the filters from the address", async () => {
+      window.history.replaceState(null, "", "/library?q=alone&have=wanted");
+      serve();
+      renderApp(<Library />);
+
+      expect(
+        await screen.findByRole("link", { name: tileName("Wished Alone") }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: tileName("Stand Alone") })).not.toBeInTheDocument();
+      expect(screen.getByRole("searchbox", { name: "Title, author or series" })).toHaveValue(
+        "alone",
+      );
+      expect(screen.getByRole("button", { name: "Remove filter In wishlist" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Filters · 1" })).toBeInTheDocument();
+    });
+
+    it("writes every change of the search and the filters into the address", async () => {
+      window.history.replaceState(null, "", "/library");
+      serve();
+      renderApp(<Library />);
+      await screen.findByRole("link", { name: tileName("Stand Alone") });
+
+      fireEvent.click(screen.getByRole("button", { name: "Filters" }));
+      const panel = screen.getByRole("dialog");
+      fireEvent.click(within(panel).getByRole("button", { name: "In wishlist" }));
+      fireEvent.click(within(panel).getByRole("button", { name: "Show 2 books" }));
+      expect(window.location.search).toBe("?have=wanted");
+
+      fireEvent.change(screen.getByRole("searchbox", { name: "Title, author or series" }), {
+        target: { value: "ash" },
+      });
+      expect(window.location.search).toBe("?q=ash&have=wanted");
+
+      fireEvent.click(screen.getByRole("button", { name: "Remove filter In wishlist" }));
+      expect(window.location.search).toBe("?q=ash");
+
+      fireEvent.change(screen.getByRole("searchbox", { name: "Title, author or series" }), {
+        target: { value: "" },
+      });
+      expect(window.location.search).toBe("");
+      expect(window.location.pathname).toBe("/library");
+    });
+
+    it("clears the address when the panel is reset and applied", async () => {
+      window.history.replaceState(null, "", "/library?have=wanted");
+      serve();
+      renderApp(<Library />);
+      await screen.findByRole("link", { name: tileName("Wished Alone") });
+
+      fireEvent.click(screen.getByRole("button", { name: "Filters · 1" }));
+      const panel = screen.getByRole("dialog");
+      fireEvent.click(within(panel).getByRole("button", { name: "Reset" }));
+      fireEvent.click(within(panel).getByRole("button", { name: "Show 4 books" }));
+
+      expect(window.location.search).toBe("");
+    });
+
+    it("ignores what it does not understand in the address and shows the library", async () => {
+      window.history.replaceState(null, "", "/library?have=maybe&rating=7&status=standalone&x=1");
+      serve();
+      renderApp(<Library />);
+
+      expect(
+        await screen.findByRole("link", { name: tileName("Stand Alone") }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("region", { name: "Saga of Ash" })).not.toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: /^Remove filter/ })).toHaveLength(1);
+      expect(
+        screen.getByRole("button", { name: "Remove filter Standalone books" }),
+      ).toBeInTheDocument();
+    });
   });
 
   describe("filter panel", () => {

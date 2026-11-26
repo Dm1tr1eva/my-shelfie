@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorState } from "@/components/error-state";
@@ -17,7 +18,6 @@ import { ShelfSkeleton } from "@/components/skeleton";
 import { useBooks } from "@/lib/books";
 import {
   LIBRARY_FILTER_KEYS,
-  NO_FILTERS,
   activeFilterCount,
   libraryFilterGroups,
   panelChipLabel,
@@ -25,6 +25,7 @@ import {
 } from "@/lib/filters";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
+import { readLibraryParams, writeLibraryParams, type LibraryParams } from "@/lib/library-params";
 import { useSeriesList } from "@/lib/series";
 import { libraryShelves, rowsOf, shelfRow, type SeriesShelf } from "@/lib/shelves";
 import { useRequireAuth } from "@/lib/use-require-auth";
@@ -80,8 +81,10 @@ export function Library() {
   const books = useBooks();
   const seriesList = useSeriesList();
   const columns = useShelfColumns();
-  const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const searchParams = useSearchParams();
+  const [{ query, filters }, setParams] = useState<LibraryParams>(() =>
+    readLibraryParams(searchParams),
+  );
   const [panelOpen, setPanelOpen] = useState(false);
   const filterButton = useRef<HTMLButtonElement>(null);
 
@@ -114,6 +117,16 @@ export function Library() {
     })),
   );
 
+  function show(next: LibraryParams) {
+    setParams(next);
+    const search = writeLibraryParams(next.query, next.filters);
+    window.history.replaceState(
+      null,
+      "",
+      search ? `${window.location.pathname}?${search}` : window.location.pathname,
+    );
+  }
+
   function retry() {
     books.reload();
     seriesList.reload();
@@ -137,7 +150,7 @@ export function Library() {
                 <input
                   type="search"
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => show({ query: event.target.value, filters })}
                   placeholder={t("library.searchAll")}
                   className="field pl-10"
                 />
@@ -177,9 +190,12 @@ export function Library() {
                   type="button"
                   aria-label={t("library.filters.remove", { label: pill.label })}
                   onClick={() => {
-                    setFilters({
-                      ...filters,
-                      [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
+                    show({
+                      query,
+                      filters: {
+                        ...filters,
+                        [pill.key]: filters[pill.key].filter((value) => value !== pill.value),
+                      },
                     });
                     filterButton.current?.focus();
                   }}
@@ -260,7 +276,7 @@ export function Library() {
           groups={groups}
           filters={filters}
           countWith={countWith}
-          onApply={setFilters}
+          onApply={(next) => show({ query, filters: next })}
           onClose={() => setPanelOpen(false)}
         />
       )}

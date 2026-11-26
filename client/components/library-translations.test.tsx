@@ -10,6 +10,7 @@ import { Wishlist } from "./wishlist";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(window.location.search),
 }));
 
 const saga = series({ id: "saga", title: "Saga of Ash", author: "A. Writer", totalBooks: 4 });
