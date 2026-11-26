@@ -77,7 +77,7 @@ describe("LoginForm", () => {
     expect(screen.getByLabelText("Password")).not.toHaveAttribute("aria-invalid");
   });
 
-  it("signs in and opens the library", async () => {
+  it("signs in and opens Home", async () => {
     const calls = mockApi(({ path }) => {
       if (path === "/api/auth/login") {
         return { body: { id: "1", email: "alice@example.com", name: "Alice" } };

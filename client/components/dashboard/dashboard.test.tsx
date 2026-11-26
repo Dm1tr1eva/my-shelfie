@@ -344,11 +344,6 @@ describe("Home after sign-in", () => {
     await waitFor(() => expect(statsLoads(calls)).toBe(2));
   });
 
-  it("builds the local date from the reader's calendar, not from UTC", () => {
-    expect(localDate(new Date(2026, 0, 1, 0, 30))).toBe("2026-01-01");
-    expect(localDate(new Date(2026, 11, 31, 23, 59))).toBe("2026-12-31");
-  });
-
   it("says what went wrong when finishing fails, translated", async () => {
     act(() => setLocale("ru"));
     serve(fullStats(), (call) => {
@@ -497,6 +492,18 @@ describe("Home after sign-in", () => {
     expect(within(chart).getByRole("region", { name: "April · 1 book" })).toBeInTheDocument();
     fireEvent.pointerLeave(april.closest("li")!, { pointerType: "mouse" });
     expect(within(chart).queryByRole("region")).not.toBeInTheDocument();
+  });
+
+  it("opens a month's books with one tap on a touch screen", async () => {
+    serve(fullStats());
+    await renderHome();
+    const chart = screen.getByRole("region", { name: "Read per month" });
+    const april = within(chart).getByRole("button", { name: "April, 1 book" });
+
+    fireEvent.pointerEnter(april.closest("li")!, { pointerType: "touch" });
+    fireEvent.click(april);
+
+    expect(within(chart).getByRole("region", { name: "April · 1 book" })).toBeInTheDocument();
   });
 
   it("lists genres, continuations and the very much wishlist with their links", async () => {

@@ -107,7 +107,7 @@ describe("RegisterForm", () => {
     expect(screen.getByText("Enter a valid email address.")).toBeInTheDocument();
   });
 
-  it("registers, signs in and opens the library", async () => {
+  it("registers, signs in and opens Home", async () => {
     const calls = await open(({ path }) => {
       if (path === "/api/auth/register") {
         return { status: 201, body: { id: "1", email: "alice@example.com", name: "Alice" } };
