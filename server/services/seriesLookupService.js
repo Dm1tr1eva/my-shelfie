@@ -11,13 +11,6 @@ const UNSETTLED_TTL_DAYS = 30;
 const SETTLED_TTL_DAYS = 180;
 const USAGE_TTL_DAYS = 2;
 
-class LookupLimitError extends HttpError {
-  constructor() {
-    super(429, "Daily series lookup limit reached");
-    this.name = "LookupLimitError";
-  }
-}
-
 function normalizeText(value) {
   return value
     .normalize("NFKC")
@@ -157,7 +150,7 @@ async function lookUpSeries(userId, query, now = new Date()) {
     dailyLimit,
     daysFrom(now, USAGE_TTL_DAYS),
   );
-  if (!allowed) throw new LookupLimitError();
+  if (!allowed) throw new HttpError(429, "Daily series lookup limit reached");
 
   const outcome = await seriesLookupProvider.lookUpSeries(query);
   logModelCall(provider, model, outcome);
@@ -166,4 +159,4 @@ async function lookUpSeries(userId, query, now = new Date()) {
   return store(bookKey, query, outcome.answer, now);
 }
 
-module.exports = { lookUpSeries, LookupLimitError };
+module.exports = { lookUpSeries };

@@ -25,17 +25,10 @@ class SeriesLookupUnavailableError extends HttpError {
   }
 }
 
-class SeriesLookupNotConfiguredError extends HttpError {
-  constructor() {
-    super(503, "Series lookup is not configured");
-    this.name = "SeriesLookupNotConfiguredError";
-  }
-}
-
 function createDefaultClient() {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new SeriesLookupNotConfiguredError();
+    throw new HttpError(503, "Series lookup is not configured");
   }
   return new Anthropic({ apiKey, baseURL: ANTHROPIC_API_URL, maxRetries: 0, timeout: TIMEOUT_MS });
 }
@@ -152,6 +145,4 @@ module.exports = {
   createAnthropicAdapter,
   createAnthropicLookup,
   SeriesLookupUnavailableError,
-  SeriesLookupNotConfiguredError,
-  WEB_SEARCH_TOOL,
 };

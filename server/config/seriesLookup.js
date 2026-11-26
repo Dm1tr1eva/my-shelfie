@@ -37,4 +37,4 @@ function readSeriesLookupConfig(env = process.env) {
   };
 }
 
-module.exports = { readSeriesLookupConfig, SERIES_LOOKUP_PROVIDERS };
+module.exports = { readSeriesLookupConfig };
