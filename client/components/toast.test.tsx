@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { TOAST_DURATION_MS, Toast, type ToastMessage } from "./toast";
+import { finishAnimation, pretendAnimations } from "@/test/helpers";
 
 function renderToast(toast: ToastMessage) {
   const onDismiss = vi.fn();
@@ -45,5 +46,20 @@ describe("Toast", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Could not save");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("slides away before it is dismissed when its time is up", () => {
+    vi.useFakeTimers();
+    const animations = pretendAnimations();
+    const onDismiss = renderToast({ id: 1, tone: "done", text: "Saved" });
+    const card = screen.getByText("Saved").parentElement as HTMLElement;
+
+    act(() => vi.advanceTimersByTime(TOAST_DURATION_MS));
+
+    expect(card.className).toContain("animate-rise-out");
+    expect(onDismiss).not.toHaveBeenCalled();
+    finishAnimation(card);
+    expect(onDismiss).toHaveBeenCalledOnce();
+    animations.mockRestore();
   });
 });

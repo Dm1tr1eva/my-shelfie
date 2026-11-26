@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { ConfirmDialog } from "./confirm-dialog";
+import { finishAnimation, pretendAnimations } from "@/test/helpers";
 
 function Harness({ onConfirm = () => {} }: { onConfirm?: () => void }) {
   const [open, setOpen] = useState(false);
@@ -89,5 +90,20 @@ describe("ConfirmDialog", () => {
     open();
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
     expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
+  it("plays its closing animation before it goes when Cancel is pressed", () => {
+    const animations = pretendAnimations();
+    render(<Harness />);
+    open();
+    const dialog = screen.getByRole("alertdialog");
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(dialog.className).toContain("animate-pop-out");
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    finishAnimation(dialog);
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    animations.mockRestore();
   });
 });
