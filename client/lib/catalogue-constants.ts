@@ -24,6 +24,8 @@ export const MOOD_NAME_MAX = 40;
 export const LINKS_MAX = 10;
 export const QUOTES_MAX = 50;
 export const BOOK_LENGTH_MAX = 10000;
+export const DATE_YEAR_MIN = 1900;
+export const DATE_YEAR_MAX = 2100;
 
 export const OWNERSHIP_LABELS: Record<Ownership, string> = {
   owned: "In my library",

@@ -15,6 +15,7 @@ import {
 } from "@/lib/catalogue-constants";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
+import { isWholeIn } from "@/lib/numbers";
 import { useDraft, type SaveBook } from "@/lib/use-book-autosave";
 
 const LABEL = "text-xs font-semibold uppercase tracking-[0.06em] text-muted";
@@ -186,9 +187,7 @@ function QuoteForm({
   const [page, setPage] = useState("");
 
   const pageNumber = page.trim() === "" ? undefined : Number(page);
-  const pageValid =
-    pageNumber === undefined ||
-    (Number.isInteger(pageNumber) && pageNumber >= 1 && pageNumber <= BOOK_LENGTH_MAX);
+  const pageValid = pageNumber === undefined || isWholeIn(page, 1, BOOK_LENGTH_MAX);
 
   const commit = useCallback(
     async (text: string) => {
@@ -202,12 +201,17 @@ function QuoteForm({
   );
   const draft = useDraft("quote", "", commit);
 
+  function cancel() {
+    draft.discard();
+    onClose();
+  }
+
   return (
     <div
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           event.preventDefault();
-          onClose();
+          cancel();
         }
       }}
       className="flex flex-col gap-3 rounded-card border border-slate p-4"
@@ -247,7 +251,7 @@ function QuoteForm({
         )}
       </div>
       <div className="flex items-center justify-between gap-3">
-        <button type="button" onClick={onClose} className="btn-outline">
+        <button type="button" onClick={cancel} className="btn-outline">
           {t("book.panel.links.cancel")}
         </button>
         <button

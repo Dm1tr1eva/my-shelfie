@@ -5,7 +5,14 @@ import { StarRating } from "@/components/form-controls";
 import { XIcon } from "@/components/icons";
 import { Select } from "@/components/select";
 import { STATUSES, type Book, type BookStatus } from "@/lib/books";
-import { BOOK_LENGTH_MAX, type Format, type Ownership } from "@/lib/catalogue-constants";
+import {
+  BOOK_LENGTH_MAX,
+  DATE_YEAR_MAX,
+  DATE_YEAR_MIN,
+  type Format,
+  type Ownership,
+} from "@/lib/catalogue-constants";
+import { isWholeIn } from "@/lib/numbers";
 import { useLocale, useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { useBookProgress } from "@/lib/progress";
@@ -75,17 +82,12 @@ function HaveToggle({
   );
 }
 
-function wholeIn(text: string, min: number, max: number) {
-  const value = Number(text);
-  return text.trim() !== "" && Number.isInteger(value) && value >= min && value <= max;
-}
-
 function PagesField({ book, save, labelId }: { book: Book; save: SaveBook; labelId: string }) {
   const t = useT();
   const [invalid, setInvalid] = useState(false);
   const commit = useCallback(
     async (text: string) => {
-      if (text.trim() !== "" && !wholeIn(text, 1, BOOK_LENGTH_MAX)) {
+      if (text.trim() !== "" && !isWholeIn(text, 1, BOOK_LENGTH_MAX)) {
         setInvalid(true);
         return false;
       }
@@ -145,8 +147,8 @@ function DurationField({ book, save, labelId }: { book: Book; save: SaveBook; la
       const m = minutes.trim() === "" ? "0" : minutes;
       const total = Number(h) * 60 + Number(m);
       if (
-        !wholeIn(h, 0, BOOK_LENGTH_MAX) ||
-        !wholeIn(m, 0, 59) ||
+        !isWholeIn(h, 0, BOOK_LENGTH_MAX) ||
+        !isWholeIn(m, 0, 59) ||
         total < 1 ||
         total > BOOK_LENGTH_MAX
       ) {
@@ -248,7 +250,7 @@ function DateField({
     if (refocus) window.setTimeout(() => button.current?.focus());
     if (text === dateValue(value)) return;
     const year = Number(text.slice(0, 4));
-    if (text !== "" && (year < 1900 || year > 2100)) return;
+    if (text !== "" && (year < DATE_YEAR_MIN || year > DATE_YEAR_MAX)) return;
     onChange(text === "" ? null : text);
   }
 
@@ -258,8 +260,8 @@ function DateField({
         type="date"
         aria-label={label}
         autoFocus
-        min="1900-01-01"
-        max="2100-12-31"
+        min={`${DATE_YEAR_MIN}-01-01`}
+        max={`${DATE_YEAR_MAX}-12-31`}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onBlur={(event) => finish(event.target.value, false)}
