@@ -36,6 +36,12 @@ recorded here instead. How to run the suites is in [README.md](README.md).
 - **A sum can hide a wrong term.** The first percent-only-entry test summed to the same total
   with the fallback replaced by 0 (30 + 120 and 0 + 150). Put the case under test where a wrong
   value changes the result, and break it to check.
+- **A tie-break needs input in the opposite order.** A sort's second key (genres by name,
+  books without progress by age, the series cover by number) passed with the key removed while
+  the fixtures were already in the expected order: `Array.prototype.sort` is stable. Feed the
+  tied items in reverse; the same goes for a date rule checked only on days where the wrong
+  rule agrees (the quote by day of month matched the day number from 26 to 29 November, and
+  differs across 31 January → 1 February).
 - **Home stats are tested at two levels.** `homeStats.test.js` drives the pure builder with a
   fixed `now` (year edges, weeks left, the quote's day); `stats.test.js` goes through HTTP and
   the database (isolation, query validation, documents saved before v3). The HTTP tests cannot

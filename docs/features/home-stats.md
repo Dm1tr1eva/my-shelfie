@@ -65,8 +65,11 @@ every list may be empty.
   order (ties by insertion): every entry dated within the year adds `max(0, page − previous
   page)`. The previous page is the book's previous entry, even from an earlier year; the first
   entry ever counts from page 0. An entry without `page` reads as `round(percent × pages / 100)`
-  with the book's current `pages`. A step back adds nothing and the next step forward counts from
-  the lower page. Entries of a deleted book are ignored. "Finished" writes 100%, which is stored
+  with the book's current `pages` (`pageAtPercent` in `services/readingPosition.js`, the rule
+  `POST /api/progress` stores pages by). A step back adds nothing and the next step forward
+  counts from the lower page — except after the last page: an entry below it after an entry at
+  the last page (100%) is a re-read and counts from page 0, so a 400-page book read in 2025 and
+  logged at 50, 200 and 400 in 2026 adds 400 to 2026. Entries of a deleted book are ignored. "Finished" writes 100%, which is stored
   as the last page, so it adds the rest of the book.
 - **waitingOnShelf** — owned books (`ownership` not `wanted`, absent included) with
   `status: want`.
@@ -95,14 +98,17 @@ every list may be empty.
   The `expected` entry for exactly that number adds `expectedYear` and `source`. Dated entries
   first by year, then the rest, each by series title.
 - **veryMuch** — at most 3, in the wishlist groups of `data-model.md`: series to continue (an
-  owned book, and a wanted book or a number up to `totalBooks` with no book), then new series (no
+  owned book, and a wanted book or a whole number with no book up to `totalBooks` or the highest
+  known number, `expected` included, whichever is larger — the rule of `GET /api/wishlist`'s
+  missing segments), then new series (no
   owned book), each with `desire: high` on the series and in the order of `GET /api/series`
   (newest first); then wanted books with `desire: high` and no series (or a deleted one), newest
   first. A series row
   has `owned` and `total` (`totalBooks`, or the number of its books if that is larger) and the
   cover of its lowest-numbered book that has one. A wanted book of a series is represented by its
-  series row, never on its own. `GET /api/wishlist`, built separately, has its own grouping;
-  this is a small local rule.
+  series row, never on its own; a wanted book whose series is gone (deleting a series unlinks
+  its books in a second write) is shown as a standalone book. `GET /api/wishlist` has its own
+  grouping; this is a small local rule that agrees with it on which series want more.
 - **quoteOfTheDay** — every quote of every book (owned or wanted), books newest first, quotes in
   their stored order; the one at index `floor(now / 1 day) mod count`. The same quote all UTC
   day, the next one the day after; every quote shows once before any repeats.
@@ -143,8 +149,10 @@ No new index: every query is one user's documents, a few hundred rows.
 - **The first entry of a book counts from page 0**, so logging a book already half read counts
   its first half once, this year.
 - **A typo is counted.** An entry at page 500 corrected to 50 keeps the 450 extra pages; the
-  handoff defines pages as increases between consecutive entries, which also lets a re-read
-  count again.
+  handoff defines pages as increases between consecutive entries. A typo at the last page
+  corrected to a lower one reads as a re-read and counts the lower page again.
+- **A re-read is only recognised after the last page.** Starting over from a book left at 60%
+  reads as a step back and counts from there, as a correction would.
 - **Unnumbered books never complete a series** and never set its next number.
 - **Genres are matched exactly**: "Fantasy" and "fantasy" are two bars.
 - **Everything is loaded on each request**, all books and all entries, without a cap: a cap

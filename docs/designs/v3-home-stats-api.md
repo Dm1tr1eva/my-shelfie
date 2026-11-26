@@ -30,7 +30,8 @@ defaults); a pure `services/homeStats.js` builds the response with explicit fiel
 - *Read*: `status: read`, `finishedAt` in the year, any format or ownership.
 - *Pages*: per book with `pages`, not audio; each entry dated in the year adds
   `max(0, page − previous page)`. The previous entry may be last year's; the first ever starts
-  from 0; a missing `page` is `round(percent × pages / 100)`. "Finished" writes the last page.
+  from 0, as does a lower entry after the last page (a re-read); a missing `page` is
+  `round(percent × pages / 100)`. "Finished" writes the last page.
 - *Waiting on the shelf*: owned, `status: want`.
 - *Series complete*: of series with an owned book, those owning every whole number 1 to
   `totalBooks`; without it, status `complete` and every number up to the highest known
@@ -42,8 +43,7 @@ defaults); a pure `services/homeStats.js` builds the response with explicit fiel
 - *Genres*: owned books, each genre once per book.
 - *Waiting for continuation*: series with an owned book; next = highest numbered book + 1,
   with its `expected` entry if any; skipped when `complete` or past `totalBooks`.
-- *Very much*: `data-model.md`'s wishlist groups with `desire: high`, at most 3; a local rule
-  `GET /api/wishlist` may later own.
+- *Very much*: the wishlist groups with `desire: high`, at most 3; gaps as `GET /api/wishlist`.
 - *Quote of the day*: all quotes as loaded; index = UTC days since 1970 mod count.
 - *New on the shelf*: 6 newest owned books.
 
@@ -63,14 +63,14 @@ day; the server would stamp a UTC one.
 
 ## Cost
 
-Route, controller, service, pure builder, schema, two repository methods, 39 tests.
+Route, controller, service, pure builder, schema, two repository methods, 45 tests.
 
 ## Review
 
 Kept against the "cut" pass: `year` and the second completeness rule (the brief and
 `data-model.md` ask for them), the local Very much (the brief forbids depending on the
-wishlist), the percent fallback (`pages` can arrive after entries). Response shapes and tie
-rules: [../features/home-stats.md](../features/home-stats.md).
+wishlist), the percent fallback (`pages` can arrive after entries). Shapes and ties:
+[../features/home-stats.md](../features/home-stats.md).
 
 ## Open questions
 
