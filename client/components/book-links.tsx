@@ -16,7 +16,10 @@ import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { hostOf, isHttpUrl } from "@/lib/links";
 
-export const FRESH_LINK_MS = 1500;
+const FRESH_LINK_MS = 1500;
+
+export const ADD_PILL =
+  "inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy";
 
 function LanguagePicker({
   value,
@@ -323,7 +326,7 @@ export function BookLinks({
             ref={addButton}
             type="button"
             onClick={() => setAdding(true)}
-            className="inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy"
+            className={ADD_PILL}
           >
             <PlusIcon size={14} />
             {t("book.panel.links.add")}

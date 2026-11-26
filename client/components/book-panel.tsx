@@ -15,15 +15,19 @@ import { ErrorState } from "@/components/error-state";
 import { EditIcon, TrashIcon } from "@/components/icons";
 import { Toast } from "@/components/toast";
 import { ApiError } from "@/lib/api";
-import { useBook, useBookActions, type Book, type BookChanges } from "@/lib/books";
+import { useBook, useBookActions, type Book } from "@/lib/books";
 import { useT } from "@/lib/i18n";
 import { useSeriesList, type Series } from "@/lib/series";
-import { FlushContext, useBookAutosave, useDraft, useFlushRegistry } from "@/lib/use-book-autosave";
+import {
+  FlushContext,
+  useBookAutosave,
+  useDraft,
+  useFlushRegistry,
+  type SaveBook,
+} from "@/lib/use-book-autosave";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
 export type CloseBy = "back" | "library";
-
-type Save = (changes: BookChanges, options?: { optimistic?: boolean }) => Promise<boolean>;
 
 function PanelHeader({ book, series }: { book?: Book; series?: Series }) {
   const t = useT();
@@ -71,7 +75,7 @@ function PanelSkeleton() {
   );
 }
 
-function TitleBlock({ book, save }: { book: Book; save: Save }) {
+function TitleBlock({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const titleId = useId();
   const authorId = useId();
@@ -210,7 +214,7 @@ function TitleBlock({ book, save }: { book: Book; save: Save }) {
   );
 }
 
-function Annotation({ book, series, save }: { book: Book; series?: Series; save: Save }) {
+function Annotation({ book, series, save }: { book: Book; series?: Series; save: SaveBook }) {
   const t = useT();
   const areaId = useId();
   const commit = useCallback(

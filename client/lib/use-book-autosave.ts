@@ -29,6 +29,8 @@ function valuesBefore(book: Book, changes: BookChanges): BookChanges {
 
 type SaveOptions = { optimistic?: boolean; undo?: boolean };
 
+export type SaveBook = (changes: BookChanges, options?: SaveOptions) => Promise<boolean>;
+
 export function useBookAutosave(id: string) {
   const t = useT();
   const { cache, mutate } = useSWRConfig();

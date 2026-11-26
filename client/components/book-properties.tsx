@@ -4,14 +4,12 @@ import { useCallback, useId, useRef, useState } from "react";
 import { StarRating } from "@/components/form-controls";
 import { XIcon } from "@/components/icons";
 import { Select } from "@/components/select";
-import { STATUSES, type Book, type BookChanges, type BookStatus } from "@/lib/books";
+import { STATUSES, type Book, type BookStatus } from "@/lib/books";
 import { BOOK_LENGTH_MAX, type Format, type Ownership } from "@/lib/catalogue-constants";
 import { useLocale, useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
 import { useBookProgress } from "@/lib/progress";
-import { useDraft } from "@/lib/use-book-autosave";
-
-type Save = (changes: BookChanges, options?: { optimistic?: boolean }) => Promise<boolean>;
+import { useDraft, type SaveBook } from "@/lib/use-book-autosave";
 
 const FORMATS: Format[] = ["paper", "ebook", "audio"];
 const OWNERSHIPS: Ownership[] = ["owned", "wanted"];
@@ -82,7 +80,7 @@ function wholeIn(text: string, min: number, max: number) {
   return text.trim() !== "" && Number.isInteger(value) && value >= min && value <= max;
 }
 
-function PagesField({ book, save, labelId }: { book: Book; save: Save; labelId: string }) {
+function PagesField({ book, save, labelId }: { book: Book; save: SaveBook; labelId: string }) {
   const t = useT();
   const [invalid, setInvalid] = useState(false);
   const commit = useCallback(
@@ -134,7 +132,7 @@ function durationText(minutes: number | undefined) {
   return minutes === undefined ? ":" : `${Math.floor(minutes / 60)}:${minutes % 60}`;
 }
 
-function DurationField({ book, save, labelId }: { book: Book; save: Save; labelId: string }) {
+function DurationField({ book, save, labelId }: { book: Book; save: SaveBook; labelId: string }) {
   const t = useT();
   const [invalid, setInvalid] = useState(false);
   const commit = useCallback(
@@ -345,7 +343,7 @@ function Progress({ book, labelId }: { book: Book; labelId: string }) {
   );
 }
 
-export function BookProperties({ book, save }: { book: Book; save: Save }) {
+export function BookProperties({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const domain = useDomain();
   const ids = useId();

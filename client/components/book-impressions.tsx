@@ -2,8 +2,9 @@
 
 import { useCallback, useId, useRef, useState } from "react";
 import { AutoTextarea } from "@/components/auto-textarea";
+import { ADD_PILL } from "@/components/book-links";
 import { PlusIcon, XIcon } from "@/components/icons";
-import type { Book, BookChanges, Quote } from "@/lib/books";
+import type { Book, Quote } from "@/lib/books";
 import {
   BOOK_LENGTH_MAX,
   MOOD_NAME_MAX,
@@ -14,13 +15,9 @@ import {
 } from "@/lib/catalogue-constants";
 import { useT } from "@/lib/i18n";
 import { useDomain } from "@/lib/i18n/domain";
-import { useDraft } from "@/lib/use-book-autosave";
-
-type Save = (changes: BookChanges, options?: { optimistic?: boolean }) => Promise<boolean>;
+import { useDraft, type SaveBook } from "@/lib/use-book-autosave";
 
 const LABEL = "text-xs font-semibold uppercase tracking-[0.06em] text-muted";
-const ADD_PILL =
-  "inline-flex min-h-9 items-center gap-1 self-start rounded-pill border border-dashed border-slate px-3 text-sm font-semibold text-navy";
 
 function pill(selected: boolean) {
   return `inline-flex min-h-9 items-center rounded-pill border px-3 text-sm font-medium ${
@@ -28,7 +25,7 @@ function pill(selected: boolean) {
   }`;
 }
 
-function Moods({ book, save }: { book: Book; save: Save }) {
+function Moods({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const domain = useDomain();
   const inputId = useId();
@@ -144,7 +141,7 @@ function Moods({ book, save }: { book: Book; save: Save }) {
   );
 }
 
-function Recommend({ book, save }: { book: Book; save: Save }) {
+function Recommend({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const domain = useDomain();
   const labelId = useId();
@@ -180,7 +177,7 @@ function QuoteForm({
   onClose,
 }: {
   quotes: Quote[];
-  save: Save;
+  save: SaveBook;
   onClose: () => void;
 }) {
   const t = useT();
@@ -266,7 +263,7 @@ function QuoteForm({
   );
 }
 
-function Quotes({ book, save }: { book: Book; save: Save }) {
+function Quotes({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
@@ -329,7 +326,7 @@ function Quotes({ book, save }: { book: Book; save: Save }) {
   );
 }
 
-function Note({ book, save }: { book: Book; save: Save }) {
+function Note({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
   const noteId = useId();
   const commit = useCallback(
@@ -360,7 +357,7 @@ function Note({ book, save }: { book: Book; save: Save }) {
   );
 }
 
-export function BookImpressions({ book, save }: { book: Book; save: Save }) {
+export function BookImpressions({ book, save }: { book: Book; save: SaveBook }) {
   const t = useT();
 
   return (
