@@ -21,11 +21,11 @@ One panel at a time, a few saves a minute, one tab.
 
 **Routing.** A root `@panel` slot: `@panel/(.)books/[id]` intercepts a soft navigation and
 renders the panel over the current page, closing with `router.back()`, so the page underneath
-keeps its state and address (library filters included). `@panel/default` renders nothing; the
-panel renders nothing once the path is no longer its book, so leaving for another page closes
-it (the guide's catch-all slot turned every unknown address's `404` into `200`). A direct visit
-to `/books/[id]` renders the library with the panel open; closing replaces the address with
-`/library`.
+keeps its state and address (library filters included). `@panel/default` and
+`@panel/series/[id]` (the panel's one link) render nothing, and the panel hides off its path,
+asking for its book again on return (the guide's catch-all turned unknown addresses' `404` into
+`200`). A direct visit to `/books/[id]` renders the library with the panel open; closing
+replaces the address with `/library`.
 
 **Drawer** gains `tall` (a sheet from 32px with the grab handle) and `lightScrim` (0.28); width
 stays `className` (460px, 500px from 1024px). Escape already handled (`defaultPrevented`) by an
@@ -40,8 +40,8 @@ Annotation, Links (rows; "+ link" form with Type, URL and a searchable multi-sel
 API languages), Impressions (six preset moods stored in English like default genres, own moods,
 recommend, quotes with page, my note), "Delete book" → `ConfirmDialog`. Annotation is the
 book's own, series book included (decision 21; the DTO returned the series' until 2026-11-26).
-A standalone book gets Genre and Tropes (existing controls); a series
-book shows its series' read-only: one place edits them.
+A standalone book gets Genre and Tropes (existing controls); a series book shows its series'
+read-only: one place edits them.
 
 **Autosave.** `lib/use-book-autosave.ts` sends `PATCH`es one at a time, in order. Choices
 (toggles, selects, stars, pills, dates, links, quotes, cover) save at once and update the cache

@@ -205,9 +205,7 @@ client.
   (`app/@panel/(.)books/[id]`): the panel opens over the page it came from, the address becomes
   `/books/<id>`, and closing (×, Escape, a click on the scrim) is `router.back()`, so the page
   underneath, its scroll, search and library filters stay as they were and the focus goes back
-  to the cover that opened it. `@panel/default` renders nothing, and the
-  panel renders nothing once `usePathname()` is no longer `/books/<id>`, so following a link out
-  of the panel (the series name in its header) closes it. The Next guide closes a modal with a
+  to the cover that opened it. `@panel/default` renders nothing, and so does `@panel/series/[id]`: the series name in the panel's header is its one link out, and that page moves the slot off the intercepted book (without it the same book could not be opened again from the series page, checked 2026-11-26 on Next 16.4.5). The slot keeps its last page mounted, so the panel also renders nothing once `usePathname()` is no longer `/books/<id>`, and asks for its book again when the address comes back to it (Back and Forward), so a book deleted in between shows as not found. The Next guide closes a modal with a
   catch-all `@panel/[...catchAll]` page instead; that slot matched every address, and an unknown
   one answered `200` with an empty page instead of `404` (checked with `next start`, 2026-11-26). A
   direct visit or a reload of `/books/<id>` renders the library with the panel open

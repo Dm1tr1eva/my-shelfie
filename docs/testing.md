@@ -98,6 +98,13 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   Vitest nor `next dev` showed it; `next build` listed a `/[...rest]` route, and `curl` against
   `next start` gave the status. After touching route files, check an unknown address that way.
 
+- **A parallel slot keeps its last page.** Leaving the book panel through a link left `@panel`
+  on the intercepted book, and a later link to that same book did nothing at all, not even
+  change the address; Back and Forward reused the mounted panel, so its SWR data was not asked
+  for again (2026-11-26, Next 16.4.5, found only in a browser). Vitest cannot run interception:
+  check route files with `next build` and `next start`, on `127.0.0.1`, since other sessions
+  share the `localhost` cookie and `next dev` refuses `127.0.0.1` without `allowedDevOrigins`.
+
 - **A save can outlive its test.** The panel's tests answer `PATCH` after 30 ms, as a real server
   would not answer at once; a test that ended right after a click left the answer in flight,
   and once `fetch` was unstubbed it failed into an unmounted SWR cache (an unhandled
