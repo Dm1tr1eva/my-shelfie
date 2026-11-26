@@ -19,12 +19,12 @@ request after a pause can take up to a minute.
   out, finished, unknown), an optional size ("6 books"), a note and one description, and it
   carries one set of genres and tropes for all its books.
 - **Gaps.** A number below the highest one you own that you do not have is a gap, and it is marked
-  on the shelf, on the series page and in Next to buy.
+  on the shelf and on the series page.
 - **Paper or e-book.** Every cover carries a small mark for the format of that copy.
 - **Adding a book.** Search by title (Google Books, filled in as you type) or add it by hand,
   then say which series it belongs to, its genres, tropes and shop links.
-- **Filters.** Genre, trope, series status, author and shop language, on the library, the
-  wishlist and Next to buy.
+- **Filters.** Genre, trope, series status, author and shop language, on the library and the
+  wishlist.
 - **Reading.** A reading status (to read, reading, read, dropped), a rating from 1 to 5 and notes
   for each book.
 - **Three languages.** The interface is in English, Russian and Ukrainian, with a switch in the
@@ -37,24 +37,14 @@ request after a pause can take up to a minute.
 
 ![The library as a cover grid](docs/screenshots/library.png)
 
-### Next to buy
+### Wishlist
 
-This is the one piece of logic that is more than a list. For every series of which you own at
-least one book, it offers:
-
-1. the wanted books **below your highest owned number**, the gaps, first;
-2. then the other wanted books of the series in order, then the numbers of a series with a stated
-   size that are not on your list at all ("Book 5, not in your list yet"), each with an
-   **Add this book** action;
-3. then the standalone books on your wishlist, newest first.
-
-Each row shows the links you saved, marked by language (RU, UK, EN or other) and by what they
-lead to (buy the paper book, buy the e-book, download it free, read it online), and **I bought it** moves
-the book into your library. Filters narrow the list in the browser. A series you own nothing of
-is not listed: you have not started it. The code is `server/services/nextToBuy.js`, and its
-behaviour is pinned by tests.
-
-![Next to buy](docs/screenshots/next-to-buy.png)
+The wishlist sorts what you want into three groups: **series to continue** (you own some of the
+books, others are wanted or missing), **new series** (you own none yet) and **standalone
+books**. Each row shows the series' progress and how much you want it, Very much, Want or
+Someday; a tap on that pill changes it, and each group is ordered by it. Search and the
+library's filters narrow the list in the browser. The grouping is
+`server/services/wishlist.js`, and its behaviour is pinned by tests.
 
 ![A series with its gaps and the numbers still missing](docs/screenshots/series.png)
 
@@ -102,12 +92,13 @@ someone else answers `404`.
 | `GET /api/books/search?q=` | Search the Google Books API (the key stays on the server) |
 | `GET`, `PATCH`, `DELETE /api/books/:id` | Read, update or delete one book |
 | `/api/series` | Series: create, list with owned and wanted counts, read with its books, update, delete |
-| `GET /api/next-to-buy` | The next-to-buy list, with filters |
+| `GET /api/wishlist` | The wishlist in three groups, ordered by how much each is wanted |
 | `GET /api/tropes` | The user's own tropes, for suggestions |
 
 Details: [docs/features/auth.md](docs/features/auth.md),
-[docs/features/books.md](docs/features/books.md) and
-[docs/features/series.md](docs/features/series.md).
+[docs/features/books.md](docs/features/books.md),
+[docs/features/series.md](docs/features/series.md) and
+[docs/features/wishlist.md](docs/features/wishlist.md).
 
 ## Design and specification
 
