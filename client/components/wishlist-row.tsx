@@ -24,7 +24,7 @@ export function WishlistRow({
   const name = [row.title, row.author].filter(Boolean).join(", ");
 
   return (
-    <li className="relative grid grid-cols-[64px_minmax(0,1fr)_36px] grid-rows-[auto_auto] items-center gap-x-3.5 border-t border-page px-3.5 py-3 first:border-t-0 hover:bg-row-hover md:grid-cols-[64px_minmax(0,1fr)_auto_44px] md:grid-rows-1 md:gap-x-4 md:px-[18px] md:py-3.5 lg:gap-x-5 lg:px-5">
+    <li className="relative grid grid-cols-[64px_minmax(0,1fr)_36px] grid-rows-[auto_auto] items-center gap-x-3.5 border-t border-page px-3.5 py-3 first:border-t-0 hover:bg-row-hover md:grid-cols-[64px_minmax(0,1fr)_auto_44px] md:grid-rows-1 md:gap-x-4 md:px-[18px] md:py-3.5 lg:grid-cols-[64px_minmax(0,1fr)_140px_44px] lg:gap-x-5 lg:px-5">
       <div className="row-span-2 md:row-span-1">
         <BookCover
           url={row.coverUrl}
@@ -40,13 +40,13 @@ export function WishlistRow({
         </h3>
         {row.author && <p className="truncate text-[13px] text-muted md:text-sm">{row.author}</p>}
         {row.type === "series" && (
-          <div className="mt-1.5">
+          <div className="mt-2 flex">
             <SeriesSegments states={row.segments.map((segment) => segment.state)} />
           </div>
         )}
       </div>
 
-      <div className="relative z-10 col-start-2 row-start-2 self-start md:col-start-3 md:row-start-1 md:self-center">
+      <div className="relative z-10 col-start-2 row-start-2 self-start md:col-start-3 md:row-start-1 md:self-center md:justify-self-end">
         <DesirePill
           desire={desire}
           onCycle={() => {
