@@ -15,8 +15,9 @@ work proceeds.
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind
 - **Database:** MongoDB (Atlas) + Mongoose
 - **Repository layout:** a monorepo, `/server` and `/client` folders in one git repository
-- **AI:** Gemini API (requests proxied through the backend, the key never reaches the
-  frontend)
+- **AI:** series lookup through Claude Haiku 5.5 with web search, behind a swappable adapter
+  (2026-11-26); the chat provider is not chosen yet. Requests go through the backend, the key
+  never reaches the frontend
 
 ## Current focus — library, wishlist and series (submission by 2026-10-17)
 
@@ -188,7 +189,15 @@ in steps, each on its own branch:
    further than 999, so an old number in the millions cannot stall the server —
    [designs/v3-wishlist-api.md](designs/v3-wishlist-api.md),
    [features/wishlist.md](features/wishlist.md)
-7. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
+7. 🟨 **Add a book: series detection** — server half done 2026-11-26: `POST /api/series/lookup`
+   asks Claude Haiku 5.5 with web search which series a book belongs to, with its number, the
+   other books, announced ones, status, confidence and sources; a cache shared by all users
+   ([ADR 0001](adr/0001-shared-reference-data.md)), a per-user daily limit, provider and model
+   from env. The real-prompt check after the trial's fixes is still to run (the key in the local
+   `.env` was refused). Next: the client flow (series card, confirm with one tap) —
+   [designs/series-lookup.md](designs/series-lookup.md),
+   [features/series-lookup.md](features/series-lookup.md)
+8. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
    the Home screen
 
 ## Course submission MVP — done 2026-10-09
@@ -414,6 +423,12 @@ Constraints from Google's terms, read on 2026-10-06 — the stage 7 design must 
   or client application's IP address"; check what the deployed backend's region gets back.
 
 ## Stage 8 — AI chat (Gemini API)
+
+**Series detection, decided 2026-11 with the author:** free sources (Google Books, Open Library,
+Wikidata) found 7 of 40 test series and none of 15 Russian or Ukrainian ones, and FantLab is
+rejected, so series detection uses Claude Haiku 5.5 with web search through the author's
+Anthropic API credits: 38 of 40 series right in a trial, about $0.027 and 9 s a lookup. Built as
+v3 step 6 — [designs/series-lookup.md](designs/series-lookup.md). The chat below is still open.
 
 - `POST /api/chat` on Express, proxying requests to Gemini (the key stays on the backend
   only)

@@ -10,7 +10,7 @@ the area you are about to change.
 | [ROADMAP.md](ROADMAP.md) | The plan: stages, status, decisions taken and alternatives rejected. This is the `plan.md` that `CLAUDE.md` refers to. |
 | [designs/](designs/) | Design docs, written before non-trivial work, at most 600 words |
 | [features/](features/) | One doc per feature. The shape is defined by [features/TEMPLATE.md](features/TEMPLATE.md) |
-| `adr/` | One decision per file. Empty so far. |
+| [adr/](adr/) | One decision per file: [0001, shared reference data](adr/0001-shared-reference-data.md) |
 | [design/](design/) | The design handoff: tokens, components, product decisions and HTML mockups at 375, 768 and 1440 |
 | [testing.md](testing.md) | Pitfalls hit while testing, recorded here because the code has no comments |
 | [../CLAUDE.md](../CLAUDE.md) | Working agreements: what precedes code, what counts as done |
@@ -62,7 +62,13 @@ since 2026-10-08: frontend `https://my-shelfie-ecru.vercel.app`, backend
 | Host | Render, Web Service, free tier | Vercel |
 | Root directory | `server` | `client` |
 | Build / start | `npm install` / `npm start` | Vercel's Next.js defaults |
-| Environment | `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (the Vercel URL), `GOOGLE_BOOKS_API_KEY`, `NODE_ENV=production`; `PORT` is set by Render | `API_ORIGIN` (the Render URL, no trailing slash) |
+| Environment | `MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL` (the Vercel URL), `GOOGLE_BOOKS_API_KEY`, `ANTHROPIC_API_KEY`, `NODE_ENV=production`; optional `SERIES_LOOKUP_PROVIDER`, `SERIES_LOOKUP_MODEL`, `SERIES_LOOKUP_DAILY_LIMIT`; `PORT` is set by Render | `API_ORIGIN` (the Render URL, no trailing slash) |
+
+**Series lookup costs money.** Add `ANTHROPIC_API_KEY` on Render (without it the server
+starts and `POST /api/series/lookup` answers `503`), and in the Claude Console set a monthly
+spend limit on the key's workspace: registration is open, and the per-user daily limit
+(`SERIES_LOOKUP_DAILY_LIMIT`, default 30) does not stop many accounts. About $0.03 a model call;
+details in [features/series-lookup.md](features/series-lookup.md).
 
 Create the Render service first, then Vercel. Set `API_ORIGIN` before the Vercel build: the
 rewrite destination is baked in at build time, so changing it later needs a redeploy. Atlas

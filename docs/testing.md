@@ -46,6 +46,16 @@ recorded here instead. How to run the suites is in [README.md](README.md).
   fixed `now` (year edges, weeks left, the quote's day); `stats.test.js` goes through HTTP and
   the database (isolation, query validation, documents saved before v3). The HTTP tests cannot
   fix the clock, so they use the current year and ranges rather than exact `weeksLeft`.
+- **No test may reach the model.** `seriesLookup.test.js` replaces
+  `seriesLookupProvider.lookUpSeries` in a `beforeEach` with a function that throws, so a test
+  that forgets to say what the model answers fails instead of spending money; each test then
+  mocks it with its answer. The adapter's own tests pass a fake client object to
+  `createAnthropicAdapter`, and the one test of the real client stubs `globalThis.fetch` before
+  creating it (the SDK takes `fetch` when it is constructed).
+- **`ANTHROPIC_BASE_URL` in the environment would redirect the SDK, key included.** Shells
+  started by Claude Code set it, so a value pointing elsewhere would send the series lookup key
+  there. The adapter passes `baseURL` explicitly; a test sets the variable and checks where the
+  request goes.
 - **A test nobody has seen fail is a guess.** Break the behaviour it covers (remove the
   ownership filter, drop `.strict()`, restore the old `401`) and confirm exactly that test
   goes red.

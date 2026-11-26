@@ -89,8 +89,8 @@ many books the series has or has announced), `genres` (free text: 1 to 40 charac
 characters each), `annotation` (up to 5000 characters), `ageRating` (`none | 12 | 16 | 18`,
 default `none`), `desire` (`high | normal | someday`, default `normal`, for the wishlist row of
 the series), `expected` (up to 50 `{ number, expectedYear?, source }`: a number above 0, unique
-in the list; a whole year from 1900 to 2200; `source` one of `fantlab | ai | manual`; replaced
-as a whole, `[]` empties it), `tagsMerged` (internal), timestamps; index `{ userId, createdAt }`.
+in the list; a whole year from 1900 to 2200; `source` one of `fantlab | ai | manual`, where `ai` marks a
+number taken from [series lookup](series-lookup.md); replaced as a whole, `[]` empties it), `tagsMerged` (internal), timestamps; index `{ userId, createdAt }`.
 Series saved before the v3 fields read with the defaults and an empty `expected`. A book of the
 series is returned with the series' `ageRating` when it is set (not `none`), otherwise with its
 own. Design:
@@ -144,4 +144,4 @@ db.books.find({ seriesId: { $nin: db.series.distinct("_id") }, seriesId: { $exis
 
 ## ADRs
 
-None yet.
+None for user series. The shared series lookup cache: [ADR 0001](../adr/0001-shared-reference-data.md).
