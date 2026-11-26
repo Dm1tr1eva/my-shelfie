@@ -204,7 +204,11 @@ in steps, each on its own branch:
    request nor the book has one; a sent date or `null` wins, stored dates are kept. Home's
    "Read in YEAR" now counts books marked read from the client as it is —
    [designs/auto-reading-dates.md](designs/auto-reading-dates.md)
-9. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
+9. ✅ **A progress entry starts the book, 2026-11-26** — an entry for an owned book in `want`
+   moves it to `reading`, and the reading-dates rule sets `startedAt`; other statuses and
+   wishlist books are left alone, and 100% does not mark a book read —
+   [features/reading-progress.md](features/reading-progress.md)
+10. ⬜ The following steps: the book panel, the series page, the add modal, the wishlist page,
    the Home screen
 
 ## Course submission MVP — done 2026-10-09

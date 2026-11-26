@@ -79,4 +79,5 @@ Client: types, links, i18n keys, a cover icon. No migration, no dependency.
 
 ## Open questions
 
-- Should a progress entry set the status to `reading`? Today the client does that separately.
+- Should a progress entry set the status to `reading`? *Answered 2026-11-26:* yes, for an
+  owned book in `want` only — [../features/reading-progress.md](../features/reading-progress.md).
