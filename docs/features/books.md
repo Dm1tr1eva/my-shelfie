@@ -174,15 +174,16 @@ client.
   search and the applied filters are kept in the address (`lib/library-params.ts`): `q` and
   one parameter per group, repeated per value, in the panel's order
   (`/library?q=ash&have=wanted&genre=Fantasy`). The page reads them once with
-  `useSearchParams` (inside a `Suspense` boundary in `app/library/page.tsx`, which a static
-  page using it needs for the production build) and writes every change — typing, "Show N
-  books", Reset, removing a pill — with `history.replaceState`, so a reload or a way back from
-  a book or a series restores them and typing adds no history entries. Unknown parameters,
-  values outside a fixed group's list (I have, Status, Format, Age, Series status, Rating,
-  Link language and type), empty values, repeats and values over 200 characters are dropped
-  without an error; free values (genre, trope, author) are kept as they are, and one the
-  library no longer has shows as a pill that removes it. No tabs, stats line, view toggle or
-  series notes, as in the v3 handoff.
+  `useSearchParams` (inside a `Suspense` boundary in `app/library/page.tsx`, as the Next guide
+  for `useSearchParams` advises and `/add` already does; the 16.3 build passes with or without
+  it, checked 2026-11-26) and writes every change — typing, "Show N books", Reset, removing a
+  pill — with `history.replaceState`, so a reload or a way back from a book or a series
+  restores them and typing adds no history entries. Unknown parameters, values outside a fixed
+  group's list (I have, Status, Format, Age, Series status, Rating, Link language and type),
+  empty values, repeats and values over 200 characters are dropped without an error; free
+  values (genre, trope, author) are kept as they are, and one the library no longer has shows
+  as a pill that removes it. No tabs, stats line, view toggle or series notes, as in the v3
+  handoff.
 - `/wishlist` — `components/wishlist.tsx`, the v2 shelves until the Wishlist step: wanted
   books only, series groups from `lib/catalogue.ts` with "own n of m", a list or a cover grid
   (the choice kept in `localStorage`, `lib/use-view-mode.ts`), the v2 filter bar. Since
