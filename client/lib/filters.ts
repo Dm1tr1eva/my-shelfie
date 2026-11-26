@@ -234,6 +234,21 @@ export type PanelGroup = {
 const FORMAT_VALUES: Format[] = ["paper", "ebook", "audio"];
 const AGE_VALUES: AgeRating[] = ["none", "12", "16", "18"];
 const RATING_VALUES = ["5", "4", "low", "none"];
+
+const KNOWN_VALUES: Partial<Record<FilterKey, readonly string[]>> = {
+  have: ["owned", "wanted"],
+  reading: STATUSES,
+  format: FORMAT_VALUES,
+  age: AGE_VALUES,
+  status: [...SERIES_STATUSES, STANDALONE],
+  language: LINK_LANGUAGES.map((language) => language.value),
+  kind: LINK_KINDS.map((kind) => kind.value),
+  rating: RATING_VALUES,
+};
+
+export function knownFilterValues(key: FilterKey) {
+  return KNOWN_VALUES[key];
+}
 const FOLDING: FilterKey[] = ["genre", "trope", "author"];
 
 export function panelOptionLabel(key: FilterKey, value: string, { t, domain }: FilterLabels) {
@@ -288,34 +303,20 @@ function byFrequency(subjects: Subject[], key: FilterKey) {
   );
 }
 
-function panelValues(key: FilterKey, subjects: Subject[]): string[] {
-  const present = (fixed: string[]) => {
-    const found = new Set(subjects.flatMap((subject) => valuesOf(subject, key)));
-    return fixed.filter((value) => found.has(value));
-  };
+function panelValues(key: FilterKey, subjects: Subject[]): readonly string[] {
+  const known = KNOWN_VALUES[key];
+  if (!known) return byFrequency(subjects, key);
 
-  switch (key) {
-    case "have":
-      return ["owned", "wanted"];
-    case "reading":
-      return STATUSES;
-    case "format":
-      return FORMAT_VALUES;
-    case "age":
-      return subjects.some((subject) => subject.book && subject.book.ageRating !== "none")
-        ? AGE_VALUES
-        : [];
-    case "status":
-      return [...SERIES_STATUSES, STANDALONE];
-    case "language":
-      return present(LINK_LANGUAGES.map((language) => language.value));
-    case "kind":
-      return present(LINK_KINDS.map((kind) => kind.value));
-    case "rating":
-      return RATING_VALUES;
-    default:
-      return byFrequency(subjects, key);
+  if (key === "age") {
+    return subjects.some((subject) => subject.book && subject.book.ageRating !== "none")
+      ? known
+      : [];
   }
+  if (key === "language" || key === "kind") {
+    const found = new Set(subjects.flatMap((subject) => valuesOf(subject, key)));
+    return known.filter((value) => found.has(value));
+  }
+  return known;
 }
 
 export function libraryFilterGroups(subjects: Subject[], labels: FilterLabels): PanelGroup[] {
