@@ -1,6 +1,6 @@
 export const privacy = {
   title: "Privacy",
-  intro: "What My Shelfie keeps about you, and why. Last updated 13 October 2026.",
+  intro: "What My Shelfie keeps about you, and why. Last updated 26 November 2026.",
   onThisPage: "On this page",
   store: {
     title: "What we store",
@@ -17,7 +17,7 @@ export const privacy = {
   },
   search: {
     title: "Book search",
-    body: "The text you type into the search box is sent through this app's server to the Google Books API, and Google's own terms and privacy policy apply to it. Results are shown and not kept; the one you pick is saved to your shelf. Book covers are loaded straight from Google's servers, so your browser contacts Google when a cover is displayed.",
+    body: "The text you type into the search box is sent through this app's server to the Google Books API, and Google's own terms and privacy policy apply to it. Results are shown and not kept; the one you pick is saved to your shelf. Book covers are loaded straight from Google's servers, so your browser contacts Google when a cover is displayed. To find out whether a book belongs to a series, its title, authors and, when known, its subtitle, ISBN, Google Books id and language are sent through this app's server to Anthropic's Claude API, which searches the web for the answer; your name, email and shelves are never sent. The answer is kept on the server and reused for anyone who looks up the same book, and only becomes part of your shelf when you confirm it.",
   },
   links: {
     title: "Shop links",
@@ -25,7 +25,7 @@ export const privacy = {
   },
   hosting: {
     title: "Where your data lives",
-    body: "The site is hosted on Vercel, the server on Render and the database on MongoDB Atlas. The data is not sold and not shared with anyone else.",
+    body: "The site is hosted on Vercel, the server on Render and the database on MongoDB Atlas. The data is not sold and not shared with anyone beyond what this page describes.",
   },
   deleting: {
     title: "Deleting your data",

@@ -21,6 +21,15 @@ describe("privacy page", () => {
     expect(screen.getByText(/sent through this app's server to the Google/)).toBeInTheDocument();
   });
 
+  it("names Anthropic as the receiver of a book's details for series lookup, and nothing about the user", () => {
+    render(<PrivacyPage />);
+
+    expect(
+      screen.getByText(/title, authors .* are sent through this app's server to Anthropic/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/your name, email and shelves are never sent/)).toBeInTheDocument();
+  });
+
   it("lists every section in a contents list that links to it", () => {
     render(<PrivacyPage />);
 
