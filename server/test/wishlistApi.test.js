@@ -183,7 +183,7 @@ describe("GET /api/wishlist", () => {
     assert.equal(response.status, 200);
     assert.deepEqual(titlesIn(response, "standalone"), ["Keen", "Old wanted", "Later"]);
     assert.equal(itemsIn(response, "standalone")[1].desire, "normal");
-    assert.deepEqual(itemsIn(response, "newSeries")[0].desire, "normal");
+    assert.equal(itemsIn(response, "newSeries")[0].desire, "normal");
   });
 
   it("moves a series when its desire level changes through the series endpoint", async () => {

@@ -70,7 +70,7 @@ deletes the route, `nextToBuy.js` and its tests.
 
 ## Cost
 
-One service, one controller function, route and schema; about 25 tests, one cross-user. No
+One service, one controller function, route and schema; about 30 tests, two cross-user. No
 model change, no dependency.
 
 ## Open questions

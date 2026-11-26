@@ -1,7 +1,11 @@
-const DESIRE_RANK = { high: 0, normal: 1, someday: 2 };
+const DESIRE_RANK = new Map([
+  ["high", 0],
+  ["normal", 1],
+  ["someday", 2],
+]);
 
 function desireRank(desire) {
-  return DESIRE_RANK[desire] ?? DESIRE_RANK.normal;
+  return DESIRE_RANK.get(desire) ?? DESIRE_RANK.get("normal");
 }
 
 function isOwned(book) {
@@ -21,10 +25,7 @@ function byAge(a, b) {
 }
 
 function byNumberThenAge(a, b) {
-  const aNumber = hasNumber(a) ? a.seriesNumber : Infinity;
-  const bNumber = hasNumber(b) ? b.seriesNumber : Infinity;
-  if (aNumber !== bNumber) return aNumber - bNumber;
-  return byAge(a, b);
+  return (a.seriesNumber ?? Infinity) - (b.seriesNumber ?? Infinity) || byAge(a, b);
 }
 
 function distinct(values) {

@@ -235,14 +235,15 @@ describe("wishlist order", () => {
     ]);
   });
 
-  it("ranks a row with no desire as normal", () => {
+  it("ranks a row with no desire, or a name the object prototype knows, as normal", () => {
     const keen = book({ title: "Keen", desire: "high" });
-    const unset = book({ title: "Unset", desire: undefined });
+    const unset = book({ title: "Unset", desire: undefined, createdAt: new Date(2026, 0, 2) });
+    const odd = book({ title: "Odd", desire: "constructor", createdAt: new Date(2026, 0, 1) });
     const later = book({ title: "Later", desire: "someday" });
 
-    const groups = buildWishlist({ series: [], books: [later, unset, keen] });
+    const groups = buildWishlist({ series: [], books: [later, odd, unset, keen] });
 
-    assert.deepEqual(titlesIn(groups, "standalone"), ["Keen", "Unset", "Later"]);
+    assert.deepEqual(titlesIn(groups, "standalone"), ["Keen", "Unset", "Odd", "Later"]);
     assert.equal(rowOf(groups, unset.id).desire, "normal");
   });
 });
