@@ -99,6 +99,14 @@ describe("Library", () => {
     ).toBeTruthy();
   });
 
+  it("shows no rating on a book from the wishlist", async () => {
+    serve([book({ title: "Wanted and rated", ownership: "wanted", rating: 5 })]);
+    renderApp(<Library />);
+    await screen.findByRole("link", { name: tileName("Wanted and rated") });
+
+    expect(screen.queryByRole("img", { name: "Rated 5 out of 5" })).not.toBeInTheDocument();
+  });
+
   it("links the whole series header to the series page and shows its segments", async () => {
     serve();
     renderApp(<Library />);
@@ -302,6 +310,40 @@ describe("Library", () => {
       expect(
         within(screen.getByRole("dialog")).getByRole("button", { name: "Reading" }),
       ).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("announces the live count of books the choices would show", async () => {
+      const { panel } = await openPanel();
+      const status = panel.querySelector('[aria-live="polite"]');
+
+      expect(status).toHaveTextContent("Show 4 books");
+      fireEvent.click(within(panel).getByRole("button", { name: "In wishlist" }));
+      expect(status).toHaveTextContent("Show 2 books");
+    });
+
+    it("keeps a chosen option visible when its group is folded", async () => {
+      serve([book({ title: "Busy", genres: ["A", "B", "C", "D", "E", "F"] })]);
+      renderApp(<Library />);
+      await screen.findByRole("link", { name: tileName("Busy") });
+      const button = screen.getByRole("button", { name: "Filters" });
+
+      fireEvent.click(button);
+      let genres = within(screen.getByRole("dialog")).getByRole("region", { name: "Genre" });
+      fireEvent.click(within(genres).getByRole("button", { name: "+2 more" }));
+      fireEvent.click(within(genres).getByRole("button", { name: "F" }));
+      fireEvent.click(
+        within(screen.getByRole("dialog")).getByRole("button", { name: "Show 1 book" }),
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Filters · 1" }));
+      genres = within(screen.getByRole("dialog")).getByRole("region", { name: "Genre" });
+
+      expect(within(genres).getByRole("button", { name: "F" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      expect(within(genres).queryByRole("button", { name: "E" })).not.toBeInTheDocument();
+      expect(within(genres).getByRole("button", { name: "+1 more" })).toBeInTheDocument();
     });
 
     it("folds long groups behind a more button and searches tropes", async () => {

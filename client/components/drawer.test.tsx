@@ -81,6 +81,16 @@ describe("Drawer", () => {
     expect(last).toHaveFocus();
   });
 
+  it("sends Shift+Tab from the panel itself, right after opening, to the last control", () => {
+    render(<Opener />);
+    open();
+
+    const dialog = screen.getByRole("dialog");
+    fireEvent.keyDown(dialog, { key: "Tab", shiftKey: true });
+
+    expect(screen.getByRole("button", { name: "Last" })).toHaveFocus();
+  });
+
   it("renders nothing on the server, where there is no page to put it on", () => {
     expect(() =>
       renderToString(

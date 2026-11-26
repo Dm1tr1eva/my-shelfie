@@ -109,6 +109,20 @@ describe("libraryShelves", () => {
     expect(shelves.count).toBe(4);
   });
 
+  it("puts the series with the most recently added book first", () => {
+    const older = series({ id: "older", title: "Older", createdAt: "2026-01-01T00:00:00Z" });
+    const newer = series({ id: "newer", title: "Newer", createdAt: "2026-02-01T00:00:00Z" });
+    const books = [
+      book({ seriesId: "newer", seriesNumber: 1, createdAt: "2026-02-02T00:00:00Z" }),
+      book({ seriesId: "older", seriesNumber: 1, createdAt: "2026-03-01T00:00:00Z" }),
+    ];
+
+    expect(libraryShelves(books, [newer, older]).series.map((shelf) => shelf.series.id)).toEqual([
+      "older",
+      "newer",
+    ]);
+  });
+
   it("treats a book whose series is gone as standalone", () => {
     const orphan = book({ title: "Orphan", seriesId: "missing", seriesNumber: 2 });
 
